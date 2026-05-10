@@ -335,239 +335,183 @@ const COMMON_CONDITIONS = [
 ]
 
 function Onboarding({ onDone }: { onDone: (p: HealthProfile) => void }) {
+  const [step, setStep] = useState(1)
   const [form, setForm] = useState({
     name: '', age: 30, gender: 'male',
     heightCm: 170, weightKg: 70,
     goals: [] as string[],
-    conditions: [] as string[],
   })
-  const [condInput, setCondInput] = useState('')
-  const [condFocus, setCondFocus] = useState(false)
 
-  const GOALS = ['Lose weight', 'Sleep better', 'More energy', 'Reduce stress', 'Build fitness', 'Eat healthier', 'Manage condition']
-
-  function toggleGoal(g: string) {
-    setForm(f => ({ ...f, goals: f.goals.includes(g) ? f.goals.filter(x => x !== g) : [...f.goals, g] }))
-  }
-
-  function addCondition(c: string) {
-    const trimmed = c.trim()
-    if (!trimmed || form.conditions.includes(trimmed)) return
-    setForm(f => ({ ...f, conditions: [...f.conditions, trimmed] }))
-    setCondInput('')
-  }
-
-  function removeCondition(c: string) {
-    setForm(f => ({ ...f, conditions: f.conditions.filter(x => x !== c) }))
-  }
-
-  const filteredConditions = COMMON_CONDITIONS.filter(c =>
-    c.toLowerCase().includes(condInput.toLowerCase()) && !form.conditions.includes(c)
-  )
+  const GOALS = ['Lose weight', 'Sleep better', 'More energy', 'Reduce stress', 'Build fitness', 'Eat healthier']
 
   const bmi = form.weightKg / Math.pow(form.heightCm / 100, 2)
   const bmiLabel = bmi < 18.5 ? 'Underweight' : bmi < 25 ? 'Healthy' : bmi < 30 ? 'Overweight' : 'Obese'
   const bmiColor = bmi < 18.5 ? '#60a5fa' : bmi < 25 ? '#34d399' : bmi < 30 ? '#f59e0b' : '#ef4444'
-
-  // Height display: cm + ft/in
   const totalIn = Math.round(form.heightCm / 2.54)
-  const feet = Math.floor(totalIn / 12)
-  const inches = totalIn % 12
-  const heightDisplay = `${form.heightCm} cm (${feet}′${inches}″)`
-
-  // Weight display: kg + st
-  const stone = Math.floor(form.weightKg / 6.35)
-  const lbs = Math.round((form.weightKg % 6.35) * 2.205)
-  const weightDisplay = `${form.weightKg} kg (${stone} st ${lbs} lb)`
+  const heightDisplay = `${form.heightCm} cm · ${Math.floor(totalIn / 12)}′${totalIn % 12}″`
+  const weightDisplay = `${form.weightKg} kg · ${Math.floor(form.weightKg / 6.35)} st`
 
   function submit() {
-    if (!form.name) return
     const profile: HealthProfile = {
       name: form.name, age: form.age,
       gender: form.gender as any,
-      heightCm: form.heightCm,
-      weightKg: form.weightKg,
+      heightCm: form.heightCm, weightKg: form.weightKg,
       goals: form.goals.length ? form.goals : ['general health'],
-      conditions: form.conditions,
+      conditions: [],
     }
     import('@/lib/storage').then(m => { m.saveProfile(profile); onDone(profile) })
   }
 
-  const stepperBtn = (onClick: () => void, label: string) => (
-    <button onClick={onClick} style={{
-      width: 36, height: 36, borderRadius: 8, fontSize: 20, fontWeight: 400, cursor: 'pointer',
-      background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.1)',
-      color: 'rgba(255,255,255,0.7)', display: 'flex', alignItems: 'center', justifyContent: 'center',
-      flexShrink: 0, lineHeight: 1,
-    }}>{label}</button>
-  )
+  const S = { fontSize: 12, color: 'rgba(255,255,255,0.4)', fontWeight: 600 as const, display: 'block' as const, marginBottom: 8 }
 
   return (
-    <main style={{ maxWidth: 760, margin: '0 auto', padding: '40px 24px 40px' }}>
-      <div style={{ textAlign: 'center', marginBottom: 48 }}>
-        <div style={{ width: 80, height: 80, borderRadius: 24, background: 'linear-gradient(135deg, #34d399, #10b981)', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 24px', fontSize: 40, boxShadow: '0 0 60px rgba(52,211,153,0.35)' }}>💚</div>
-        <h1 style={{ fontSize: 38, fontWeight: 900, color: '#fff', letterSpacing: '-1px', marginBottom: 12 }}>Welcome to MyVitals</h1>
-        <p style={{ color: 'rgba(255,255,255,0.45)', fontSize: 17, lineHeight: 1.7, maxWidth: 480, margin: '0 auto' }}>
-          Track your daily health. Get personalised AI insights — like a doctor-friend reviewing your week.
-        </p>
-      </div>
+    <main style={{ minHeight: 'calc(100vh - 58px)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '20px 24px' }}>
+      <div style={{ width: '100%', maxWidth: 640 }}>
 
-      <div className="onboard-wide" style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: 28, padding: '40px 40px', display: 'flex', flexDirection: 'column', gap: 28, backdropFilter: 'blur(12px)' }}>
-
-        {/* Name */}
-        <Field label="Your name" value={form.name} onChange={v => setForm(f => ({ ...f, name: v }))} placeholder="e.g. Siva" />
-
-        {/* Age + Gender */}
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
-          {/* Age stepper */}
-          <div>
-            <label style={{ fontSize: 12, color: 'rgba(255,255,255,0.45)', display: 'block', marginBottom: 8, fontWeight: 600 }}>Age</label>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 8, background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.09)', borderRadius: 10, padding: '6px 10px' }}>
-              {stepperBtn(() => setForm(f => ({ ...f, age: Math.max(10, f.age - 1) })), '−')}
-              <span style={{ flex: 1, textAlign: 'center', fontSize: 22, fontWeight: 800, color: '#fff' }}>{form.age}</span>
-              {stepperBtn(() => setForm(f => ({ ...f, age: Math.min(100, f.age + 1) })), '+')}
-            </div>
-          </div>
-          {/* Gender pills */}
-          <div>
-            <label style={{ fontSize: 12, color: 'rgba(255,255,255,0.45)', display: 'block', marginBottom: 8, fontWeight: 600 }}>Gender</label>
-            <div style={{ display: 'flex', gap: 6 }}>
-              {(['Male', 'Female', 'Other'] as const).map(g => (
-                <button key={g} onClick={() => setForm(f => ({ ...f, gender: g.toLowerCase() }))}
-                  style={{ flex: 1, padding: '9px 4px', borderRadius: 10, fontSize: 12, fontWeight: 700, cursor: 'pointer',
-                    border: `1px solid ${form.gender === g.toLowerCase() ? GREEN : 'rgba(255,255,255,0.09)'}`,
-                    background: form.gender === g.toLowerCase() ? 'rgba(52,211,153,0.15)' : 'rgba(255,255,255,0.03)',
-                    color: form.gender === g.toLowerCase() ? GREEN : 'rgba(255,255,255,0.4)', transition: 'all 0.15s' }}>
-                  {g}
-                </button>
-              ))}
-            </div>
-          </div>
+        {/* Progress */}
+        <div style={{ display: 'flex', gap: 6, marginBottom: 32 }}>
+          {[1, 2].map(s => (
+            <div key={s} style={{ flex: 1, height: 3, borderRadius: 2,
+              background: s <= step ? GREEN : 'rgba(255,255,255,0.1)',
+              transition: 'background 0.3s' }} />
+          ))}
         </div>
 
-        {/* Height slider */}
-        <div>
-          <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 8 }}>
-            <label style={{ fontSize: 12, color: 'rgba(255,255,255,0.45)', fontWeight: 600 }}>Height</label>
-            <span style={{ fontSize: 13, fontWeight: 700, color: '#fff' }}>{heightDisplay}</span>
-          </div>
-          <input type="range" min={140} max={220} step={1} value={form.heightCm}
-            onChange={e => setForm(f => ({ ...f, heightCm: parseInt(e.target.value) }))}
-            style={{ width: '100%', accentColor: GREEN }} />
-          <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: 4 }}>
-            <span style={{ fontSize: 11, color: 'rgba(255,255,255,0.2)' }}>140 cm</span>
-            <span style={{ fontSize: 11, color: 'rgba(255,255,255,0.2)' }}>220 cm</span>
-          </div>
-        </div>
-
-        {/* Weight slider + BMI badge */}
-        <div>
-          <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 8, alignItems: 'center' }}>
-            <label style={{ fontSize: 12, color: 'rgba(255,255,255,0.45)', fontWeight: 600 }}>Weight</label>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-              <span style={{ fontSize: 13, fontWeight: 700, color: '#fff' }}>{weightDisplay}</span>
-              <span style={{ fontSize: 11, fontWeight: 700, padding: '2px 8px', borderRadius: 20,
-                background: `${bmiColor}20`, color: bmiColor, border: `1px solid ${bmiColor}40` }}>
-                BMI {bmi.toFixed(1)} · {bmiLabel}
-              </span>
+        {step === 1 && (
+          <div className="animate-fade-in" style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
+            <div style={{ marginBottom: 8 }}>
+              <h1 style={{ fontSize: 32, fontWeight: 900, color: '#fff', letterSpacing: '-0.5px', marginBottom: 8 }}>
+                Welcome to <span style={{ color: GREEN }}>MyVitals</span> 💚
+              </h1>
+              <p style={{ color: 'rgba(255,255,255,0.4)', fontSize: 15 }}>Daily tracking + AI insights. Takes 30 seconds to set up.</p>
             </div>
-          </div>
-          <input type="range" min={35} max={180} step={0.5} value={form.weightKg}
-            onChange={e => setForm(f => ({ ...f, weightKg: parseFloat(e.target.value) }))}
-            style={{ width: '100%', accentColor: bmiColor }} />
-          <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: 4 }}>
-            <span style={{ fontSize: 11, color: 'rgba(255,255,255,0.2)' }}>35 kg</span>
-            <span style={{ fontSize: 11, color: 'rgba(255,255,255,0.2)' }}>180 kg</span>
-          </div>
-        </div>
 
-        {/* Goals */}
-        <div>
-          <label style={{ fontSize: 12, color: 'rgba(255,255,255,0.45)', display: 'block', marginBottom: 10, fontWeight: 600 }}>What are your health goals?</label>
-          <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
-            {GOALS.map(g => (
-              <button key={g} onClick={() => toggleGoal(g)}
-                style={{ padding: '7px 14px', borderRadius: 20, fontSize: 13, cursor: 'pointer',
-                  border: `1px solid ${form.goals.includes(g) ? GREEN : 'rgba(255,255,255,0.1)'}`,
-                  background: form.goals.includes(g) ? 'rgba(52,211,153,0.15)' : 'transparent',
-                  color: form.goals.includes(g) ? GREEN : 'rgba(255,255,255,0.45)', transition: 'all 0.15s' }}>
-                {form.goals.includes(g) ? '✓ ' : ''}{g}
-              </button>
-            ))}
-          </div>
-        </div>
-
-        {/* Conditions — chip input */}
-        <div>
-          <label style={{ fontSize: 12, color: 'rgba(255,255,255,0.45)', display: 'block', marginBottom: 8, fontWeight: 600 }}>
-            Health conditions <span style={{ fontWeight: 400, opacity: 0.6 }}>(optional)</span>
-          </label>
-
-          {/* Selected chips */}
-          {form.conditions.length > 0 && (
-            <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6, marginBottom: 10 }}>
-              {form.conditions.map(c => (
-                <span key={c} style={{ display: 'flex', alignItems: 'center', gap: 5, padding: '4px 10px 4px 12px',
-                  borderRadius: 20, background: 'rgba(248,113,113,0.12)', border: '1px solid rgba(248,113,113,0.25)',
-                  fontSize: 12, color: '#fca5a5' }}>
-                  {c}
-                  <button onClick={() => removeCondition(c)} style={{ background: 'none', border: 'none', color: 'rgba(252,165,165,0.6)', cursor: 'pointer', padding: '0 0 0 2px', fontSize: 14, lineHeight: 1 }}>×</button>
-                </span>
-              ))}
+            {/* Name */}
+            <div>
+              <label style={S}>Your name</label>
+              <input
+                autoFocus
+                value={form.name}
+                onChange={e => setForm(f => ({ ...f, name: e.target.value }))}
+                onKeyDown={e => e.key === 'Enter' && form.name && setStep(2)}
+                placeholder="e.g. Siva"
+                style={{ width: '100%', padding: '14px 18px', borderRadius: 14, fontSize: 17, color: '#fff',
+                  background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', outline: 'none' }}
+              />
             </div>
-          )}
 
-          {/* Search input */}
-          <div style={{ position: 'relative' }}>
-            <input
-              value={condInput}
-              onChange={e => setCondInput(e.target.value)}
-              onFocus={() => setCondFocus(true)}
-              onBlur={() => setTimeout(() => setCondFocus(false), 150)}
-              onKeyDown={e => {
-                if (e.key === 'Enter' && condInput.trim()) { addCondition(condInput); e.preventDefault() }
-                if (e.key === 'Backspace' && !condInput && form.conditions.length) {
-                  removeCondition(form.conditions[form.conditions.length - 1])
-                }
-              }}
-              placeholder={form.conditions.length ? 'Add another…' : 'Search or type a condition…'}
-              style={{ width: '100%', padding: '10px 14px', borderRadius: 10, fontSize: 14, color: '#fff',
-                background: 'rgba(255,255,255,0.04)', border: `1px solid ${condFocus ? 'rgba(248,113,113,0.35)' : 'rgba(255,255,255,0.09)'}`,
-                outline: 'none', transition: 'border 0.15s', boxSizing: 'border-box' }} />
-
-            {/* Dropdown */}
-            {condFocus && (condInput ? filteredConditions.length > 0 : COMMON_CONDITIONS.filter(c => !form.conditions.includes(c)).length > 0) && (
-              <div style={{ position: 'absolute', top: '100%', left: 0, right: 0, marginTop: 4, borderRadius: 12,
-                background: 'rgba(18,18,22,0.97)', border: '1px solid rgba(255,255,255,0.1)',
-                zIndex: 50, overflow: 'hidden', backdropFilter: 'blur(16px)', maxHeight: 220, overflowY: 'auto' }}>
-                {condInput && !COMMON_CONDITIONS.map(c => c.toLowerCase()).includes(condInput.toLowerCase()) && (
-                  <button onMouseDown={() => addCondition(condInput)}
-                    style={{ width: '100%', padding: '10px 14px', textAlign: 'left', background: 'rgba(248,113,113,0.08)',
-                      border: 'none', borderBottom: '1px solid rgba(255,255,255,0.06)', color: '#fca5a5', fontSize: 13, cursor: 'pointer' }}>
-                    + Add "{condInput}"
-                  </button>
-                )}
-                {(condInput ? filteredConditions : COMMON_CONDITIONS.filter(c => !form.conditions.includes(c))).map(c => (
-                  <button key={c} onMouseDown={() => addCondition(c)}
-                    style={{ width: '100%', padding: '9px 14px', textAlign: 'left', background: 'none',
-                      border: 'none', borderBottom: '1px solid rgba(255,255,255,0.04)',
-                      color: 'rgba(255,255,255,0.7)', fontSize: 13, cursor: 'pointer' }}>
-                    {c}
-                  </button>
-                ))}
+            {/* Age + Gender side by side */}
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 }}>
+              <div>
+                <label style={S}>Age</label>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 10, background: 'rgba(255,255,255,0.05)',
+                  border: '1px solid rgba(255,255,255,0.1)', borderRadius: 14, padding: '10px 14px' }}>
+                  <button onClick={() => setForm(f => ({ ...f, age: Math.max(10, f.age - 1) }))}
+                    style={{ width: 36, height: 36, borderRadius: 8, background: 'rgba(255,255,255,0.08)',
+                      border: 'none', color: '#fff', fontSize: 20, cursor: 'pointer' }}>−</button>
+                  <span style={{ flex: 1, textAlign: 'center', fontSize: 26, fontWeight: 800, color: '#fff' }}>{form.age}</span>
+                  <button onClick={() => setForm(f => ({ ...f, age: Math.min(100, f.age + 1) }))}
+                    style={{ width: 36, height: 36, borderRadius: 8, background: 'rgba(255,255,255,0.08)',
+                      border: 'none', color: '#fff', fontSize: 20, cursor: 'pointer' }}>+</button>
+                </div>
               </div>
-            )}
-          </div>
-          <p style={{ fontSize: 11, color: 'rgba(255,255,255,0.2)', marginTop: 6 }}>Type to search, Enter to add custom. Used to personalise AI insights.</p>
-        </div>
+              <div>
+                <label style={S}>Gender</label>
+                <div style={{ display: 'flex', gap: 8, height: 58 }}>
+                  {['Male', 'Female', 'Other'].map(g => (
+                    <button key={g} onClick={() => setForm(f => ({ ...f, gender: g.toLowerCase() }))}
+                      style={{ flex: 1, borderRadius: 14, fontSize: 13, fontWeight: 700, cursor: 'pointer',
+                        border: `1px solid ${form.gender === g.toLowerCase() ? GREEN : 'rgba(255,255,255,0.1)'}`,
+                        background: form.gender === g.toLowerCase() ? 'rgba(52,211,153,0.15)' : 'rgba(255,255,255,0.03)',
+                        color: form.gender === g.toLowerCase() ? GREEN : 'rgba(255,255,255,0.4)' }}>
+                      {g}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            </div>
 
-        <button onClick={submit} disabled={!form.name}
-          style={{ padding: '15px', borderRadius: 12, fontWeight: 800, fontSize: 16, cursor: form.name ? 'pointer' : 'not-allowed',
-            background: !form.name ? 'rgba(255,255,255,0.06)' : `linear-gradient(135deg, ${GREEN}, ${TEAL})`,
-            color: !form.name ? 'rgba(255,255,255,0.2)' : '#000',
-            border: 'none', boxShadow: !form.name ? 'none' : '0 0 24px rgba(52,211,153,0.25)', transition: 'all 0.2s' }}>
-          Start tracking my health →
-        </button>
+            <button onClick={() => setStep(2)} disabled={!form.name}
+              style={{ padding: '16px', borderRadius: 14, fontWeight: 800, fontSize: 16,
+                background: form.name ? `linear-gradient(135deg, ${GREEN}, ${TEAL})` : 'rgba(255,255,255,0.06)',
+                color: form.name ? '#000' : 'rgba(255,255,255,0.2)',
+                border: 'none', boxShadow: form.name ? '0 0 24px rgba(52,211,153,0.2)' : 'none',
+                transition: 'all 0.2s', cursor: form.name ? 'pointer' : 'not-allowed' }}>
+              Continue →
+            </button>
+          </div>
+        )}
+
+        {step === 2 && (
+          <div className="animate-fade-in" style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
+            <div style={{ marginBottom: 8 }}>
+              <h2 style={{ fontSize: 28, fontWeight: 900, color: '#fff', letterSpacing: '-0.5px', marginBottom: 6 }}>
+                Hi {form.name} 👋
+              </h2>
+              <p style={{ color: 'rgba(255,255,255,0.4)', fontSize: 15 }}>A few more details to personalise your AI coach.</p>
+            </div>
+
+            {/* Height + Weight */}
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 }}>
+              <div>
+                <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 8 }}>
+                  <label style={{ ...S, marginBottom: 0 }}>Height</label>
+                  <span style={{ fontSize: 12, fontWeight: 700, color: GREEN }}>{heightDisplay}</span>
+                </div>
+                <input type="range" min={140} max={220} value={form.heightCm}
+                  onChange={e => setForm(f => ({ ...f, heightCm: parseInt(e.target.value) }))}
+                  style={{ width: '100%', accentColor: GREEN }} />
+              </div>
+              <div>
+                <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 8, alignItems: 'center' }}>
+                  <label style={{ ...S, marginBottom: 0 }}>Weight</label>
+                  <span style={{ fontSize: 11, fontWeight: 700, padding: '2px 7px', borderRadius: 20,
+                    background: `${bmiColor}20`, color: bmiColor, border: `1px solid ${bmiColor}40` }}>
+                    BMI {bmi.toFixed(1)} {bmiLabel}
+                  </span>
+                </div>
+                <span style={{ fontSize: 12, color: GREEN, fontWeight: 700, display: 'block', marginBottom: 6 }}>{weightDisplay}</span>
+                <input type="range" min={35} max={180} step={0.5} value={form.weightKg}
+                  onChange={e => setForm(f => ({ ...f, weightKg: parseFloat(e.target.value) }))}
+                  style={{ width: '100%', accentColor: bmiColor }} />
+              </div>
+            </div>
+
+            {/* Goals */}
+            <div>
+              <label style={S}>Health goals (pick any)</label>
+              <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
+                {GOALS.map(g => {
+                  const on = form.goals.includes(g)
+                  return (
+                    <button key={g} onClick={() => setForm(f => ({ ...f, goals: on ? f.goals.filter(x => x !== g) : [...f.goals, g] }))}
+                      style={{ padding: '9px 16px', borderRadius: 20, fontSize: 13, cursor: 'pointer',
+                        border: `1px solid ${on ? GREEN : 'rgba(255,255,255,0.1)'}`,
+                        background: on ? 'rgba(52,211,153,0.15)' : 'transparent',
+                        color: on ? GREEN : 'rgba(255,255,255,0.5)', fontWeight: on ? 700 : 400, transition: 'all 0.15s' }}>
+                      {on ? '✓ ' : ''}{g}
+                    </button>
+                  )
+                })}
+              </div>
+            </div>
+
+            <div style={{ display: 'flex', gap: 12 }}>
+              <button onClick={() => setStep(1)}
+                style={{ padding: '16px 24px', borderRadius: 14, fontWeight: 700, fontSize: 15,
+                  background: 'rgba(255,255,255,0.06)', color: 'rgba(255,255,255,0.6)',
+                  border: '1px solid rgba(255,255,255,0.1)', cursor: 'pointer' }}>
+                ← Back
+              </button>
+              <button onClick={submit}
+                style={{ flex: 1, padding: '16px', borderRadius: 14, fontWeight: 800, fontSize: 16,
+                  background: `linear-gradient(135deg, ${GREEN}, ${TEAL})`, color: '#000',
+                  border: 'none', boxShadow: '0 0 24px rgba(52,211,153,0.2)', cursor: 'pointer' }}>
+                Start tracking 🚀
+              </button>
+            </div>
+          </div>
+        )}
       </div>
     </main>
   )
