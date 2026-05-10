@@ -1,5 +1,5 @@
 'use client'
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { getProfile, getLog, saveLog, today, getStreak, healthScore } from '@/lib/storage'
 import type { HealthProfile, DayLog } from '@/lib/types'
 import { MOOD_LABELS, MOOD_COLORS } from '@/lib/types'
@@ -58,7 +58,7 @@ export default function Dashboard() {
   if (!profile) return <Onboarding onDone={p => setProfile(p)} />
 
   return (
-    <main style={{ maxWidth: 960, margin: '0 auto', padding: '28px 20px' }}>
+    <main style={{ maxWidth: 960, margin: '0 auto', padding: '28px 20px' }} className="animate-fade-in">
       {/* Header */}
       <div style={{ marginBottom: 28, display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between' }}>
         <div>
@@ -78,14 +78,14 @@ export default function Dashboard() {
       </div>
 
       {/* 3-col stats */}
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: 14, marginBottom: 24 }}>
+      <div className="stats-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: 14, marginBottom: 24 }}>
         <GlassStatCard icon="💧" label="Water" value={log.water} max={8} unit="glasses" color="#38bdf8" />
         <GlassStatCard icon="😴" label="Sleep" value={log.sleep} max={8} unit="hrs" color="#818cf8" />
         <GlassStatCard icon="👟" label="Steps" value={log.steps} max={10000} unit="" color={GREEN} format={v => v >= 1000 ? `${(v/1000).toFixed(1)}k` : String(v)} />
       </div>
 
       {/* Main layout: log form + score sidebar */}
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 280px', gap: 20, alignItems: 'start' }}>
+      <div className="main-grid" style={{ display: 'grid', gridTemplateColumns: '1fr 280px', gap: 20, alignItems: 'start' }}>
 
         {/* LOG FORM */}
         <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
@@ -230,7 +230,7 @@ export default function Dashboard() {
         </div>
 
         {/* SIDEBAR */}
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 14, position: 'sticky', top: 78 }}>
+        <div className="sidebar-sticky" style={{ display: 'flex', flexDirection: 'column', gap: 14, position: 'sticky', top: 78 }}>
 
           {/* Score ring */}
           <div style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.07)', borderRadius: 20, padding: '24px 20px', textAlign: 'center', backdropFilter: 'blur(12px)' }}>
@@ -328,9 +328,21 @@ function TargetBar({ icon, label, current, target, unit, color, format }: { icon
   )
 }
 
+const COMMON_CONDITIONS = [
+  'Diabetes', 'Hypertension', 'Asthma', 'Anxiety', 'Depression',
+  'High cholesterol', 'Arthritis', 'Back pain', 'Migraine', 'GERD',
+  'Thyroid', 'PCOS', 'IBS', 'Sleep apnea', 'Eczema',
+]
+
 function Onboarding({ onDone }: { onDone: (p: HealthProfile) => void }) {
-  const [form, setForm] = useState({ name: '', age: '', gender: 'male', heightCm: '', weightKg: '', goals: [] as string[], conditions: '' })
-  const [step, setStep] = useState(1)
+  const [form, setForm] = useState({
+    name: '', age: 30, gender: 'male',
+    heightCm: 170, weightKg: 70,
+    goals: [] as string[],
+    conditions: [] as string[],
+  })
+  const [condInput, setCondInput] = useState('')
+  const [condFocus, setCondFocus] = useState(false)
 
   const GOALS = ['Lose weight', 'Sleep better', 'More energy', 'Reduce stress', 'Build fitness', 'Eat healthier', 'Manage condition']
 
@@ -338,48 +350,138 @@ function Onboarding({ onDone }: { onDone: (p: HealthProfile) => void }) {
     setForm(f => ({ ...f, goals: f.goals.includes(g) ? f.goals.filter(x => x !== g) : [...f.goals, g] }))
   }
 
+  function addCondition(c: string) {
+    const trimmed = c.trim()
+    if (!trimmed || form.conditions.includes(trimmed)) return
+    setForm(f => ({ ...f, conditions: [...f.conditions, trimmed] }))
+    setCondInput('')
+  }
+
+  function removeCondition(c: string) {
+    setForm(f => ({ ...f, conditions: f.conditions.filter(x => x !== c) }))
+  }
+
+  const filteredConditions = COMMON_CONDITIONS.filter(c =>
+    c.toLowerCase().includes(condInput.toLowerCase()) && !form.conditions.includes(c)
+  )
+
+  const bmi = form.weightKg / Math.pow(form.heightCm / 100, 2)
+  const bmiLabel = bmi < 18.5 ? 'Underweight' : bmi < 25 ? 'Healthy' : bmi < 30 ? 'Overweight' : 'Obese'
+  const bmiColor = bmi < 18.5 ? '#60a5fa' : bmi < 25 ? '#34d399' : bmi < 30 ? '#f59e0b' : '#ef4444'
+
+  // Height display: cm + ft/in
+  const totalIn = Math.round(form.heightCm / 2.54)
+  const feet = Math.floor(totalIn / 12)
+  const inches = totalIn % 12
+  const heightDisplay = `${form.heightCm} cm (${feet}′${inches}″)`
+
+  // Weight display: kg + st
+  const stone = Math.floor(form.weightKg / 6.35)
+  const lbs = Math.round((form.weightKg % 6.35) * 2.205)
+  const weightDisplay = `${form.weightKg} kg (${stone} st ${lbs} lb)`
+
   function submit() {
-    if (!form.name || !form.age) return
+    if (!form.name) return
     const profile: HealthProfile = {
-      name: form.name, age: parseInt(form.age),
-      gender: form.gender as any, heightCm: parseFloat(form.heightCm) || 170,
-      weightKg: parseFloat(form.weightKg) || 70,
+      name: form.name, age: form.age,
+      gender: form.gender as any,
+      heightCm: form.heightCm,
+      weightKg: form.weightKg,
       goals: form.goals.length ? form.goals : ['general health'],
-      conditions: form.conditions ? form.conditions.split(',').map(s => s.trim()).filter(Boolean) : [],
+      conditions: form.conditions,
     }
     import('@/lib/storage').then(m => { m.saveProfile(profile); onDone(profile) })
   }
 
+  const stepperBtn = (onClick: () => void, label: string) => (
+    <button onClick={onClick} style={{
+      width: 36, height: 36, borderRadius: 8, fontSize: 20, fontWeight: 400, cursor: 'pointer',
+      background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.1)',
+      color: 'rgba(255,255,255,0.7)', display: 'flex', alignItems: 'center', justifyContent: 'center',
+      flexShrink: 0, lineHeight: 1,
+    }}>{label}</button>
+  )
+
   return (
     <main style={{ maxWidth: 500, margin: '60px auto', padding: '0 20px' }}>
-      {/* Hero */}
       <div style={{ textAlign: 'center', marginBottom: 40 }}>
         <div style={{ width: 72, height: 72, borderRadius: 22, background: 'linear-gradient(135deg, #34d399, #10b981)', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 20px', fontSize: 36, boxShadow: '0 0 40px rgba(52,211,153,0.3)' }}>💚</div>
-        <h1 style={{ fontSize: 30, fontWeight: 900, color: '#fff', letterSpacing: '-0.5px', marginBottom: 10 }}>Welcome to MyVitals</h1>
+        <h1 style={{ fontSize: 30, fontWeight: 900, color: '#fff', letterSpacing: '-0.5px', marginBottom: 10 }}>Welcome to HealthPulse</h1>
         <p style={{ color: 'rgba(255,255,255,0.4)', fontSize: 15, lineHeight: 1.6, maxWidth: 360, margin: '0 auto' }}>
           Track your daily health. Get personalised AI insights — like having a doctor-friend review your week.
         </p>
       </div>
 
-      <div style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: 22, padding: 32, display: 'flex', flexDirection: 'column', gap: 16, backdropFilter: 'blur(12px)' }}>
+      <div style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: 22, padding: 32, display: 'flex', flexDirection: 'column', gap: 20, backdropFilter: 'blur(12px)' }}>
+
+        {/* Name */}
         <Field label="Your name" value={form.name} onChange={v => setForm(f => ({ ...f, name: v }))} placeholder="e.g. Siva" />
+
+        {/* Age + Gender */}
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
-          <Field label="Age" value={form.age} onChange={v => setForm(f => ({ ...f, age: v }))} placeholder="35" type="number" />
+          {/* Age stepper */}
           <div>
-            <label style={{ fontSize: 12, color: 'rgba(255,255,255,0.45)', display: 'block', marginBottom: 6, fontWeight: 600 }}>Gender</label>
-            <select value={form.gender} onChange={e => setForm(f => ({ ...f, gender: e.target.value }))}
-              style={{ width: '100%', padding: '10px 12px', borderRadius: 10, background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.1)', color: '#fff', fontSize: 14 }}>
-              <option value="male">Male</option>
-              <option value="female">Female</option>
-              <option value="other">Other</option>
-            </select>
+            <label style={{ fontSize: 12, color: 'rgba(255,255,255,0.45)', display: 'block', marginBottom: 8, fontWeight: 600 }}>Age</label>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8, background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.09)', borderRadius: 10, padding: '6px 10px' }}>
+              {stepperBtn(() => setForm(f => ({ ...f, age: Math.max(10, f.age - 1) })), '−')}
+              <span style={{ flex: 1, textAlign: 'center', fontSize: 22, fontWeight: 800, color: '#fff' }}>{form.age}</span>
+              {stepperBtn(() => setForm(f => ({ ...f, age: Math.min(100, f.age + 1) })), '+')}
+            </div>
+          </div>
+          {/* Gender pills */}
+          <div>
+            <label style={{ fontSize: 12, color: 'rgba(255,255,255,0.45)', display: 'block', marginBottom: 8, fontWeight: 600 }}>Gender</label>
+            <div style={{ display: 'flex', gap: 6 }}>
+              {(['Male', 'Female', 'Other'] as const).map(g => (
+                <button key={g} onClick={() => setForm(f => ({ ...f, gender: g.toLowerCase() }))}
+                  style={{ flex: 1, padding: '9px 4px', borderRadius: 10, fontSize: 12, fontWeight: 700, cursor: 'pointer',
+                    border: `1px solid ${form.gender === g.toLowerCase() ? GREEN : 'rgba(255,255,255,0.09)'}`,
+                    background: form.gender === g.toLowerCase() ? 'rgba(52,211,153,0.15)' : 'rgba(255,255,255,0.03)',
+                    color: form.gender === g.toLowerCase() ? GREEN : 'rgba(255,255,255,0.4)', transition: 'all 0.15s' }}>
+                  {g}
+                </button>
+              ))}
+            </div>
           </div>
         </div>
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
-          <Field label="Height (cm)" value={form.heightCm} onChange={v => setForm(f => ({ ...f, heightCm: v }))} placeholder="175" type="number" />
-          <Field label="Weight (kg)" value={form.weightKg} onChange={v => setForm(f => ({ ...f, weightKg: v }))} placeholder="70" type="number" />
+
+        {/* Height slider */}
+        <div>
+          <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 8 }}>
+            <label style={{ fontSize: 12, color: 'rgba(255,255,255,0.45)', fontWeight: 600 }}>Height</label>
+            <span style={{ fontSize: 13, fontWeight: 700, color: '#fff' }}>{heightDisplay}</span>
+          </div>
+          <input type="range" min={140} max={220} step={1} value={form.heightCm}
+            onChange={e => setForm(f => ({ ...f, heightCm: parseInt(e.target.value) }))}
+            style={{ width: '100%', accentColor: GREEN }} />
+          <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: 4 }}>
+            <span style={{ fontSize: 11, color: 'rgba(255,255,255,0.2)' }}>140 cm</span>
+            <span style={{ fontSize: 11, color: 'rgba(255,255,255,0.2)' }}>220 cm</span>
+          </div>
         </div>
 
+        {/* Weight slider + BMI badge */}
+        <div>
+          <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 8, alignItems: 'center' }}>
+            <label style={{ fontSize: 12, color: 'rgba(255,255,255,0.45)', fontWeight: 600 }}>Weight</label>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+              <span style={{ fontSize: 13, fontWeight: 700, color: '#fff' }}>{weightDisplay}</span>
+              <span style={{ fontSize: 11, fontWeight: 700, padding: '2px 8px', borderRadius: 20,
+                background: `${bmiColor}20`, color: bmiColor, border: `1px solid ${bmiColor}40` }}>
+                BMI {bmi.toFixed(1)} · {bmiLabel}
+              </span>
+            </div>
+          </div>
+          <input type="range" min={35} max={180} step={0.5} value={form.weightKg}
+            onChange={e => setForm(f => ({ ...f, weightKg: parseFloat(e.target.value) }))}
+            style={{ width: '100%', accentColor: bmiColor }} />
+          <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: 4 }}>
+            <span style={{ fontSize: 11, color: 'rgba(255,255,255,0.2)' }}>35 kg</span>
+            <span style={{ fontSize: 11, color: 'rgba(255,255,255,0.2)' }}>180 kg</span>
+          </div>
+        </div>
+
+        {/* Goals */}
         <div>
           <label style={{ fontSize: 12, color: 'rgba(255,255,255,0.45)', display: 'block', marginBottom: 10, fontWeight: 600 }}>What are your health goals?</label>
           <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
@@ -388,20 +490,82 @@ function Onboarding({ onDone }: { onDone: (p: HealthProfile) => void }) {
                 style={{ padding: '7px 14px', borderRadius: 20, fontSize: 13, cursor: 'pointer',
                   border: `1px solid ${form.goals.includes(g) ? GREEN : 'rgba(255,255,255,0.1)'}`,
                   background: form.goals.includes(g) ? 'rgba(52,211,153,0.15)' : 'transparent',
-                  color: form.goals.includes(g) ? GREEN : 'rgba(255,255,255,0.5)' }}>
-                {g}
+                  color: form.goals.includes(g) ? GREEN : 'rgba(255,255,255,0.45)', transition: 'all 0.15s' }}>
+                {form.goals.includes(g) ? '✓ ' : ''}{g}
               </button>
             ))}
           </div>
         </div>
 
-        <Field label="Health conditions (optional, comma-separated)" value={form.conditions} onChange={v => setForm(f => ({ ...f, conditions: v }))} placeholder="e.g. diabetes, hypertension" />
+        {/* Conditions — chip input */}
+        <div>
+          <label style={{ fontSize: 12, color: 'rgba(255,255,255,0.45)', display: 'block', marginBottom: 8, fontWeight: 600 }}>
+            Health conditions <span style={{ fontWeight: 400, opacity: 0.6 }}>(optional)</span>
+          </label>
 
-        <button onClick={submit} disabled={!form.name || !form.age}
-          style={{ padding: '15px', borderRadius: 12, fontWeight: 800, fontSize: 16, cursor: 'pointer',
-            background: (!form.name || !form.age) ? 'rgba(255,255,255,0.06)' : `linear-gradient(135deg, ${GREEN}, ${TEAL})`,
-            color: (!form.name || !form.age) ? 'rgba(255,255,255,0.2)' : '#000',
-            border: 'none', boxShadow: (!form.name || !form.age) ? 'none' : '0 0 24px rgba(52,211,153,0.25)', transition: 'all 0.2s' }}>
+          {/* Selected chips */}
+          {form.conditions.length > 0 && (
+            <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6, marginBottom: 10 }}>
+              {form.conditions.map(c => (
+                <span key={c} style={{ display: 'flex', alignItems: 'center', gap: 5, padding: '4px 10px 4px 12px',
+                  borderRadius: 20, background: 'rgba(248,113,113,0.12)', border: '1px solid rgba(248,113,113,0.25)',
+                  fontSize: 12, color: '#fca5a5' }}>
+                  {c}
+                  <button onClick={() => removeCondition(c)} style={{ background: 'none', border: 'none', color: 'rgba(252,165,165,0.6)', cursor: 'pointer', padding: '0 0 0 2px', fontSize: 14, lineHeight: 1 }}>×</button>
+                </span>
+              ))}
+            </div>
+          )}
+
+          {/* Search input */}
+          <div style={{ position: 'relative' }}>
+            <input
+              value={condInput}
+              onChange={e => setCondInput(e.target.value)}
+              onFocus={() => setCondFocus(true)}
+              onBlur={() => setTimeout(() => setCondFocus(false), 150)}
+              onKeyDown={e => {
+                if (e.key === 'Enter' && condInput.trim()) { addCondition(condInput); e.preventDefault() }
+                if (e.key === 'Backspace' && !condInput && form.conditions.length) {
+                  removeCondition(form.conditions[form.conditions.length - 1])
+                }
+              }}
+              placeholder={form.conditions.length ? 'Add another…' : 'Search or type a condition…'}
+              style={{ width: '100%', padding: '10px 14px', borderRadius: 10, fontSize: 14, color: '#fff',
+                background: 'rgba(255,255,255,0.04)', border: `1px solid ${condFocus ? 'rgba(248,113,113,0.35)' : 'rgba(255,255,255,0.09)'}`,
+                outline: 'none', transition: 'border 0.15s', boxSizing: 'border-box' }} />
+
+            {/* Dropdown */}
+            {condFocus && (condInput ? filteredConditions.length > 0 : COMMON_CONDITIONS.filter(c => !form.conditions.includes(c)).length > 0) && (
+              <div style={{ position: 'absolute', top: '100%', left: 0, right: 0, marginTop: 4, borderRadius: 12,
+                background: 'rgba(18,18,22,0.97)', border: '1px solid rgba(255,255,255,0.1)',
+                zIndex: 50, overflow: 'hidden', backdropFilter: 'blur(16px)', maxHeight: 220, overflowY: 'auto' }}>
+                {condInput && !COMMON_CONDITIONS.map(c => c.toLowerCase()).includes(condInput.toLowerCase()) && (
+                  <button onMouseDown={() => addCondition(condInput)}
+                    style={{ width: '100%', padding: '10px 14px', textAlign: 'left', background: 'rgba(248,113,113,0.08)',
+                      border: 'none', borderBottom: '1px solid rgba(255,255,255,0.06)', color: '#fca5a5', fontSize: 13, cursor: 'pointer' }}>
+                    + Add "{condInput}"
+                  </button>
+                )}
+                {(condInput ? filteredConditions : COMMON_CONDITIONS.filter(c => !form.conditions.includes(c))).map(c => (
+                  <button key={c} onMouseDown={() => addCondition(c)}
+                    style={{ width: '100%', padding: '9px 14px', textAlign: 'left', background: 'none',
+                      border: 'none', borderBottom: '1px solid rgba(255,255,255,0.04)',
+                      color: 'rgba(255,255,255,0.7)', fontSize: 13, cursor: 'pointer' }}>
+                    {c}
+                  </button>
+                ))}
+              </div>
+            )}
+          </div>
+          <p style={{ fontSize: 11, color: 'rgba(255,255,255,0.2)', marginTop: 6 }}>Type to search, Enter to add custom. Used to personalise AI insights.</p>
+        </div>
+
+        <button onClick={submit} disabled={!form.name}
+          style={{ padding: '15px', borderRadius: 12, fontWeight: 800, fontSize: 16, cursor: form.name ? 'pointer' : 'not-allowed',
+            background: !form.name ? 'rgba(255,255,255,0.06)' : `linear-gradient(135deg, ${GREEN}, ${TEAL})`,
+            color: !form.name ? 'rgba(255,255,255,0.2)' : '#000',
+            border: 'none', boxShadow: !form.name ? 'none' : '0 0 24px rgba(52,211,153,0.25)', transition: 'all 0.2s' }}>
           Start tracking my health →
         </button>
       </div>
