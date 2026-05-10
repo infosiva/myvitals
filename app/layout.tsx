@@ -1,5 +1,6 @@
 import type { Metadata } from 'next'
 import './globals.css'
+import FeedbackWidget from '@/components/FeedbackWidget'
 
 export const metadata: Metadata = {
   title: 'HealthPulse — AI Health Coach',
@@ -44,6 +45,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           </div>
         </nav>
         <div style={{ paddingTop: 58 }}>{children}</div>
+        <FeedbackWidget siteName="HealthPulse" accentColor="#34d399" accentColor2="#10b981" />
       </body>
     </html>
   )
