@@ -355,7 +355,7 @@ function Onboarding({ onDone }: { onDone: (p: HealthProfile) => void }) {
       {/* Hero */}
       <div style={{ textAlign: 'center', marginBottom: 40 }}>
         <div style={{ width: 72, height: 72, borderRadius: 22, background: 'linear-gradient(135deg, #34d399, #10b981)', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 20px', fontSize: 36, boxShadow: '0 0 40px rgba(52,211,153,0.3)' }}>💚</div>
-        <h1 style={{ fontSize: 30, fontWeight: 900, color: '#fff', letterSpacing: '-0.5px', marginBottom: 10 }}>Welcome to HealthPulse</h1>
+        <h1 style={{ fontSize: 30, fontWeight: 900, color: '#fff', letterSpacing: '-0.5px', marginBottom: 10 }}>Welcome to MyVitals</h1>
         <p style={{ color: 'rgba(255,255,255,0.4)', fontSize: 15, lineHeight: 1.6, maxWidth: 360, margin: '0 auto' }}>
           Track your daily health. Get personalised AI insights — like having a doctor-friend review your week.
         </p>

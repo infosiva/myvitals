@@ -9,7 +9,7 @@ export default function InsightsPage() {
   const [error, setError] = useState('')
 
   useEffect(() => {
-    const cached = sessionStorage.getItem('healthpulse_insight')
+    const cached = sessionStorage.getItem('myvitals_insight')
     if (cached) {
       try { setInsight(JSON.parse(cached)) } catch {}
     }
@@ -25,7 +25,7 @@ export default function InsightsPage() {
       const data = await res.json()
       if (data.insights) {
         setInsight(data.insights)
-        sessionStorage.setItem('healthpulse_insight', JSON.stringify(data.insights))
+        sessionStorage.setItem('myvitals_insight', JSON.stringify(data.insights))
       } else {
         setError(data.error ?? 'Unknown error')
       }

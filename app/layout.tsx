@@ -3,7 +3,7 @@ import './globals.css'
 import FeedbackWidget from '@/components/FeedbackWidget'
 
 export const metadata: Metadata = {
-  title: 'HealthPulse — AI Health Coach',
+  title: 'MyVitals — AI Health Coach',
   description: 'Track daily wellness. Get personalised AI insights like a doctor-friend.',
 }
 
@@ -45,7 +45,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           </div>
         </nav>
         <div style={{ paddingTop: 58 }}>{children}</div>
-        <FeedbackWidget siteName="HealthPulse" accentColor="#34d399" accentColor2="#10b981" />
+        <FeedbackWidget siteName="MyVitals" accentColor="#34d399" accentColor2="#10b981" />
       </body>
     </html>
   )

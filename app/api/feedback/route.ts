@@ -28,7 +28,7 @@ export async function POST(req: NextRequest) {
 
   const entry = {
     id:        crypto.randomUUID(),
-    site:      'HealthPulse',
+    site:      'MyVitals',
     type:      type ?? 'General',
     rating,
     message:   message.trim(),
@@ -45,7 +45,7 @@ export async function POST(req: NextRequest) {
   if (botToken && chatId) {
     const stars = '⭐'.repeat(rating)
     const text  = [
-      `💚 *New Feedback — HealthPulse*`,
+      `💚 *New Feedback — MyVitals*`,
       `${stars} ${rating}/5 · ${entry.type}`,
       `📄 ${entry.page}`,
       ``,
