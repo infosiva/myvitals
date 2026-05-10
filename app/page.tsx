@@ -8,26 +8,30 @@ import GuidedTour, { type TourStep } from '@/components/GuidedTour'
 const TOUR_STEPS: TourStep[] = [
   {
     target: '#nl-quick-log',
-    title: '✨ Log your day in seconds',
-    body: 'Just type how your day went — AI reads it and fills all the fields automatically. No tapping sliders.',
+    title: 'Log your day in seconds',
+    body: 'Type how your day went — "walked 8k steps, slept 7hrs, had oats for breakfast" — AI fills all fields instantly.',
+    icon: '✨',
     placement: 'bottom',
   },
   {
     target: '#wellness-score',
-    title: '📊 Your Wellness Score',
-    body: 'Updates live as you log. Tracks water, sleep, steps, mood and exercise into one number.',
+    title: 'Your Wellness Score',
+    body: 'Scores 0–100 across water, sleep, steps, mood and exercise. Updates live as you log.',
+    icon: '📊',
     placement: 'left',
   },
   {
     target: '#save-btn',
-    title: '💾 Save & Get AI Summary',
-    body: 'Hit Save and your AI health coach writes a personal 2-sentence recap of your day.',
+    title: 'Save & get AI recap',
+    body: 'After saving, your AI coach writes a personal 2-sentence summary of your day — specific to your numbers.',
+    icon: '🩺',
     placement: 'top',
   },
   {
     target: '#ai-insight-cta',
-    title: '🩺 Weekly AI Coach',
-    body: 'After 3+ days logged, get a full weekly narrative — wins, improvements, and one actionable tip.',
+    title: 'Weekly AI Coach',
+    body: 'Log 3+ days and unlock a full weekly narrative — wins, patterns, and one actionable next step.',
+    icon: '🌟',
     placement: 'left',
   },
 ]
