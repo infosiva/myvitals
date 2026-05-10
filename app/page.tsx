@@ -328,202 +328,278 @@ function TargetBar({ icon, label, current, target, unit, color, format }: { icon
   )
 }
 
+
 const COMMON_CONDITIONS = [
-  'Diabetes', 'Hypertension', 'Asthma', 'Anxiety', 'Depression',
-  'High cholesterol', 'Arthritis', 'Back pain', 'Migraine', 'GERD',
-  'Thyroid', 'PCOS', 'IBS', 'Sleep apnea', 'Eczema',
+  'Diabetes','Hypertension','Asthma','Anxiety','Depression',
+  'High cholesterol','Arthritis','Back pain','Migraine','GERD',
+  'Thyroid','PCOS','IBS','Sleep apnea','Eczema',
 ]
+const GOALS = ['Lose weight','Sleep better','More energy','Reduce stress','Build fitness','Eat healthier','Manage condition']
+const STEP_TITLES = ["What's your name?",'How old are you?','Your height','Your weight','Health goals','Any conditions?']
+const TOTAL_STEPS = 6
 
 function Onboarding({ onDone }: { onDone: (p: HealthProfile) => void }) {
-  const [step, setStep] = useState(1)
-  const [form, setForm] = useState({
-    name: '', age: 30, gender: 'male',
-    heightCm: 170, weightKg: 70,
-    goals: [] as string[],
-  })
+  const [step, setStep] = useState(0)
+  const [animKey, setAnimKey] = useState(0)
+  const [form, setForm] = useState({ name:'', age:30, gender:'male', heightCm:170, weightKg:70, goals:[] as string[], conditions:[] as string[] })
+  const [condInput, setCondInput] = useState('')
+  const [condFocus, setCondFocus] = useState(false)
 
-  const GOALS = ['Lose weight', 'Sleep better', 'More energy', 'Reduce stress', 'Build fitness', 'Eat healthier']
+  function go(dir: 1|-1) { setAnimKey(k=>k+1); setStep(s=>s+dir) }
+  function canContinue() { return step!==0||form.name.trim().length>0 }
+  function toggleGoal(g: string) { setForm(f=>({...f,goals:f.goals.includes(g)?f.goals.filter(x=>x!==g):[...f.goals,g]})) }
+  function addCond(c: string) { const t=c.trim(); if(!t||form.conditions.includes(t))return; setForm(f=>({...f,conditions:[...f.conditions,t]})); setCondInput('') }
+  function removeCond(c: string) { setForm(f=>({...f,conditions:f.conditions.filter(x=>x!==c)})) }
 
-  const bmi = form.weightKg / Math.pow(form.heightCm / 100, 2)
-  const bmiLabel = bmi < 18.5 ? 'Underweight' : bmi < 25 ? 'Healthy' : bmi < 30 ? 'Overweight' : 'Obese'
-  const bmiColor = bmi < 18.5 ? '#60a5fa' : bmi < 25 ? '#34d399' : bmi < 30 ? '#f59e0b' : '#ef4444'
-  const totalIn = Math.round(form.heightCm / 2.54)
-  const heightDisplay = `${form.heightCm} cm · ${Math.floor(totalIn / 12)}′${totalIn % 12}″`
-  const weightDisplay = `${form.weightKg} kg · ${Math.floor(form.weightKg / 6.35)} st`
+  const bmi=form.weightKg/Math.pow(form.heightCm/100,2)
+  const bmiLabel=bmi<18.5?'Underweight':bmi<25?'Healthy':bmi<30?'Overweight':'Obese'
+  const bmiColor=bmi<18.5?'#60a5fa':bmi<25?'#34d399':bmi<30?'#f59e0b':'#ef4444'
+  const totalIn=Math.round(form.heightCm/2.54); const ft=Math.floor(totalIn/12); const htIn=totalIn%12
+  const st=Math.floor(form.weightKg/6.35); const lb=Math.round((form.weightKg%6.35)*2.205)
+  const filtered=COMMON_CONDITIONS.filter(c=>c.toLowerCase().includes(condInput.toLowerCase())&&!form.conditions.includes(c))
 
   function submit() {
-    const profile: HealthProfile = {
-      name: form.name, age: form.age,
-      gender: form.gender as any,
-      heightCm: form.heightCm, weightKg: form.weightKg,
-      goals: form.goals.length ? form.goals : ['general health'],
-      conditions: [],
-    }
-    import('@/lib/storage').then(m => { m.saveProfile(profile); onDone(profile) })
+    const profile: HealthProfile = { name:form.name, age:form.age, gender:form.gender as any, heightCm:form.heightCm, weightKg:form.weightKg, goals:form.goals.length?form.goals:['general health'], conditions:form.conditions }
+    import('@/lib/storage').then(m=>{m.saveProfile(profile);onDone(profile)})
   }
 
-  const S = { fontSize: 12, color: 'rgba(255,255,255,0.4)', fontWeight: 600 as const, display: 'block' as const, marginBottom: 8 }
+  const stepContent=()=>{
+    switch(step){
+      case 0:return(
+        <div style={sWrap}>
+          <p style={sHint}>Let's personalise your health experience</p>
+          <input autoFocus value={form.name} onChange={e=>setForm(f=>({...f,name:e.target.value}))}
+            onKeyDown={e=>e.key==='Enter'&&canContinue()&&go(1)}
+            placeholder="Your first name" style={sBigInput}/>
+        </div>
+      )
+      case 1:return(
+        <div style={sWrap}>
+          <p style={sHint}>Used to personalise your health insights</p>
+          <div style={{display:'flex',alignItems:'center',justifyContent:'center',gap:32,margin:'36px 0 24px'}}>
+            <button onClick={()=>setForm(f=>({...f,age:Math.max(10,f.age-1)}))} style={sBigBtn}>−</button>
+            <span style={{fontSize:88,fontWeight:900,color:'#fff',letterSpacing:'-4px',lineHeight:1}}>{form.age}</span>
+            <button onClick={()=>setForm(f=>({...f,age:Math.min(100,f.age+1)}))} style={sBigBtn}>+</button>
+          </div>
+          <div style={{display:'flex',flexWrap:'wrap',gap:8,justifyContent:'center',marginBottom:28}}>
+            {[18,25,30,35,40,50,60].map(a=>(
+              <button key={a} onClick={()=>setForm(f=>({...f,age:a}))}
+                style={{padding:'8px 18px',borderRadius:20,fontSize:14,fontWeight:600,cursor:'pointer',transition:'all 0.15s',
+                  background:form.age===a?'rgba(52,211,153,0.12)':'rgba(255,255,255,0.04)',
+                  border:`1px solid ${form.age===a?'rgba(52,211,153,0.5)':'rgba(255,255,255,0.1)'}`,
+                  color:form.age===a?GREEN:'rgba(255,255,255,0.45)'}}>{a}</button>
+            ))}
+          </div>
+          <p style={{...sHint,marginBottom:12}}>Gender</p>
+          <div style={{display:'flex',gap:10,justifyContent:'center'}}>
+            {(['Male','Female','Other'] as const).map(g=>(
+              <button key={g} onClick={()=>setForm(f=>({...f,gender:g.toLowerCase()}))}
+                style={{padding:'12px 28px',borderRadius:14,fontSize:15,fontWeight:700,cursor:'pointer',transition:'all 0.15s',
+                  border:`2px solid ${form.gender===g.toLowerCase()?GREEN:'rgba(255,255,255,0.1)'}`,
+                  background:form.gender===g.toLowerCase()?'rgba(52,211,153,0.1)':'rgba(255,255,255,0.03)',
+                  color:form.gender===g.toLowerCase()?GREEN:'rgba(255,255,255,0.45)'}}>{g}</button>
+            ))}
+          </div>
+        </div>
+      )
+      case 2:return(
+        <div style={sWrap}>
+          <p style={sHint}>Drag the slider to set your height</p>
+          <div style={{textAlign:'center',margin:'36px 0 12px'}}>
+            <span style={{fontSize:80,fontWeight:900,color:'#fff',letterSpacing:'-3px'}}>{form.heightCm}</span>
+            <span style={{fontSize:22,color:'rgba(255,255,255,0.35)',marginLeft:8}}>cm</span>
+            <p style={{fontSize:18,color:'rgba(255,255,255,0.3)',marginTop:6}}>{ft}&prime; {htIn}&Prime;</p>
+          </div>
+          <input type="range" min={140} max={220} step={1} value={form.heightCm}
+            onChange={e=>setForm(f=>({...f,heightCm:parseInt(e.target.value)}))}
+            style={{width:'100%',accentColor:GREEN,height:6,marginBottom:8}}/>
+          <div style={{display:'flex',justifyContent:'space-between'}}>
+            <span style={sRangeLabel}>140 cm</span><span style={sRangeLabel}>220 cm</span>
+          </div>
+        </div>
+      )
+      case 3:return(
+        <div style={sWrap}>
+          <p style={sHint}>Drag the slider to set your weight</p>
+          <div style={{textAlign:'center',margin:'36px 0 12px'}}>
+            <span style={{fontSize:80,fontWeight:900,color:'#fff',letterSpacing:'-3px'}}>{form.weightKg}</span>
+            <span style={{fontSize:22,color:'rgba(255,255,255,0.35)',marginLeft:8}}>kg</span>
+            <p style={{fontSize:18,color:'rgba(255,255,255,0.3)',marginTop:6}}>{st} st {lb} lb</p>
+          </div>
+          <input type="range" min={35} max={180} step={0.5} value={form.weightKg}
+            onChange={e=>setForm(f=>({...f,weightKg:parseFloat(e.target.value)}))}
+            style={{width:'100%',accentColor:bmiColor,height:6,marginBottom:8}}/>
+          <div style={{display:'flex',justifyContent:'space-between',marginBottom:20}}>
+            <span style={sRangeLabel}>35 kg</span><span style={sRangeLabel}>180 kg</span>
+          </div>
+          <div style={{textAlign:'center',padding:'14px 20px',borderRadius:16,background:`${bmiColor}10`,border:`1px solid ${bmiColor}28`}}>
+            <span style={{fontSize:32,fontWeight:900,color:bmiColor}}>{bmi.toFixed(1)}</span>
+            <span style={{fontSize:15,color:bmiColor,marginLeft:10,fontWeight:700}}>BMI &middot; {bmiLabel}</span>
+          </div>
+        </div>
+      )
+      case 4:return(
+        <div style={sWrap}>
+          <p style={sHint}>Select all that apply — shapes your daily tracking</p>
+          <div style={{display:'flex',flexWrap:'wrap',gap:10,justifyContent:'center',marginTop:24}}>
+            {GOALS.map(g=>{const sel=form.goals.includes(g);return(
+              <button key={g} onClick={()=>toggleGoal(g)}
+                style={{padding:'13px 22px',borderRadius:16,fontSize:15,cursor:'pointer',fontWeight:sel?700:500,transition:'all 0.15s',
+                  border:`2px solid ${sel?GREEN:'rgba(255,255,255,0.1)'}`,
+                  background:sel?'rgba(52,211,153,0.1)':'rgba(255,255,255,0.03)',
+                  color:sel?GREEN:'rgba(255,255,255,0.5)'}}>
+                {sel?'✓ ':''}{g}
+              </button>
+            )})}
+          </div>
+        </div>
+      )
+      case 5:return(
+        <div style={sWrap}>
+          <p style={sHint}>Helps AI personalise your insights. Skip if none.</p>
+          {form.conditions.length>0&&(
+            <div style={{display:'flex',flexWrap:'wrap',gap:8,marginTop:16,marginBottom:4,justifyContent:'center'}}>
+              {form.conditions.map(c=>(
+                <span key={c} style={{display:'flex',alignItems:'center',gap:6,padding:'8px 14px 8px 16px',
+                  borderRadius:20,background:'rgba(248,113,113,0.1)',border:'1px solid rgba(248,113,113,0.28)',
+                  fontSize:14,color:'#fca5a5',fontWeight:600}}>
+                  {c}
+                  <button onClick={()=>removeCond(c)} style={{background:'none',border:'none',color:'rgba(252,165,165,0.6)',cursor:'pointer',padding:'0 0 0 4px',fontSize:16,lineHeight:1}}>×</button>
+                </span>
+              ))}
+            </div>
+          )}
+          <div style={{position:'relative',marginTop:20}}>
+            <input value={condInput} onChange={e=>setCondInput(e.target.value)}
+              onFocus={()=>setCondFocus(true)} onBlur={()=>setTimeout(()=>setCondFocus(false),150)}
+              onKeyDown={e=>{if(e.key==='Enter'&&condInput.trim()){addCond(condInput);e.preventDefault()}if(e.key==='Backspace'&&!condInput&&form.conditions.length)removeCond(form.conditions[form.conditions.length-1])}}
+              placeholder="Search or type a condition…"
+              style={{...sBigInput,fontSize:17,marginTop:0}}/>
+            {condFocus&&(
+              <div style={{position:'absolute',top:'100%',left:0,right:0,marginTop:6,borderRadius:16,
+                background:'rgba(10,10,14,0.98)',border:'1px solid rgba(255,255,255,0.1)',
+                zIndex:50,overflow:'hidden',backdropFilter:'blur(20px)',maxHeight:240,overflowY:'auto'}}>
+                {condInput&&!COMMON_CONDITIONS.map(c=>c.toLowerCase()).includes(condInput.toLowerCase())&&(
+                  <button onMouseDown={()=>addCond(condInput)}
+                    style={{width:'100%',padding:'13px 18px',textAlign:'left',background:'rgba(248,113,113,0.08)',
+                      border:'none',borderBottom:'1px solid rgba(255,255,255,0.06)',color:'#fca5a5',fontSize:14,cursor:'pointer'}}>
+                    + Add &ldquo;{condInput}&rdquo;
+                  </button>
+                )}
+                {(condInput?filtered:COMMON_CONDITIONS.filter(c=>!form.conditions.includes(c))).map(c=>(
+                  <button key={c} onMouseDown={()=>addCond(c)}
+                    style={{width:'100%',padding:'12px 18px',textAlign:'left',background:'none',
+                      border:'none',borderBottom:'1px solid rgba(255,255,255,0.05)',
+                      color:'rgba(255,255,255,0.75)',fontSize:14,cursor:'pointer'}}>{c}</button>
+                ))}
+              </div>
+            )}
+          </div>
+        </div>
+      )
+    }
+  }
 
-  return (
-    <main style={{ minHeight: 'calc(100vh - 58px)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '20px 24px' }}>
-      <div style={{ width: '100%', maxWidth: 640 }}>
+  const pct=(step/(TOTAL_STEPS-1))*100
 
-        {/* Progress */}
-        <div style={{ display: 'flex', gap: 6, marginBottom: 32 }}>
-          {[1, 2].map(s => (
-            <div key={s} style={{ flex: 1, height: 3, borderRadius: 2,
-              background: s <= step ? GREEN : 'rgba(255,255,255,0.1)',
-              transition: 'background 0.3s' }} />
-          ))}
+  return(
+    <>
+      <style>{`
+        @keyframes ob-blob1{0%,100%{transform:translate(0,0) scale(1)}33%{transform:translate(70px,-60px) scale(1.2)}66%{transform:translate(-30px,40px) scale(0.85)}}
+        @keyframes ob-blob2{0%,100%{transform:translate(0,0) scale(1)}40%{transform:translate(-60px,70px) scale(1.15)}70%{transform:translate(50px,-30px) scale(0.9)}}
+        @keyframes ob-blob3{0%,100%{transform:translate(0,0) scale(1)}30%{transform:translate(50px,60px) scale(0.88)}60%{transform:translate(-40px,-50px) scale(1.18)}}
+        @keyframes ob-in{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)}}
+        .ob-step{animation:ob-in 0.3s cubic-bezier(0.4,0,0.2,1) forwards}
+        input[type=range]{-webkit-appearance:none;appearance:none;border-radius:999px;background:rgba(255,255,255,0.1);cursor:pointer}
+        input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;appearance:none;width:26px;height:26px;border-radius:50%;background:#fff;box-shadow:0 0 14px rgba(52,211,153,0.4);cursor:pointer}
+      `}</style>
+
+      {/* Animated BG */}
+      <div style={{position:'fixed',inset:0,zIndex:0,background:'#07090c'}}>
+        {/* Base gradient wash */}
+        <div style={{position:'absolute',inset:0,background:'radial-gradient(ellipse 90% 70% at 10% 40%, rgba(16,185,129,0.18) 0%, transparent 60%), radial-gradient(ellipse 70% 60% at 90% 10%, rgba(99,102,241,0.16) 0%, transparent 55%), radial-gradient(ellipse 60% 50% at 60% 90%, rgba(52,211,153,0.1) 0%, transparent 60%)'}}/>
+        {/* Animated blobs */}
+        <div style={{position:'absolute',width:700,height:700,borderRadius:'50%',background:'radial-gradient(circle, rgba(52,211,153,0.22) 0%, transparent 65%)',top:'-10%',left:'-15%',animation:'ob-blob1 16s ease-in-out infinite',filter:'blur(55px)'}}/>
+        <div style={{position:'absolute',width:550,height:550,borderRadius:'50%',background:'radial-gradient(circle, rgba(99,102,241,0.18) 0%, transparent 65%)',bottom:'-8%',right:'-12%',animation:'ob-blob2 20s ease-in-out infinite',filter:'blur(60px)'}}/>
+        <div style={{position:'absolute',width:400,height:400,borderRadius:'50%',background:'radial-gradient(circle, rgba(20,184,166,0.15) 0%, transparent 65%)',top:'45%',left:'55%',animation:'ob-blob3 14s ease-in-out infinite',filter:'blur(50px)'}}/>
+        {/* Subtle noise overlay */}
+        <div style={{position:'absolute',inset:0,opacity:0.03,backgroundImage:'url("data:image/svg+xml,%3Csvg viewBox=\'0 0 256 256\' xmlns=\'http://www.w3.org/2000/svg\'%3E%3Cfilter id=\'n\'%3E%3CfeTurbulence type=\'fractalNoise\' baseFrequency=\'0.85\' numOctaves=\'4\'/%3E%3C/filter%3E%3Crect width=\'100%25\' height=\'100%25\' filter=\'url(%23n)\'/%3E%3C/svg%3E")'}}/>
+      </div>
+
+      <div style={{position:'relative',zIndex:1,minHeight:'100vh',display:'flex',flexDirection:'column',alignItems:'center',justifyContent:'center',padding:'40px 20px'}}>
+
+        {/* Logo */}
+        <div style={{textAlign:'center',marginBottom:40}}>
+          <div style={{width:56,height:56,borderRadius:16,background:'linear-gradient(135deg, #34d399, #10b981)',display:'flex',alignItems:'center',justifyContent:'center',margin:'0 auto 14px',fontSize:26,boxShadow:'0 0 36px rgba(52,211,153,0.28)'}}>💚</div>
+          <p style={{fontSize:20,fontWeight:900,color:'#fff',letterSpacing:'-0.3px'}}>HealthPulse</p>
         </div>
 
-        {step === 1 && (
-          <div className="animate-fade-in" style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
-            <div style={{ marginBottom: 8 }}>
-              <h1 style={{ fontSize: 32, fontWeight: 900, color: '#fff', letterSpacing: '-0.5px', marginBottom: 8 }}>
-                Welcome to <span style={{ color: GREEN }}>MyVitals</span> 💚
-              </h1>
-              <p style={{ color: 'rgba(255,255,255,0.4)', fontSize: 15 }}>Daily tracking + AI insights. Takes 30 seconds to set up.</p>
-            </div>
-
-            {/* Name */}
-            <div>
-              <label style={S}>Your name</label>
-              <input
-                autoFocus
-                value={form.name}
-                onChange={e => setForm(f => ({ ...f, name: e.target.value }))}
-                onKeyDown={e => e.key === 'Enter' && form.name && setStep(2)}
-                placeholder="e.g. Siva"
-                style={{ width: '100%', padding: '14px 18px', borderRadius: 14, fontSize: 17, color: '#fff',
-                  background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', outline: 'none' }}
-              />
-            </div>
-
-            {/* Age + Gender side by side */}
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 }}>
-              <div>
-                <label style={S}>Age</label>
-                <div style={{ display: 'flex', alignItems: 'center', gap: 10, background: 'rgba(255,255,255,0.05)',
-                  border: '1px solid rgba(255,255,255,0.1)', borderRadius: 14, padding: '10px 14px' }}>
-                  <button onClick={() => setForm(f => ({ ...f, age: Math.max(10, f.age - 1) }))}
-                    style={{ width: 36, height: 36, borderRadius: 8, background: 'rgba(255,255,255,0.08)',
-                      border: 'none', color: '#fff', fontSize: 20, cursor: 'pointer' }}>−</button>
-                  <span style={{ flex: 1, textAlign: 'center', fontSize: 26, fontWeight: 800, color: '#fff' }}>{form.age}</span>
-                  <button onClick={() => setForm(f => ({ ...f, age: Math.min(100, f.age + 1) }))}
-                    style={{ width: 36, height: 36, borderRadius: 8, background: 'rgba(255,255,255,0.08)',
-                      border: 'none', color: '#fff', fontSize: 20, cursor: 'pointer' }}>+</button>
-                </div>
-              </div>
-              <div>
-                <label style={S}>Gender</label>
-                <div style={{ display: 'flex', gap: 8, height: 58 }}>
-                  {['Male', 'Female', 'Other'].map(g => (
-                    <button key={g} onClick={() => setForm(f => ({ ...f, gender: g.toLowerCase() }))}
-                      style={{ flex: 1, borderRadius: 14, fontSize: 13, fontWeight: 700, cursor: 'pointer',
-                        border: `1px solid ${form.gender === g.toLowerCase() ? GREEN : 'rgba(255,255,255,0.1)'}`,
-                        background: form.gender === g.toLowerCase() ? 'rgba(52,211,153,0.15)' : 'rgba(255,255,255,0.03)',
-                        color: form.gender === g.toLowerCase() ? GREEN : 'rgba(255,255,255,0.4)' }}>
-                      {g}
-                    </button>
-                  ))}
-                </div>
-              </div>
-            </div>
-
-            <button onClick={() => setStep(2)} disabled={!form.name}
-              style={{ padding: '16px', borderRadius: 14, fontWeight: 800, fontSize: 16,
-                background: form.name ? `linear-gradient(135deg, ${GREEN}, ${TEAL})` : 'rgba(255,255,255,0.06)',
-                color: form.name ? '#000' : 'rgba(255,255,255,0.2)',
-                border: 'none', boxShadow: form.name ? '0 0 24px rgba(52,211,153,0.2)' : 'none',
-                transition: 'all 0.2s', cursor: form.name ? 'pointer' : 'not-allowed' }}>
-              Continue →
-            </button>
+        {/* Progress */}
+        <div style={{width:'100%',maxWidth:600,marginBottom:12}}>
+          <div style={{display:'flex',justifyContent:'space-between',marginBottom:8}}>
+            <span style={{fontSize:12,color:'rgba(255,255,255,0.28)',fontWeight:600}}>Step {step+1} of {TOTAL_STEPS}</span>
+            <span style={{fontSize:12,color:'rgba(255,255,255,0.28)'}}>{Math.round(pct)}% complete</span>
           </div>
-        )}
+          <div style={{height:3,borderRadius:99,background:'rgba(255,255,255,0.07)',overflow:'hidden'}}>
+            <div style={{height:'100%',borderRadius:99,background:`linear-gradient(90deg, ${GREEN}, ${TEAL})`,width:`${pct}%`,transition:'width 0.4s cubic-bezier(0.4,0,0.2,1)'}}/>
+          </div>
+        </div>
 
-        {step === 2 && (
-          <div className="animate-fade-in" style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
-            <div style={{ marginBottom: 8 }}>
-              <h2 style={{ fontSize: 28, fontWeight: 900, color: '#fff', letterSpacing: '-0.5px', marginBottom: 6 }}>
-                Hi {form.name} 👋
-              </h2>
-              <p style={{ color: 'rgba(255,255,255,0.4)', fontSize: 15 }}>A few more details to personalise your AI coach.</p>
-            </div>
+        {/* Card */}
+        <div style={{width:'100%',maxWidth:600,background:'rgba(255,255,255,0.028)',border:'1px solid rgba(255,255,255,0.07)',borderRadius:28,padding:'44px 48px 40px',backdropFilter:'blur(24px)'}}>
+          <h2 style={{fontSize:34,fontWeight:900,color:'#fff',letterSpacing:'-0.8px',marginBottom:4}}>{STEP_TITLES[step]}</h2>
 
-            {/* Height + Weight */}
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 }}>
-              <div>
-                <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 8 }}>
-                  <label style={{ ...S, marginBottom: 0 }}>Height</label>
-                  <span style={{ fontSize: 12, fontWeight: 700, color: GREEN }}>{heightDisplay}</span>
-                </div>
-                <input type="range" min={140} max={220} value={form.heightCm}
-                  onChange={e => setForm(f => ({ ...f, heightCm: parseInt(e.target.value) }))}
-                  style={{ width: '100%', accentColor: GREEN }} />
-              </div>
-              <div>
-                <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 8, alignItems: 'center' }}>
-                  <label style={{ ...S, marginBottom: 0 }}>Weight</label>
-                  <span style={{ fontSize: 11, fontWeight: 700, padding: '2px 7px', borderRadius: 20,
-                    background: `${bmiColor}20`, color: bmiColor, border: `1px solid ${bmiColor}40` }}>
-                    BMI {bmi.toFixed(1)} {bmiLabel}
-                  </span>
-                </div>
-                <span style={{ fontSize: 12, color: GREEN, fontWeight: 700, display: 'block', marginBottom: 6 }}>{weightDisplay}</span>
-                <input type="range" min={35} max={180} step={0.5} value={form.weightKg}
-                  onChange={e => setForm(f => ({ ...f, weightKg: parseFloat(e.target.value) }))}
-                  style={{ width: '100%', accentColor: bmiColor }} />
-              </div>
-            </div>
+          <div key={animKey} className="ob-step">
+            {stepContent()}
+          </div>
 
-            {/* Goals */}
-            <div>
-              <label style={S}>Health goals (pick any)</label>
-              <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
-                {GOALS.map(g => {
-                  const on = form.goals.includes(g)
-                  return (
-                    <button key={g} onClick={() => setForm(f => ({ ...f, goals: on ? f.goals.filter(x => x !== g) : [...f.goals, g] }))}
-                      style={{ padding: '9px 16px', borderRadius: 20, fontSize: 13, cursor: 'pointer',
-                        border: `1px solid ${on ? GREEN : 'rgba(255,255,255,0.1)'}`,
-                        background: on ? 'rgba(52,211,153,0.15)' : 'transparent',
-                        color: on ? GREEN : 'rgba(255,255,255,0.5)', fontWeight: on ? 700 : 400, transition: 'all 0.15s' }}>
-                      {on ? '✓ ' : ''}{g}
-                    </button>
-                  )
-                })}
-              </div>
-            </div>
-
-            <div style={{ display: 'flex', gap: 12 }}>
-              <button onClick={() => setStep(1)}
-                style={{ padding: '16px 24px', borderRadius: 14, fontWeight: 700, fontSize: 15,
-                  background: 'rgba(255,255,255,0.06)', color: 'rgba(255,255,255,0.6)',
-                  border: '1px solid rgba(255,255,255,0.1)', cursor: 'pointer' }}>
+          <div style={{display:'flex',gap:10,marginTop:40}}>
+            {step>0&&(
+              <button onClick={()=>go(-1)} style={{flex:'0 0 auto',padding:'14px 24px',borderRadius:14,fontSize:15,fontWeight:700,cursor:'pointer',background:'rgba(255,255,255,0.05)',border:'1px solid rgba(255,255,255,0.1)',color:'rgba(255,255,255,0.45)'}}>
                 ← Back
               </button>
-              <button onClick={submit}
-                style={{ flex: 1, padding: '16px', borderRadius: 14, fontWeight: 800, fontSize: 16,
-                  background: `linear-gradient(135deg, ${GREEN}, ${TEAL})`, color: '#000',
-                  border: 'none', boxShadow: '0 0 24px rgba(52,211,153,0.2)', cursor: 'pointer' }}>
-                Start tracking 🚀
+            )}
+            {step<TOTAL_STEPS-1?(
+              <button onClick={()=>canContinue()&&go(1)} disabled={!canContinue()}
+                style={{flex:1,padding:'16px',borderRadius:14,fontSize:16,fontWeight:800,transition:'all 0.2s',
+                  cursor:canContinue()?'pointer':'not-allowed',border:'none',
+                  background:canContinue()?`linear-gradient(135deg, ${GREEN}, ${TEAL})`:'rgba(255,255,255,0.06)',
+                  color:canContinue()?'#000':'rgba(255,255,255,0.2)',
+                  boxShadow:canContinue()?'0 0 28px rgba(52,211,153,0.25)':'none'}}>
+                Continue →
               </button>
-            </div>
+            ):(
+              <button onClick={submit}
+                style={{flex:1,padding:'16px',borderRadius:14,fontSize:16,fontWeight:800,cursor:'pointer',border:'none',
+                  background:`linear-gradient(135deg, ${GREEN}, ${TEAL})`,color:'#000',
+                  boxShadow:'0 0 28px rgba(52,211,153,0.3)'}}>
+                Start tracking my health 🚀
+              </button>
+            )}
           </div>
-        )}
+          {step===TOTAL_STEPS-1&&(
+            <button onClick={submit} style={{width:'100%',marginTop:10,padding:'10px',background:'none',border:'none',color:'rgba(255,255,255,0.25)',fontSize:13,cursor:'pointer'}}>
+              Skip — set up later
+            </button>
+          )}
+        </div>
       </div>
-    </main>
+    </>
   )
 }
 
-function Field({ label, value, onChange, placeholder, type = 'text' }: { label: string; value: string; onChange: (v: string) => void; placeholder: string; type?: string }) {
-  return (
+const sWrap: React.CSSProperties={paddingTop:8}
+const sHint: React.CSSProperties={fontSize:15,color:'rgba(255,255,255,0.38)',marginBottom:8}
+const sBigInput: React.CSSProperties={width:'100%',padding:'18px 22px',borderRadius:16,fontSize:22,fontWeight:600,color:'#fff',background:'rgba(255,255,255,0.05)',border:'1px solid rgba(255,255,255,0.1)',outline:'none',boxSizing:'border-box',letterSpacing:'-0.3px',marginTop:16}
+const sBigBtn: React.CSSProperties={width:60,height:60,borderRadius:18,fontSize:30,fontWeight:300,cursor:'pointer',background:'rgba(255,255,255,0.07)',border:'1px solid rgba(255,255,255,0.12)',color:'rgba(255,255,255,0.8)',display:'flex',alignItems:'center',justifyContent:'center',flexShrink:0,lineHeight:1}
+const sRangeLabel: React.CSSProperties={fontSize:12,color:'rgba(255,255,255,0.2)'}
+
+function Field({ label, value, onChange, placeholder, type='text' }: { label:string; value:string; onChange:(v:string)=>void; placeholder:string; type?:string }) {
+  return(
     <div>
-      <label style={{ fontSize: 12, color: 'rgba(255,255,255,0.45)', display: 'block', marginBottom: 6, fontWeight: 600 }}>{label}</label>
-      <input type={type} value={value} onChange={e => onChange(e.target.value)} placeholder={placeholder}
-        style={{ width: '100%', padding: '10px 14px', borderRadius: 10, fontSize: 14, color: '#fff',
-          background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.09)', outline: 'none' }} />
+      <label style={{fontSize:12,color:'rgba(255,255,255,0.45)',display:'block',marginBottom:6,fontWeight:600}}>{label}</label>
+      <input type={type} value={value} onChange={e=>onChange(e.target.value)} placeholder={placeholder}
+        style={{width:'100%',padding:'10px 14px',borderRadius:10,fontSize:14,color:'#fff',background:'rgba(255,255,255,0.04)',border:'1px solid rgba(255,255,255,0.09)',outline:'none'}}/>
     </div>
   )
 }
