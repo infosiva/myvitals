@@ -3,6 +3,34 @@ import { useState, useEffect, useRef } from 'react'
 import { getProfile, getLog, saveLog, saveProfile, today, getStreak, healthScore } from '@/lib/storage'
 import type { HealthProfile, DayLog } from '@/lib/types'
 import { MOOD_LABELS, MOOD_COLORS } from '@/lib/types'
+import GuidedTour, { type TourStep } from '@/components/GuidedTour'
+
+const TOUR_STEPS: TourStep[] = [
+  {
+    target: '#nl-quick-log',
+    title: '✨ Log your day in seconds',
+    body: 'Just type how your day went — AI reads it and fills all the fields automatically. No tapping sliders.',
+    placement: 'bottom',
+  },
+  {
+    target: '#wellness-score',
+    title: '📊 Your Wellness Score',
+    body: 'Updates live as you log. Tracks water, sleep, steps, mood and exercise into one number.',
+    placement: 'left',
+  },
+  {
+    target: '#save-btn',
+    title: '💾 Save & Get AI Summary',
+    body: 'Hit Save and your AI health coach writes a personal 2-sentence recap of your day.',
+    placement: 'top',
+  },
+  {
+    target: '#ai-insight-cta',
+    title: '🩺 Weekly AI Coach',
+    body: 'After 3+ days logged, get a full weekly narrative — wins, improvements, and one actionable tip.',
+    placement: 'left',
+  },
+]
 
 const GREEN = '#34d399'
 const TEAL = '#10b981'
@@ -148,7 +176,7 @@ export default function Dashboard() {
       )}
 
       {/* NL Quick Log */}
-      <div style={{ marginBottom: 20, padding: '16px 18px', borderRadius: 16, background: 'rgba(255,255,255,0.025)', border: '1px solid rgba(255,255,255,0.07)' }}>
+      <div id="nl-quick-log" style={{ marginBottom: 20, padding: '16px 18px', borderRadius: 16, background: 'rgba(255,255,255,0.025)', border: '1px solid rgba(255,255,255,0.07)' }}>
         <p style={{ fontSize: 12, fontWeight: 700, color: 'rgba(255,255,255,0.35)', letterSpacing: '0.08em', textTransform: 'uppercase', marginBottom: 10 }}>✨ Quick Log with AI</p>
         <div style={{ display: 'flex', gap: 10 }}>
           <input
@@ -329,7 +357,7 @@ export default function Dashboard() {
           </GlassCard>
 
           {/* Save button */}
-          <button onClick={save} style={{
+          <button id="save-btn" onClick={save} style={{
             padding: '15px', borderRadius: 14, fontWeight: 700, fontSize: 16, cursor: 'pointer',
             background: saved ? 'rgba(52,211,153,0.15)' : `linear-gradient(135deg, ${GREEN}, ${TEAL})`,
             color: saved ? GREEN : '#000', border: saved ? `1px solid ${GREEN}40` : 'none',
@@ -344,7 +372,7 @@ export default function Dashboard() {
         <div className="sidebar-sticky" style={{ display: 'flex', flexDirection: 'column', gap: 14, position: 'sticky', top: 78 }}>
 
           {/* Score ring */}
-          <div style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.07)', borderRadius: 20, padding: '24px 20px', textAlign: 'center', backdropFilter: 'blur(12px)' }}>
+          <div id="wellness-score" style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.07)', borderRadius: 20, padding: '24px 20px', textAlign: 'center', backdropFilter: 'blur(12px)' }}>
             <p style={{ fontSize: 11, fontWeight: 700, color: 'rgba(255,255,255,0.35)', letterSpacing: '0.1em', textTransform: 'uppercase', marginBottom: 16 }}>Today's Wellness</p>
             <svg width={140} height={140} viewBox="0 0 140 140" style={{ display: 'block', margin: '0 auto' }}>
               {/* bg track */}
@@ -375,7 +403,7 @@ export default function Dashboard() {
           </div>
 
           {/* AI CTA */}
-          <a href="/insights" style={{ display: 'block', textDecoration: 'none', borderRadius: 16, overflow: 'hidden',
+          <a id="ai-insight-cta" href="/insights" style={{ display: 'block', textDecoration: 'none', borderRadius: 16, overflow: 'hidden',
             background: 'linear-gradient(135deg, rgba(52,211,153,0.12), rgba(16,185,129,0.06))',
             border: '1px solid rgba(52,211,153,0.18)', padding: 20 }}>
             <div style={{ fontSize: 24, marginBottom: 8 }}>🩺</div>
@@ -390,6 +418,7 @@ export default function Dashboard() {
         </div>
       </div>
       <style>{`@keyframes nlpulse{0%,100%{opacity:0.4;transform:scale(0.8)}50%{opacity:1;transform:scale(1.2)}}`}</style>
+      <GuidedTour steps={TOUR_STEPS} storageKey="myvitals_tour_v1" accentColor={GREEN} delay={800} />
     </main>
   )
 }
