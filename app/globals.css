@@ -118,11 +118,16 @@ button { font-family: inherit; cursor: pointer; border: none; }
 @media (max-width: 768px) {
   main { padding: 16px !important; }
   /* stack 3-col to 1-col on small screens */
-  .stats-grid { grid-template-columns: 1fr !important; }
+  .stats-grid { grid-template-columns: 1fr 1fr !important; }
   /* stack main+sidebar */
   .main-grid { grid-template-columns: 1fr !important; }
   /* sidebar no longer sticky on mobile */
   .sidebar-sticky { position: static !important; }
+  /* onboarding card padding on mobile */
+  .onboard-wide { padding: 24px 20px !important; border-radius: 20px !important; }
+}
+@media (max-width: 480px) {
+  .stats-grid { grid-template-columns: 1fr !important; }
 }
 
 /* ── Onboarding modern card ── */

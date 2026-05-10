@@ -403,16 +403,16 @@ function Onboarding({ onDone }: { onDone: (p: HealthProfile) => void }) {
   )
 
   return (
-    <main style={{ maxWidth: 500, margin: '60px auto', padding: '0 20px' }}>
-      <div style={{ textAlign: 'center', marginBottom: 40 }}>
-        <div style={{ width: 72, height: 72, borderRadius: 22, background: 'linear-gradient(135deg, #34d399, #10b981)', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 20px', fontSize: 36, boxShadow: '0 0 40px rgba(52,211,153,0.3)' }}>💚</div>
-        <h1 style={{ fontSize: 30, fontWeight: 900, color: '#fff', letterSpacing: '-0.5px', marginBottom: 10 }}>Welcome to HealthPulse</h1>
-        <p style={{ color: 'rgba(255,255,255,0.4)', fontSize: 15, lineHeight: 1.6, maxWidth: 360, margin: '0 auto' }}>
-          Track your daily health. Get personalised AI insights — like having a doctor-friend review your week.
+    <main style={{ maxWidth: 760, margin: '0 auto', padding: '40px 24px 40px' }}>
+      <div style={{ textAlign: 'center', marginBottom: 48 }}>
+        <div style={{ width: 80, height: 80, borderRadius: 24, background: 'linear-gradient(135deg, #34d399, #10b981)', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 24px', fontSize: 40, boxShadow: '0 0 60px rgba(52,211,153,0.35)' }}>💚</div>
+        <h1 style={{ fontSize: 38, fontWeight: 900, color: '#fff', letterSpacing: '-1px', marginBottom: 12 }}>Welcome to MyVitals</h1>
+        <p style={{ color: 'rgba(255,255,255,0.45)', fontSize: 17, lineHeight: 1.7, maxWidth: 480, margin: '0 auto' }}>
+          Track your daily health. Get personalised AI insights — like a doctor-friend reviewing your week.
         </p>
       </div>
 
-      <div style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: 22, padding: 32, display: 'flex', flexDirection: 'column', gap: 20, backdropFilter: 'blur(12px)' }}>
+      <div className="onboard-wide" style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: 28, padding: '40px 40px', display: 'flex', flexDirection: 'column', gap: 28, backdropFilter: 'blur(12px)' }}>
 
         {/* Name */}
         <Field label="Your name" value={form.name} onChange={v => setForm(f => ({ ...f, name: v }))} placeholder="e.g. Siva" />
