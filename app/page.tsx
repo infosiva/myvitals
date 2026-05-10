@@ -1,6 +1,6 @@
 'use client'
 import { useState, useEffect, useRef } from 'react'
-import { getProfile, getLog, saveLog, today, getStreak, healthScore } from '@/lib/storage'
+import { getProfile, getLog, saveLog, saveProfile, today, getStreak, healthScore } from '@/lib/storage'
 import type { HealthProfile, DayLog } from '@/lib/types'
 import { MOOD_LABELS, MOOD_COLORS } from '@/lib/types'
 
@@ -15,6 +15,13 @@ export default function Dashboard() {
   const [saved, setSaved] = useState(false)
   const [mealInput, setMealInput] = useState('')
   const [mounted, setMounted] = useState(false)
+  // NL log state
+  const [nlText, setNlText] = useState('')
+  const [nlParsing, setNlParsing] = useState(false)
+  const [nlConfirm, setNlConfirm] = useState<{ parsed: Partial<DayLog>; anomalies: string[] } | null>(null)
+  // Narrative state
+  const [narrative, setNarrative] = useState('')
+  const [narrativeLoading, setNarrativeLoading] = useState(false)
 
   useEffect(() => {
     setMounted(true)
@@ -42,11 +49,58 @@ export default function Dashboard() {
     update('meals', (log.meals ?? []).filter((_: string, idx: number) => idx !== i))
   }
 
-  function save() {
+  async function save() {
     saveLog(log)
     setStreak(getStreak())
     setSaved(true)
     setTimeout(() => setSaved(false), 2500)
+    // AI narrative
+    setNarrativeLoading(true)
+    setNarrative('')
+    try {
+      const res = await fetch('/api/narrative', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ log, profile }),
+      })
+      const data = await res.json()
+      if (data.narrative) setNarrative(data.narrative)
+    } catch { /* silent */ }
+    finally { setNarrativeLoading(false) }
+  }
+
+  async function parseNL() {
+    if (!nlText.trim()) return
+    setNlParsing(true)
+    setNlConfirm(null)
+    try {
+      const res = await fetch('/api/parse-log', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ text: nlText, profile }),
+      })
+      const data = await res.json()
+      if (data.parsed) setNlConfirm({ parsed: data.parsed, anomalies: data.anomalies || [] })
+    } catch { /* silent */ }
+    finally { setNlParsing(false) }
+  }
+
+  function applyNLParsed() {
+    if (!nlConfirm) return
+    const p = nlConfirm.parsed
+    const next = { ...log }
+    if (p.water != null) next.water = p.water
+    if (p.sleep != null) next.sleep = p.sleep
+    if (p.steps != null) next.steps = p.steps
+    if (p.mood != null) next.mood = p.mood
+    if (p.exercise != null) next.exercise = p.exercise
+    if (p.weight != null) next.weight = p.weight
+    if (p.notes) next.notes = p.notes
+    if (p.meals && p.meals.length > 0) next.meals = [...(next.meals ?? []), ...p.meals]
+    setLog(next)
+    setScore(healthScore(next))
+    setNlConfirm(null)
+    setNlText('')
   }
 
   const scoreColor = score >= 80 ? '#10b981' : score >= 60 ? GREEN : score >= 40 ? '#f59e0b' : score >= 20 ? '#f97316' : '#ef4444'
@@ -55,7 +109,7 @@ export default function Dashboard() {
   const dash = circumference * (score / 100)
 
   if (!mounted) return null
-  if (!profile) return <Onboarding onDone={p => setProfile(p)} />
+  if (!profile) return <Onboarding onDone={p => { saveProfile(p); setProfile(p) }} />
 
   return (
     <main style={{ maxWidth: 960, margin: '0 auto', padding: '28px 20px' }} className="animate-fade-in">
@@ -73,6 +127,63 @@ export default function Dashboard() {
           <div style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '8px 16px', borderRadius: 20, background: 'rgba(245,158,11,0.12)', border: '1px solid rgba(245,158,11,0.25)' }}>
             <span style={{ fontSize: 18 }}>🔥</span>
             <span style={{ fontWeight: 700, color: '#f59e0b', fontSize: 15 }}>{streak} day streak</span>
+          </div>
+        )}
+      </div>
+
+      {/* AI Narrative Card (post-save) */}
+      {(narrativeLoading || narrative) && (
+        <div style={{ marginBottom: 20, padding: '18px 20px', borderRadius: 16, background: 'linear-gradient(135deg, rgba(52,211,153,0.08), rgba(16,185,129,0.04))', border: '1px solid rgba(52,211,153,0.2)', display: 'flex', gap: 14, alignItems: 'flex-start' }} className="animate-fade-in">
+          <span style={{ fontSize: 24, flexShrink: 0, marginTop: 2 }}>🩺</span>
+          <div>
+            <p style={{ fontSize: 12, fontWeight: 700, color: GREEN, letterSpacing: '0.06em', textTransform: 'uppercase', marginBottom: 6 }}>AI Health Coach</p>
+            {narrativeLoading
+              ? <div style={{ display: 'flex', gap: 6, alignItems: 'center' }}>
+                  {[0, 0.15, 0.3].map((d, i) => <div key={i} style={{ width: 7, height: 7, borderRadius: '50%', background: GREEN, animation: `nlpulse 1.2s ease-in-out ${d}s infinite` }} />)}
+                </div>
+              : <p style={{ fontSize: 15, color: 'rgba(255,255,255,0.85)', lineHeight: 1.65 }}>{narrative}</p>
+            }
+          </div>
+        </div>
+      )}
+
+      {/* NL Quick Log */}
+      <div style={{ marginBottom: 20, padding: '16px 18px', borderRadius: 16, background: 'rgba(255,255,255,0.025)', border: '1px solid rgba(255,255,255,0.07)' }}>
+        <p style={{ fontSize: 12, fontWeight: 700, color: 'rgba(255,255,255,0.35)', letterSpacing: '0.08em', textTransform: 'uppercase', marginBottom: 10 }}>✨ Quick Log with AI</p>
+        <div style={{ display: 'flex', gap: 10 }}>
+          <input
+            value={nlText}
+            onChange={e => setNlText(e.target.value)}
+            onKeyDown={e => e.key === 'Enter' && !e.shiftKey && parseNL()}
+            placeholder='"walked 8k steps, slept 7 hours, feeling great, had oats for breakfast"'
+            style={{ flex: 1, padding: '12px 16px', borderRadius: 12, fontSize: 14, color: '#fff', background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)', outline: 'none', fontFamily: 'inherit' }}
+          />
+          <button onClick={parseNL} disabled={nlParsing || !nlText.trim()}
+            style={{ padding: '12px 20px', borderRadius: 12, fontWeight: 700, fontSize: 14, cursor: nlParsing || !nlText.trim() ? 'not-allowed' : 'pointer', border: 'none', background: nlText.trim() ? `linear-gradient(135deg, ${GREEN}, ${TEAL})` : 'rgba(255,255,255,0.06)', color: nlText.trim() ? '#000' : 'rgba(255,255,255,0.2)', whiteSpace: 'nowrap', transition: 'all 0.2s' }}>
+            {nlParsing ? '…' : 'Parse →'}
+          </button>
+        </div>
+        {nlConfirm && (
+          <div style={{ marginTop: 14 }} className="animate-fade-in">
+            {nlConfirm.anomalies.length > 0 && (
+              <div style={{ marginBottom: 10, padding: '10px 14px', borderRadius: 10, background: 'rgba(245,158,11,0.08)', border: '1px solid rgba(245,158,11,0.2)' }}>
+                <p style={{ fontSize: 12, color: '#f59e0b', fontWeight: 700, marginBottom: 4 }}>⚠️ AI flagged — please confirm:</p>
+                {nlConfirm.anomalies.map((a, i) => <p key={i} style={{ fontSize: 13, color: 'rgba(255,255,255,0.6)' }}>• {a}</p>)}
+              </div>
+            )}
+            <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, marginBottom: 12 }}>
+              {Object.entries(nlConfirm.parsed).filter(([, v]) => v != null && (Array.isArray(v) ? (v as any[]).length > 0 : true)).map(([k, v]) => (
+                <ConfirmPill key={k} field={k} value={v} />
+              ))}
+            </div>
+            <div style={{ display: 'flex', gap: 8 }}>
+              <button onClick={applyNLParsed} style={{ flex: 1, padding: '11px', borderRadius: 10, fontWeight: 700, fontSize: 14, cursor: 'pointer', border: 'none', background: `linear-gradient(135deg, ${GREEN}, ${TEAL})`, color: '#000' }}>
+                ✓ Apply these fields
+              </button>
+              <button onClick={() => setNlConfirm(null)} style={{ padding: '11px 16px', borderRadius: 10, fontWeight: 600, fontSize: 14, cursor: 'pointer', border: '1px solid rgba(255,255,255,0.08)', background: 'transparent', color: 'rgba(255,255,255,0.4)' }}>
+                Cancel
+              </button>
+            </div>
           </div>
         )}
       </div>
@@ -225,7 +336,7 @@ export default function Dashboard() {
             boxShadow: saved ? 'none' : '0 0 24px rgba(52,211,153,0.25)',
             transition: 'all 0.3s',
           }}>
-            {saved ? '✓ Saved for today!' : '💾 Save Today\'s Log'}
+            {saved ? '✓ Saved! Getting AI summary…' : '💾 Save Today\'s Log'}
           </button>
         </div>
 
@@ -278,9 +389,31 @@ export default function Dashboard() {
           </a>
         </div>
       </div>
+      <style>{`@keyframes nlpulse{0%,100%{opacity:0.4;transform:scale(0.8)}50%{opacity:1;transform:scale(1.2)}}`}</style>
     </main>
   )
 }
+
+// ── Confirm pill for NL parsed fields ─────────────────────────────────────────
+function ConfirmPill({ field, value }: { field: string; value: any }) {
+  const labels: Record<string, string> = { water:'💧', sleep:'😴', steps:'👟', mood:'😊', exercise:'🏃', meals:'🍽️', weight:'⚖️', notes:'📝' }
+  const formats: Record<string, (v: any) => string> = {
+    water: v => `${v} glasses`,
+    sleep: v => `${v}h sleep`,
+    steps: v => `${Number(v).toLocaleString()} steps`,
+    mood: v => `Mood ${v}/5`,
+    exercise: v => `${v}min exercise`,
+    meals: v => Array.isArray(v) ? v.join(', ') : String(v),
+    weight: v => `${v}kg`,
+    notes: v => String(v).slice(0, 40),
+  }
+  return (
+    <span style={{ display: 'inline-flex', alignItems: 'center', gap: 5, padding: '6px 12px', borderRadius: 20, background: 'rgba(52,211,153,0.1)', border: '1px solid rgba(52,211,153,0.25)', fontSize: 13, color: '#6ee7b7', fontWeight: 600 }}>
+      {labels[field] || '•'} {formats[field] ? formats[field](value) : String(value)}
+    </span>
+  )
+}
+
 
 function greeting() {
   const h = new Date().getHours()
@@ -338,7 +471,7 @@ const GOALS = ['Lose weight','Sleep better','More energy','Reduce stress','Build
 const STEP_TITLES = ["What's your name?",'How old are you?','Your height','Your weight','Health goals','Any conditions?']
 const TOTAL_STEPS = 6
 
-function Onboarding({ onDone }: { onDone: (p: HealthProfile) => void }) {
+function ManualOnboarding({ onDone }: { onDone: (p: HealthProfile) => void }) {
   const [step, setStep] = useState(0)
   const [animKey, setAnimKey] = useState(0)
   const [form, setForm] = useState({ name:'', age:30, gender:'male', heightCm:170, weightKg:70, goals:[] as string[], conditions:[] as string[] })
@@ -360,7 +493,7 @@ function Onboarding({ onDone }: { onDone: (p: HealthProfile) => void }) {
 
   function submit() {
     const profile: HealthProfile = { name:form.name, age:form.age, gender:form.gender as any, heightCm:form.heightCm, weightKg:form.weightKg, goals:form.goals.length?form.goals:['general health'], conditions:form.conditions }
-    import('@/lib/storage').then(m=>{m.saveProfile(profile);onDone(profile)})
+    onDone(profile)
   }
 
   const stepContent=()=>{
@@ -531,7 +664,7 @@ function Onboarding({ onDone }: { onDone: (p: HealthProfile) => void }) {
         {/* Logo */}
         <div style={{textAlign:'center',marginBottom:40}}>
           <div style={{width:56,height:56,borderRadius:16,background:'linear-gradient(135deg, #34d399, #10b981)',display:'flex',alignItems:'center',justifyContent:'center',margin:'0 auto 14px',fontSize:26,boxShadow:'0 0 36px rgba(52,211,153,0.28)'}}>💚</div>
-          <p style={{fontSize:20,fontWeight:900,color:'#fff',letterSpacing:'-0.3px'}}>HealthPulse</p>
+          <p style={{fontSize:20,fontWeight:900,color:'#fff',letterSpacing:'-0.3px'}}>My<span style={{color:GREEN}}>Vitals</span></p>
         </div>
 
         {/* Progress */}
@@ -594,12 +727,108 @@ const sBigInput: React.CSSProperties={width:'100%',padding:'18px 22px',borderRad
 const sBigBtn: React.CSSProperties={width:60,height:60,borderRadius:18,fontSize:30,fontWeight:300,cursor:'pointer',background:'rgba(255,255,255,0.07)',border:'1px solid rgba(255,255,255,0.12)',color:'rgba(255,255,255,0.8)',display:'flex',alignItems:'center',justifyContent:'center',flexShrink:0,lineHeight:1}
 const sRangeLabel: React.CSSProperties={fontSize:12,color:'rgba(255,255,255,0.2)'}
 
-function Field({ label, value, onChange, placeholder, type='text' }: { label:string; value:string; onChange:(v:string)=>void; placeholder:string; type?:string }) {
-  return(
+// ── AI Chat Onboarding ─────────────────────────────────────────────────────────
+type ChatMsg = { role: 'user' | 'assistant'; content: string }
+
+function AIChatOnboarding({ onDone }: { onDone: (p: HealthProfile) => void }) {
+  const [messages, setMessages] = useState<ChatMsg[]>([
+    { role: 'assistant', content: "Hi! I'm your MyVitals health coach 👋 Let's get you set up in 30 seconds.\n\nWhat's your name and how old are you?" }
+  ])
+  const [input, setInput] = useState('')
+  const [loading, setLoading] = useState(false)
+  const [extracted, setExtracted] = useState<any>({})
+  const scrollRef = useRef<HTMLDivElement>(null)
+
+  useEffect(() => {
+    scrollRef.current?.scrollTo({ top: scrollRef.current.scrollHeight, behavior: 'smooth' })
+  }, [messages])
+
+  async function send() {
+    if (!input.trim() || loading) return
+    const userMsg: ChatMsg = { role: 'user', content: input.trim() }
+    const next = [...messages, userMsg]
+    setMessages(next)
+    setInput('')
+    setLoading(true)
+    try {
+      const res = await fetch('/api/onboard', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ messages: next }) })
+      const data = await res.json()
+      setExtracted(data)
+      if (data.complete) {
+        setMessages(prev => [...prev, { role: 'assistant', content: `Perfect! Here's what I've got:\n\n👤 ${data.name}, ${data.age} years old\n🎯 Goals: ${(data.goals||[]).join(', ')}\n\nReady to start?` }])
+      } else if (data.nextQuestion) {
+        setMessages(prev => [...prev, { role: 'assistant', content: data.nextQuestion }])
+      }
+    } catch {
+      setMessages(prev => [...prev, { role: 'assistant', content: 'Sorry, try again?' }])
+    }
+    setLoading(false)
+  }
+
+  function confirmAndStart() {
+    onDone({
+      name: extracted.name || 'Friend',
+      age: extracted.age || 30,
+      gender: extracted.gender || 'other',
+      heightCm: extracted.heightCm || 170,
+      weightKg: extracted.weightKg || 70,
+      goals: extracted.goals?.length ? extracted.goals : ['general health'],
+    })
+  }
+
+  return (
+    <div style={{ maxWidth: 540, margin: '0 auto', padding: '0 20px', display: 'flex', flexDirection: 'column', minHeight: 'calc(100vh - 58px)', justifyContent: 'center' }}>
+      <div style={{ textAlign: 'center', marginBottom: 24 }}>
+        <div style={{ width: 48, height: 48, borderRadius: 14, background: 'linear-gradient(135deg, #34d399, #10b981)', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 10px', fontSize: 22, boxShadow: '0 0 24px rgba(52,211,153,0.28)' }}>💚</div>
+        <p style={{ fontSize: 18, fontWeight: 800, color: '#fff' }}>My<span style={{ color: GREEN }}>Vitals</span> <span style={{ fontSize: 13, color: 'rgba(255,255,255,0.3)', fontWeight: 400 }}>— Setup</span></p>
+      </div>
+      <div ref={scrollRef} style={{ background: 'rgba(255,255,255,0.025)', border: '1px solid rgba(255,255,255,0.07)', borderRadius: 20, padding: 20, maxHeight: 320, overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: 10, marginBottom: 12 }}>
+        {messages.map((m, i) => (
+          <div key={i} style={{ display: 'flex', justifyContent: m.role === 'user' ? 'flex-end' : 'flex-start' }}>
+            <div style={{ maxWidth: '82%', padding: '10px 14px', borderRadius: m.role === 'user' ? '16px 16px 4px 16px' : '16px 16px 16px 4px', background: m.role === 'user' ? `linear-gradient(135deg, ${GREEN}, ${TEAL})` : 'rgba(255,255,255,0.06)', color: m.role === 'user' ? '#000' : '#fff', fontSize: 14, lineHeight: 1.55, fontWeight: m.role === 'user' ? 600 : 400, whiteSpace: 'pre-wrap' }}>
+              {m.content}
+            </div>
+          </div>
+        ))}
+        {loading && (
+          <div style={{ display: 'flex', gap: 5, padding: '10px 14px', background: 'rgba(255,255,255,0.06)', borderRadius: '16px 16px 16px 4px', alignSelf: 'flex-start' }}>
+            {[0, 0.15, 0.3].map((d, i) => <div key={i} style={{ width: 7, height: 7, borderRadius: '50%', background: GREEN, opacity: 0.6, animation: `nlpulse 1.2s ease-in-out ${d}s infinite` }} />)}
+          </div>
+        )}
+      </div>
+      <div style={{ display: 'flex', gap: 10, marginBottom: 12 }}>
+        <input autoFocus value={input} onChange={e => setInput(e.target.value)} onKeyDown={e => e.key === 'Enter' && send()} placeholder="Type your answer…" style={{ flex: 1, padding: '13px 16px', borderRadius: 12, fontSize: 15, color: '#fff', background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.09)', outline: 'none', fontFamily: 'inherit' }} />
+        <button onClick={send} disabled={loading || !input.trim()} style={{ padding: '13px 20px', borderRadius: 12, fontWeight: 700, fontSize: 14, cursor: 'pointer', border: 'none', background: input.trim() ? `linear-gradient(135deg, ${GREEN}, ${TEAL})` : 'rgba(255,255,255,0.06)', color: input.trim() ? '#000' : 'rgba(255,255,255,0.2)', transition: 'all 0.2s' }}>Send</button>
+      </div>
+      {extracted.complete && (
+        <button onClick={confirmAndStart} className="animate-fade-in" style={{ width: '100%', padding: 15, borderRadius: 14, fontWeight: 800, fontSize: 16, cursor: 'pointer', border: 'none', background: `linear-gradient(135deg, ${GREEN}, ${TEAL})`, color: '#000', boxShadow: '0 0 28px rgba(52,211,153,0.28)', marginBottom: 10 }}>
+          Start tracking my health 🚀
+        </button>
+      )}
+      <style>{`@keyframes nlpulse{0%,100%{opacity:0.4;transform:scale(0.8)}50%{opacity:1;transform:scale(1.2)}}`}</style>
+    </div>
+  )
+}
+
+// ── Onboarding: AI chat first, form toggle ─────────────────────────────────────
+function Onboarding({ onDone }: { onDone: (p: HealthProfile) => void }) {
+  const [mode, setMode] = useState<'chat' | 'manual'>('chat')
+  return (
     <div>
-      <label style={{fontSize:12,color:'rgba(255,255,255,0.45)',display:'block',marginBottom:6,fontWeight:600}}>{label}</label>
-      <input type={type} value={value} onChange={e=>onChange(e.target.value)} placeholder={placeholder}
-        style={{width:'100%',padding:'10px 14px',borderRadius:10,fontSize:14,color:'#fff',background:'rgba(255,255,255,0.04)',border:'1px solid rgba(255,255,255,0.09)',outline:'none'}}/>
+      {mode === 'chat'
+        ? <>
+            <AIChatOnboarding onDone={onDone} />
+            <div style={{ textAlign: 'center', paddingBottom: 20, marginTop: -10 }}>
+              <button onClick={() => setMode('manual')} style={{ background: 'none', border: 'none', color: 'rgba(255,255,255,0.2)', fontSize: 12, cursor: 'pointer', textDecoration: 'underline', textUnderlineOffset: 3 }}>Prefer a form instead?</button>
+            </div>
+          </>
+        : <>
+            <ManualOnboarding onDone={onDone} />
+            <div style={{ textAlign: 'center', paddingBottom: 20 }}>
+              <button onClick={() => setMode('chat')} style={{ background: 'none', border: 'none', color: 'rgba(255,255,255,0.2)', fontSize: 12, cursor: 'pointer', textDecoration: 'underline', textUnderlineOffset: 3 }}>Use AI chat instead?</button>
+            </div>
+          </>
+      }
     </div>
   )
 }
