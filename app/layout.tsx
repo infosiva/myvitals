@@ -2,7 +2,7 @@ import type { Metadata } from 'next'
 import './globals.css'
 
 export const metadata: Metadata = {
-  title: 'HealthPulse — Your AI Health Coach',
+  title: 'HealthPulse — AI Health Coach',
   description: 'Track daily wellness. Get personalised AI insights like a doctor-friend.',
 }
 
@@ -12,30 +12,39 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       <body>
         <nav style={{
           position: 'fixed', top: 0, left: 0, right: 0, zIndex: 50,
-          background: 'rgba(6,6,18,0.85)', backdropFilter: 'blur(12px)',
-          borderBottom: '1px solid rgba(255,255,255,0.06)',
+          background: 'rgba(5,5,16,0.8)', backdropFilter: 'blur(20px)',
+          WebkitBackdropFilter: 'blur(20px)',
+          borderBottom: '1px solid rgba(52,211,153,0.08)',
           display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-          padding: '0 24px', height: 56,
+          padding: '0 28px', height: 58,
         }}>
-          <a href="/" style={{ display: 'flex', alignItems: 'center', gap: 8, textDecoration: 'none' }}>
-            <span style={{ fontSize: 22 }}>💚</span>
-            <span style={{ fontWeight: 700, fontSize: 18, color: '#34d399', letterSpacing: '-0.5px' }}>HealthPulse</span>
+          <a href="/" style={{ display: 'flex', alignItems: 'center', gap: 10, textDecoration: 'none' }}>
+            <div style={{
+              width: 32, height: 32, borderRadius: 10,
+              background: 'linear-gradient(135deg, #34d399, #10b981)',
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+              fontSize: 16, boxShadow: '0 0 16px rgba(52,211,153,0.35)',
+            }}>💚</div>
+            <span style={{ fontWeight: 800, fontSize: 17, color: '#fff', letterSpacing: '-0.5px' }}>
+              Health<span style={{ color: '#34d399' }}>Pulse</span>
+            </span>
           </a>
-          <div style={{ display: 'flex', gap: 8 }}>
-            <a href="/" style={navLink}>Dashboard</a>
-            <a href="/history" style={navLink}>History</a>
-            <a href="/insights" style={navLink}>AI Insights</a>
-            <a href="/profile" style={navLink}>Profile</a>
+          <div style={{ display: 'flex', gap: 4, background: 'rgba(255,255,255,0.04)', borderRadius: 12, padding: 4, border: '1px solid rgba(255,255,255,0.06)' }}>
+            {[
+              { href: '/', label: '📊 Today' },
+              { href: '/history', label: '📅 History' },
+              { href: '/insights', label: '🧠 AI Coach' },
+              { href: '/profile', label: '⚙️ Profile' },
+            ].map(({ href, label }) => (
+              <a key={href} href={href} style={{
+                padding: '6px 14px', borderRadius: 8, fontSize: 13, fontWeight: 600,
+                color: 'rgba(255,255,255,0.6)', textDecoration: 'none',
+              }}>{label}</a>
+            ))}
           </div>
         </nav>
-        <div style={{ paddingTop: 56 }}>{children}</div>
+        <div style={{ paddingTop: 58 }}>{children}</div>
       </body>
     </html>
   )
-}
-
-const navLink: React.CSSProperties = {
-  padding: '6px 14px', borderRadius: 8, fontSize: 14, fontWeight: 500,
-  color: 'rgba(255,255,255,0.65)', textDecoration: 'none',
-  transition: 'color 0.2s',
 }
