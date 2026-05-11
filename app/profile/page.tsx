@@ -37,7 +37,7 @@ export default function ProfilePage() {
 
       <div style={{ display: 'flex', flexDirection: 'column', gap: 16, background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: 20, padding: 28 }}>
         <Field label="Name" value={form.name} onChange={v => setForm(f => ({ ...f, name: v }))} placeholder="Siva" />
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
+        <div className="profile-2col" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
           <Field label="Age" value={form.age} onChange={v => setForm(f => ({ ...f, age: v }))} placeholder="35" type="number" />
           <div>
             <label style={{ fontSize: 12, color: 'rgba(255,255,255,0.5)', display: 'block', marginBottom: 6 }}>Gender</label>
@@ -49,7 +49,7 @@ export default function ProfilePage() {
             </select>
           </div>
         </div>
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
+        <div className="profile-2col" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
           <Field label="Height (cm)" value={form.heightCm} onChange={v => setForm(f => ({ ...f, heightCm: v }))} placeholder="175" type="number" />
           <Field label="Weight (kg)" value={form.weightKg} onChange={v => setForm(f => ({ ...f, weightKg: v }))} placeholder="70" type="number" />
         </div>

@@ -29,12 +29,12 @@ export default function HistoryPage() {
           const sc = healthScore(log)
           const scoreColor = sc >= 80 ? '#10b981' : sc >= 60 ? '#34d399' : sc >= 40 ? '#f59e0b' : '#ef4444'
           return (
-            <div key={log.date} style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.07)', borderRadius: 14, padding: '18px 20px', display: 'flex', alignItems: 'center', gap: 20 }}>
-              <div style={{ minWidth: 80 }}>
+            <div key={log.date} className="history-card" style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.07)', borderRadius: 14, padding: '18px 20px', display: 'flex', alignItems: 'center', gap: 20 }}>
+              <div className="history-date" style={{ minWidth: 80 }}>
                 <p style={{ fontSize: 13, fontWeight: 700, color: '#fff' }}>{formatDate(log.date)}</p>
                 <p style={{ fontSize: 11, color: 'rgba(255,255,255,0.35)', marginTop: 2 }}>{log.date}</p>
               </div>
-              <div style={{ flex: 1, display: 'flex', gap: 16, flexWrap: 'wrap' }}>
+              <div className="history-metrics" style={{ flex: 1, display: 'flex', gap: 16, flexWrap: 'wrap' }}>
                 <Metric icon="💧" value={log.water} unit="gl" />
                 <Metric icon="😴" value={log.sleep} unit="hr" />
                 <Metric icon="👟" value={log.steps >= 1000 ? `${(log.steps/1000).toFixed(1)}k` : log.steps} unit="steps" />

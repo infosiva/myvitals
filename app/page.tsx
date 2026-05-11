@@ -146,7 +146,7 @@ export default function Dashboard() {
   return (
     <main style={{ maxWidth: 960, margin: '0 auto', padding: '28px 20px' }} className="animate-fade-in">
       {/* Header */}
-      <div style={{ marginBottom: 28, display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between' }}>
+      <div className="page-header" style={{ marginBottom: 24, display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between' }}>
         <div>
           <h1 style={{ fontSize: 28, fontWeight: 800, color: '#fff', letterSpacing: '-0.5px' }}>
             {greeting()}, <span style={{ color: GREEN }}>{profile.name}</span> 👋
@@ -182,17 +182,17 @@ export default function Dashboard() {
       {/* NL Quick Log */}
       <div id="nl-quick-log" style={{ marginBottom: 20, padding: '16px 18px', borderRadius: 16, background: 'rgba(255,255,255,0.025)', border: '1px solid rgba(255,255,255,0.07)' }}>
         <p style={{ fontSize: 12, fontWeight: 700, color: 'rgba(255,255,255,0.35)', letterSpacing: '0.08em', textTransform: 'uppercase', marginBottom: 10 }}>✨ Quick Log with AI</p>
-        <div style={{ display: 'flex', gap: 10 }}>
+        <div className="nl-row" style={{ display: 'flex', gap: 10 }}>
           <input
             value={nlText}
             onChange={e => setNlText(e.target.value)}
             onKeyDown={e => e.key === 'Enter' && !e.shiftKey && parseNL()}
-            placeholder='"walked 8k steps, slept 7 hours, feeling great, had oats for breakfast"'
-            style={{ flex: 1, padding: '12px 16px', borderRadius: 12, fontSize: 14, color: '#fff', background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)', outline: 'none', fontFamily: 'inherit' }}
+            placeholder='"8k steps, 7h sleep, oats for breakfast"'
+            style={{ flex: 1, minWidth: 0, padding: '12px 16px', borderRadius: 12, fontSize: 14, color: '#fff', background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)', outline: 'none', fontFamily: 'inherit' }}
           />
           <button onClick={parseNL} disabled={nlParsing || !nlText.trim()}
-            style={{ padding: '12px 20px', borderRadius: 12, fontWeight: 700, fontSize: 14, cursor: nlParsing || !nlText.trim() ? 'not-allowed' : 'pointer', border: 'none', background: nlText.trim() ? `linear-gradient(135deg, ${GREEN}, ${TEAL})` : 'rgba(255,255,255,0.06)', color: nlText.trim() ? '#000' : 'rgba(255,255,255,0.2)', whiteSpace: 'nowrap', transition: 'all 0.2s' }}>
-            {nlParsing ? '…' : 'Parse →'}
+            style={{ flexShrink: 0, padding: '12px 20px', borderRadius: 12, fontWeight: 700, fontSize: 14, cursor: nlParsing || !nlText.trim() ? 'not-allowed' : 'pointer', border: 'none', background: nlText.trim() ? `linear-gradient(135deg, ${GREEN}, ${TEAL})` : 'rgba(255,255,255,0.06)', color: nlText.trim() ? '#000' : 'rgba(255,255,255,0.2)', whiteSpace: 'nowrap', transition: 'all 0.2s' }}>
+            {nlParsing ? '…' : 'AI →'}
           </button>
         </div>
         {nlConfirm && (
@@ -290,9 +290,9 @@ export default function Dashboard() {
 
           {/* Mood */}
           <GlassCard accentColor="#f472b6" title="😊 Mood">
-            <div style={{ display: 'flex', gap: 8 }}>
+            <div className="mood-row" style={{ display: 'flex', gap: 8 }}>
               {([1,2,3,4,5] as const).map(m => (
-                <button key={m} onClick={() => update('mood', m)}
+                <button key={m} className="mood-btn" onClick={() => update('mood', m)}
                   style={{ flex: '1 1 0', padding: '12px 6px', borderRadius: 12, cursor: 'pointer',
                     border: `2px solid ${log.mood === m ? MOOD_COLORS[m] : 'rgba(255,255,255,0.06)'}`,
                     background: log.mood === m ? `${MOOD_COLORS[m]}18` : 'rgba(255,255,255,0.02)',
@@ -313,9 +313,9 @@ export default function Dashboard() {
             </div>
             <input type="range" min={0} max={120} step={5} value={log.exercise} onChange={e => update('exercise', parseInt(e.target.value))}
               style={{ width: '100%', accentColor: '#fb923c' }} />
-            <div style={{ display: 'flex', gap: 6, marginTop: 12 }}>
+            <div className="exercise-row" style={{ display: 'flex', gap: 6, marginTop: 12 }}>
               {[0,15,30,45,60,90].map(n => (
-                <button key={n} onClick={() => update('exercise', n)}
+                <button key={n} className="exercise-btn" onClick={() => update('exercise', n)}
                   style={{ flex: 1, padding: '5px 4px', borderRadius: 8, fontSize: 12, fontWeight: 600, cursor: 'pointer',
                     border: `1px solid ${log.exercise === n ? '#fb923c' : 'rgba(251,146,60,0.15)'}`,
                     background: log.exercise === n ? 'rgba(251,146,60,0.2)' : 'transparent',
@@ -373,12 +373,12 @@ export default function Dashboard() {
         </div>
 
         {/* SIDEBAR */}
-        <div className="sidebar-sticky" style={{ display: 'flex', flexDirection: 'column', gap: 14, position: 'sticky', top: 78 }}>
+        <div className="sidebar-sticky" style={{ display: 'flex', flexDirection: 'column', gap: 14, position: 'sticky', top: 70 }}>
 
           {/* Score ring */}
-          <div id="wellness-score" style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.07)', borderRadius: 20, padding: '24px 20px', textAlign: 'center', backdropFilter: 'blur(12px)' }}>
+          <div id="wellness-score" className="score-card" style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.07)', borderRadius: 20, padding: '24px 20px', textAlign: 'center', backdropFilter: 'blur(12px)' }}>
             <p style={{ fontSize: 11, fontWeight: 700, color: 'rgba(255,255,255,0.35)', letterSpacing: '0.1em', textTransform: 'uppercase', marginBottom: 16 }}>Today's Wellness</p>
-            <svg width={140} height={140} viewBox="0 0 140 140" style={{ display: 'block', margin: '0 auto' }}>
+            <svg className="score-svg" width={140} height={140} viewBox="0 0 140 140" style={{ display: 'block', margin: '0 auto' }}>
               {/* bg track */}
               <circle cx={70} cy={70} r={r} fill="none" stroke="rgba(255,255,255,0.05)" strokeWidth={11} />
               {/* glow */}
@@ -544,7 +544,7 @@ function ManualOnboarding({ onDone }: { onDone: (p: HealthProfile) => void }) {
           <p style={sHint}>Used to personalise your health insights</p>
           <div style={{display:'flex',alignItems:'center',justifyContent:'center',gap:32,margin:'36px 0 24px'}}>
             <button onClick={()=>setForm(f=>({...f,age:Math.max(10,f.age-1)}))} style={sBigBtn}>−</button>
-            <span style={{fontSize:88,fontWeight:900,color:'#fff',letterSpacing:'-4px',lineHeight:1}}>{form.age}</span>
+            <span className="onboard-big-num" style={{fontSize:88,fontWeight:900,color:'#fff',letterSpacing:'-4px',lineHeight:1}}>{form.age}</span>
             <button onClick={()=>setForm(f=>({...f,age:Math.min(100,f.age+1)}))} style={sBigBtn}>+</button>
           </div>
           <div style={{display:'flex',flexWrap:'wrap',gap:8,justifyContent:'center',marginBottom:28}}>
@@ -572,7 +572,7 @@ function ManualOnboarding({ onDone }: { onDone: (p: HealthProfile) => void }) {
         <div style={sWrap}>
           <p style={sHint}>Drag the slider to set your height</p>
           <div style={{textAlign:'center',margin:'36px 0 12px'}}>
-            <span style={{fontSize:80,fontWeight:900,color:'#fff',letterSpacing:'-3px'}}>{form.heightCm}</span>
+            <span className="onboard-big-num" style={{fontSize:80,fontWeight:900,color:'#fff',letterSpacing:'-3px'}}>{form.heightCm}</span>
             <span style={{fontSize:22,color:'rgba(255,255,255,0.35)',marginLeft:8}}>cm</span>
             <p style={{fontSize:18,color:'rgba(255,255,255,0.3)',marginTop:6}}>{ft}&prime; {htIn}&Prime;</p>
           </div>
@@ -588,7 +588,7 @@ function ManualOnboarding({ onDone }: { onDone: (p: HealthProfile) => void }) {
         <div style={sWrap}>
           <p style={sHint}>Drag the slider to set your weight</p>
           <div style={{textAlign:'center',margin:'36px 0 12px'}}>
-            <span style={{fontSize:80,fontWeight:900,color:'#fff',letterSpacing:'-3px'}}>{form.weightKg}</span>
+            <span className="onboard-big-num" style={{fontSize:80,fontWeight:900,color:'#fff',letterSpacing:'-3px'}}>{form.weightKg}</span>
             <span style={{fontSize:22,color:'rgba(255,255,255,0.35)',marginLeft:8}}>kg</span>
             <p style={{fontSize:18,color:'rgba(255,255,255,0.3)',marginTop:6}}>{st} st {lb} lb</p>
           </div>
@@ -712,7 +712,7 @@ function ManualOnboarding({ onDone }: { onDone: (p: HealthProfile) => void }) {
         </div>
 
         {/* Card */}
-        <div style={{width:'100%',maxWidth:600,background:'rgba(255,255,255,0.028)',border:'1px solid rgba(255,255,255,0.07)',borderRadius:28,padding:'44px 48px 40px',backdropFilter:'blur(24px)'}}>
+        <div className="onboard-card-wide" style={{width:'100%',maxWidth:600,background:'rgba(255,255,255,0.028)',border:'1px solid rgba(255,255,255,0.07)',borderRadius:28,padding:'44px 48px 40px',backdropFilter:'blur(24px)'}}>
           <h2 style={{fontSize:34,fontWeight:900,color:'#fff',letterSpacing:'-0.8px',marginBottom:4}}>{STEP_TITLES[step]}</h2>
 
           <div key={animKey} className="ob-step">

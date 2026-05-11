@@ -116,18 +116,58 @@ button { font-family: inherit; cursor: pointer; border: none; }
 
 /* ── Mobile main padding ── */
 @media (max-width: 768px) {
-  main { padding: 16px !important; }
-  /* stack 3-col to 1-col on small screens */
-  .stats-grid { grid-template-columns: 1fr 1fr !important; }
+  main { padding: 16px 14px !important; }
+  /* onboarding card: less side padding on mobile */
+  .onboard-card-wide { padding: 28px 22px 28px !important; border-radius: 20px !important; }
+  /* big number: slightly smaller on mobile */
+  .onboard-big-num { font-size: 64px !important; }
+  /* glass cards: tighter padding on mobile */
+  .glass-card-inner { padding: 16px 14px !important; }
+  /* mood buttons: allow wrap on mobile */
+  .mood-row { flex-wrap: wrap !important; }
+  .mood-btn { flex: 1 1 auto !important; min-width: 52px !important; }
+  /* exercise quick-pick: wrap */
+  .exercise-row { flex-wrap: wrap !important; }
+  .exercise-btn { flex: 1 1 auto !important; min-width: 40px !important; }
+  /* stack 3-col to 2-col on tablets */
+  .stats-grid { grid-template-columns: 1fr 1fr !important; gap: 10px !important; }
   /* stack main+sidebar */
   .main-grid { grid-template-columns: 1fr !important; }
-  /* sidebar no longer sticky on mobile */
-  .sidebar-sticky { position: static !important; }
+  /* on mobile: score ring sidebar floats above the form */
+  .sidebar-sticky { position: static !important; order: -1; }
   /* onboarding card padding on mobile */
   .onboard-wide { padding: 24px 20px !important; border-radius: 20px !important; }
+  /* header: wrap streak badge below name on narrow phones */
+  .page-header { flex-direction: column !important; align-items: flex-start !important; gap: 8px !important; }
+  /* NL row: allow button to shrink-wrap */
+  .nl-row { gap: 8px !important; }
+  .nl-row input { min-width: 0 !important; }
+  .nl-row button { flex-shrink: 0 !important; padding: 12px 14px !important; }
+  /* score ring: smaller on mobile */
+  .score-svg { width: 110px !important; height: 110px !important; }
+  /* sidebar score card less padding */
+  .score-card { padding: 18px 14px !important; }
 }
 @media (max-width: 480px) {
-  .stats-grid { grid-template-columns: 1fr !important; }
+  .stats-grid { grid-template-columns: 1fr 1fr !important; }
+  main { padding: 12px !important; }
+}
+@media (max-width: 380px) {
+  .stats-grid { grid-template-columns: 1fr 1fr !important; }
+  /* compact stat card text on tiny screens */
+  .stat-value { font-size: 20px !important; }
+}
+
+/* ── History page log cards ── */
+@media (max-width: 600px) {
+  .history-card { flex-direction: column !important; gap: 10px !important; padding: 14px !important; }
+  .history-date { min-width: unset !important; }
+  .history-metrics { gap: 10px !important; }
+}
+
+/* ── Profile 2-col grids ── */
+@media (max-width: 480px) {
+  .profile-2col { grid-template-columns: 1fr !important; }
 }
 
 /* ── Onboarding modern card ── */
