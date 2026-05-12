@@ -129,8 +129,8 @@ button { font-family: inherit; cursor: pointer; border: none; }
   /* exercise quick-pick: wrap */
   .exercise-row { flex-wrap: wrap !important; }
   .exercise-btn { flex: 1 1 auto !important; min-width: 40px !important; }
-  /* stack 3-col to 2-col on tablets */
-  .stats-grid { grid-template-columns: 1fr 1fr !important; gap: 10px !important; }
+  /* stack 3-col to single row on tablets — all 3 equal-width */
+  .stats-grid { grid-template-columns: repeat(3, 1fr) !important; gap: 8px !important; }
   /* stack main+sidebar */
   .main-grid { grid-template-columns: 1fr !important; }
   /* on mobile: score ring sidebar floats above the form */
@@ -149,11 +149,12 @@ button { font-family: inherit; cursor: pointer; border: none; }
   .score-card { padding: 18px 14px !important; }
 }
 @media (max-width: 480px) {
-  .stats-grid { grid-template-columns: 1fr 1fr !important; }
+  /* on very small screens collapse stats to 1-col for readability */
+  .stats-grid { grid-template-columns: 1fr !important; }
   main { padding: 12px !important; }
 }
 @media (max-width: 380px) {
-  .stats-grid { grid-template-columns: 1fr 1fr !important; }
+  .stats-grid { grid-template-columns: 1fr !important; }
   /* compact stat card text on tiny screens */
   .stat-value { font-size: 20px !important; }
 }

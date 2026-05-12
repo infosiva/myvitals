@@ -163,6 +163,19 @@ export default function Dashboard() {
         )}
       </div>
 
+      {/* Empty state — first visit of the day, nothing logged yet */}
+      {score === 0 && !narrativeLoading && !narrative && (
+        <div style={{ marginBottom: 20, padding: '16px 20px', borderRadius: 16, background: 'rgba(52,211,153,0.05)', border: '1px solid rgba(52,211,153,0.12)', display: 'flex', alignItems: 'center', gap: 14 }} className="animate-fade-in">
+          <span style={{ fontSize: 28, flexShrink: 0 }}>✨</span>
+          <div>
+            <p style={{ fontSize: 14, fontWeight: 700, color: '#34d399', marginBottom: 3 }}>Start logging your day</p>
+            <p style={{ fontSize: 13, color: 'rgba(255,255,255,0.4)', lineHeight: 1.5 }}>
+              Try the <strong style={{ color: 'rgba(255,255,255,0.6)' }}>Quick Log</strong> below — type something like &ldquo;8k steps, 7h sleep, oats for breakfast&rdquo; and AI will fill in all fields instantly.
+            </p>
+          </div>
+        </div>
+      )}
+
       {/* AI Narrative Card (post-save) */}
       {(narrativeLoading || narrative) && (
         <div style={{ marginBottom: 20, padding: '18px 20px', borderRadius: 16, background: 'linear-gradient(135deg, rgba(52,211,153,0.08), rgba(16,185,129,0.04))', border: '1px solid rgba(52,211,153,0.2)', display: 'flex', gap: 14, alignItems: 'flex-start' }} className="animate-fade-in">
