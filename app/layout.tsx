@@ -2,6 +2,8 @@ import type { Metadata } from 'next'
 import './globals.css'
 import FeedbackWidget from '@/components/FeedbackWidget'
 import NavBar from '@/components/NavBar'
+import CookieConsent from "../components/CookieConsent";
+import Footer from "../components/Footer";
 
 export const metadata: Metadata = {
   title: 'MyVitals — AI Health Coach',
@@ -15,6 +17,8 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <NavBar />
         <div style={{ paddingTop: 58 }}>{children}</div>
         <FeedbackWidget siteName="MyVitals" accentColor="#34d399" accentColor2="#10b981" />
+        <Footer siteName="MyVitals" />
+      <CookieConsent />
       </body>
     </html>
   )
