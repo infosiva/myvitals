@@ -216,3 +216,6 @@ button { font-family: inherit; cursor: pointer; border: none; }
   box-shadow: none;
 }
 .btn-primary:not(:disabled):active { transform: scale(0.98); }
+
+/* ── Mobile: prevent horizontal overflow on all devices ── */
+html, body { overflow-x: hidden; max-width: 100%; }
