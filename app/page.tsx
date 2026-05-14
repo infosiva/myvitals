@@ -240,6 +240,36 @@ export default function Dashboard() {
         <GlassStatCard icon="👟" label="Steps" value={log.steps} max={10000} unit="" color={GREEN} format={v => v >= 1000 ? `${(v/1000).toFixed(1)}k` : String(v)} />
       </div>
 
+      {/* ── Goals progress bar — like MyFitnessPal rings ── */}
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(160px, 1fr))', gap: 10, marginBottom: 20 }}>
+        {[
+          { label: 'Water', icon: '💧', value: log.water, target: 8, unit: 'glasses', color: '#38bdf8' },
+          { label: 'Sleep', icon: '😴', value: log.sleep, target: 8, unit: 'hrs', color: '#818cf8' },
+          { label: 'Steps', icon: '👟', value: log.steps, target: 10000, unit: '', color: GREEN, fmt: (v: number) => v >= 1000 ? `${(v/1000).toFixed(1)}k` : String(v) },
+          { label: 'Exercise', icon: '🏃', value: log.exercise, target: 30, unit: 'min', color: '#f97316' },
+        ].map(g => {
+          const pct = Math.min(100, Math.round((g.value / g.target) * 100))
+          const done = pct >= 100
+          const disp = g.fmt ? g.fmt(g.value) : g.value
+          return (
+            <div key={g.label} style={{ background: 'rgba(255,255,255,0.03)', border: `1px solid ${done ? g.color + '50' : 'rgba(255,255,255,0.07)'}`, borderRadius: 14, padding: '12px 14px' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 }}>
+                <span style={{ fontSize: 12, fontWeight: 600, color: 'rgba(255,255,255,0.6)' }}>{g.icon} {g.label}</span>
+                <span style={{ fontSize: 11, fontWeight: 700, color: done ? g.color : 'rgba(255,255,255,0.3)' }}>
+                  {done ? '✓ Goal!' : `${pct}%`}
+                </span>
+              </div>
+              <div style={{ height: 4, background: 'rgba(255,255,255,0.07)', borderRadius: 99, marginBottom: 6, overflow: 'hidden' }}>
+                <div style={{ height: '100%', width: `${pct}%`, background: g.color, borderRadius: 99, transition: 'width 0.5s ease' }} />
+              </div>
+              <div style={{ fontSize: 11, color: 'rgba(255,255,255,0.3)' }}>
+                <span style={{ color: g.color, fontWeight: 700 }}>{disp}</span> / {g.target}{g.unit ? ' '+g.unit : ''}
+              </div>
+            </div>
+          )
+        })}
+      </div>
+
       {/* Main layout: log form + score sidebar */}
       <div className="main-grid" style={{ display: 'grid', gridTemplateColumns: '1fr 280px', gap: 20, alignItems: 'start' }}>
 
