@@ -1,5 +1,6 @@
 'use client'
 import { useState, useEffect, useRef } from 'react'
+import AnimatedHeroGuide from '@/components/AnimatedHeroGuide'
 import { getProfile, getLog, saveLog, saveProfile, today, getStreak, healthScore } from '@/lib/storage'
 import type { HealthProfile, DayLog } from '@/lib/types'
 import { MOOD_LABELS, MOOD_COLORS } from '@/lib/types'
@@ -141,7 +142,12 @@ export default function Dashboard() {
   const dash = circumference * (score / 100)
 
   if (!mounted) return null
-  if (!profile) return <Onboarding onDone={p => { saveProfile(p); setProfile(p) }} />
+  if (!profile) return (
+    <>
+      <AnimatedHeroGuide />
+      <Onboarding onDone={p => { saveProfile(p); setProfile(p) }} />
+    </>
+  )
 
   return (
     <>
