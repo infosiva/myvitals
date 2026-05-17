@@ -144,6 +144,7 @@ export default function Dashboard() {
   if (!profile) return <Onboarding onDone={p => { saveProfile(p); setProfile(p) }} />
 
   return (
+    <>
     <main style={{ maxWidth: 960, margin: '0 auto', padding: '28px 20px' }} className="animate-fade-in">
       {/* Header */}
       <div className="page-header" style={{ marginBottom: 24, display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between' }}>
@@ -466,7 +467,98 @@ export default function Dashboard() {
       </div>
       <style>{`@keyframes nlpulse{0%,100%{opacity:0.4;transform:scale(0.8)}50%{opacity:1;transform:scale(1.2)}}`}</style>
       <GuidedTour steps={TOUR_STEPS} storageKey="myvitals_tour_v1" accentColor={GREEN} delay={800} />
+
+      {/* Competitor comparison */}
+      <section style={{ borderTop:'1px solid rgba(74,222,128,0.1)', padding:'48px 20px' }}>
+        <div style={{ maxWidth:760, margin:'0 auto' }}>
+          <div style={{ textAlign:'center', marginBottom:28 }}>
+            <p style={{ fontSize:10, color:'rgba(74,222,128,0.4)', letterSpacing:'0.15em', textTransform:'uppercase', marginBottom:8 }}>How we compare</p>
+            <h2 style={{ fontSize:20, fontWeight:800, color:'#f0fdf4' }}>MyVitals vs alternatives</h2>
+          </div>
+          <div style={{ overflowX:'auto' }}>
+            <table style={{ width:'100%', borderCollapse:'collapse', fontSize:12 }}>
+              <thead>
+                <tr style={{ borderBottom:'1px solid rgba(74,222,128,0.15)' }}>
+                  {['Feature','MyVitals','MyFitnessPal','Apple Health','Cronometer'].map((h,i) => (
+                    <th key={h} style={{ padding:'10px 12px', textAlign:i===0?'left':'center',
+                      color: i===1 ? GREEN : 'rgba(255,255,255,0.25)', fontWeight:700, fontSize:11, letterSpacing:'0.05em' }}>{h}</th>
+                  ))}
+                </tr>
+              </thead>
+              <tbody>
+                {[
+                  ['AI natural language logging','✅ Built-in','❌','❌','❌'],
+                  ['No account required','✅','❌','❌','❌'],
+                  ['AI weekly insights','✅','❌','❌','❌'],
+                  ['Mood + sleep + steps tracking','✅ All-in-one','⚠️ Steps only','✅','⚠️ Nutrition focus'],
+                  ['Works offline','✅','⚠️','✅','⚠️'],
+                  ['Cost','Free','Free / $10 mo','Free (iPhone)','Free / $9 mo'],
+                ].map(row => (
+                  <tr key={row[0]} style={{ borderBottom:'1px solid rgba(74,222,128,0.06)' }}>
+                    {row.map((cell,i) => (
+                      <td key={i} style={{ padding:'9px 12px', textAlign:i===0?'left':'center',
+                        color: i===1 ? GREEN : i===0 ? 'rgba(255,255,255,0.55)' : 'rgba(255,255,255,0.25)',
+                        background: i===1 ? 'rgba(74,222,128,0.04)' : 'transparent', fontSize:11 }}>{cell}</td>
+                    ))}
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      {/* Footer */}
+      <footer style={{ borderTop:'1px solid rgba(74,222,128,0.1)', padding:'24px', background:'rgba(0,0,0,0.3)' }}>
+        <div style={{ maxWidth:900, margin:'0 auto', display:'flex', flexWrap:'wrap', justifyContent:'space-between', alignItems:'center', gap:16 }}>
+          <div>
+            <span style={{ fontWeight:900, fontSize:15, color:GREEN }}>MyVitals</span>
+            <p style={{ fontSize:11, color:'rgba(255,255,255,0.25)', marginTop:4 }}>AI health tracker — log your day in seconds.</p>
+          </div>
+          <div style={{ display:'flex', gap:20, flexWrap:'wrap' }}>
+            {[['About','/about'],['Privacy','/privacy'],['Terms','/terms'],['Cookie Policy','/cookies']].map(([label,href]) => (
+              <a key={label} href={href} style={{ fontSize:11, color:'rgba(255,255,255,0.25)', textDecoration:'none' }}
+                onMouseOver={e=>(e.currentTarget.style.color=GREEN)} onMouseOut={e=>(e.currentTarget.style.color='rgba(255,255,255,0.25)')}>{label}</a>
+            ))}
+          </div>
+          <p style={{ fontSize:10, color:'rgba(255,255,255,0.15)' }}>© 2026 MyVitals</p>
+        </div>
+      </footer>
     </main>
+    <MyVitalsCookieBanner green={GREEN} />
+    </>
+  )
+}
+
+function MyVitalsCookieBanner({ green }: { green: string }) {
+  const [visible, setVisible] = useState(false)
+  useEffect(() => {
+    if (!localStorage.getItem('mv_cookies_ok')) setVisible(true)
+  }, [])
+  if (!visible) return null
+  return (
+    <div style={{ position:'fixed', bottom:0, left:0, right:0, zIndex:200, padding:'12px 24px',
+      background:'rgba(5,20,10,0.97)', borderTop:'1px solid rgba(74,222,128,0.2)',
+      backdropFilter:'blur(16px)', display:'flex', alignItems:'center', justifyContent:'space-between',
+      gap:16, flexWrap:'wrap' }}>
+      <p style={{ fontSize:12, color:'rgba(255,255,255,0.45)', maxWidth:600, lineHeight:1.5 }}>
+        MyVitals uses essential cookies to save your health logs locally. No tracking, no ads.{' '}
+        <a href="/privacy" style={{ color:green, textDecoration:'underline', cursor:'pointer' }}>Privacy policy</a>
+      </p>
+      <div style={{ display:'flex', gap:10 }}>
+        <button onClick={() => { localStorage.setItem('mv_cookies_ok','1'); setVisible(false) }}
+          style={{ fontSize:12, fontWeight:700, padding:'7px 20px', borderRadius:8,
+            background:green, color:'#000', border:'none', cursor:'pointer' }}>
+          Accept
+        </button>
+        <button onClick={() => setVisible(false)}
+          style={{ fontSize:12, fontWeight:500, padding:'7px 14px', borderRadius:8,
+            background:'transparent', color:'rgba(255,255,255,0.3)',
+            border:'1px solid rgba(255,255,255,0.1)', cursor:'pointer' }}>
+          Decline
+        </button>
+      </div>
+    </div>
   )
 }
 
