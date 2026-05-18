@@ -1,6 +1,7 @@
 import type { Metadata } from 'next'
 import './globals.css'
 import FeedbackWidget from '@/components/FeedbackWidget'
+import ChatBot from '@/components/ChatBot'
 import NavBar from '@/components/NavBar'
 import CookieConsent from "../components/CookieConsent";
 import Footer from "../components/Footer";
@@ -39,8 +40,11 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <NavBar />
         <div style={{ paddingTop: 58 }}>{children}</div>
         <FeedbackWidget siteName="MyVitals" accentColor="#34d399" accentColor2="#10b981" />
+        <ChatBot />
         <Footer siteName="MyVitals" />
       <CookieConsent />
+        {/* eslint-disable-next-line @next/next/no-before-interactive-script-outside-document */}
+        <script src="http://31.97.56.148:3098/t.js" data-site="myvitals.app" defer></script>
       </body>
     </html>
   )
