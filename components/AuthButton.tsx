@@ -1,8 +1,9 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { MagicAuthModal, getStoredUser, clearAuth } from "@siva/shared-ui";
-import type { AuthUser } from "@siva/shared-ui";
+import MagicAuthModal from "@/lib/auth/MagicAuthModal";
+import { getStoredUser, clearAuth } from "@/lib/auth/useMagicAuth";
+import type { AuthUser } from "@/lib/auth/useMagicAuth";
 import { SITE_CONFIG } from "@/lib/store";
 
 export default function AuthButton() {

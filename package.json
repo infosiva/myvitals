@@ -11,8 +11,7 @@
   "dependencies": {
     "@anthropic-ai/sdk": "^0.92.0",
     "@google/generative-ai": "^0.24.1",
-    "@siva/shared-ui": "file:../shared-ui",
-    "framer-motion": "^12.39.0",
+"framer-motion": "^12.39.0",
     "groq-sdk": "^1.1.2",
     "lucide-react": "^0.503.0",
     "next": "^15.3.9",

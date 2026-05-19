@@ -1,6 +1,6 @@
 "use client";
 
-import { useMagicAuth, getStoredUser, isLoggedIn } from "@siva/shared-ui";
+import { useMagicAuth, getStoredUser, isLoggedIn } from "@/lib/auth/useMagicAuth";
 export { useMagicAuth, getStoredUser, isLoggedIn };
 
 export const SITE_CONFIG = {
