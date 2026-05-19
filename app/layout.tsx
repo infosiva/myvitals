@@ -6,6 +6,8 @@ import ChatBot from '@/components/ChatBot'
 import NavBar from '@/components/NavBar'
 import CookieConsent from "../components/CookieConsent";
 import Footer from "../components/Footer";
+import AuthButton from '@/components/AuthButton'
+import AffiliateStrip from '@/components/AffiliateStrip'
 
 export const metadata: Metadata = {
   title: 'MyVitals — AI Health Coach',
@@ -39,9 +41,11 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       </head>
       <body>
         <NavBar />
+        <div style={{ position:"fixed", top:"10px", right:"16px", zIndex:60 }}><AuthButton /></div>
         <div style={{ paddingTop: 58 }}>{children}</div>
         <FeedbackWidget siteName="MyVitals" accentColor="#34d399" accentColor2="#10b981" />
         <ChatBot />
+        <AffiliateStrip />
         <Footer siteName="MyVitals" />
       <CookieConsent />
         {/* eslint-disable-next-line @next/next/no-before-interactive-script-outside-document */}
