@@ -151,386 +151,321 @@ export default function Dashboard() {
 
   return (
     <>
-    <main style={{ maxWidth: 960, margin: '0 auto', padding: '28px 20px' }} className="animate-fade-in">
-      {/* Header */}
-      <div className="page-header" style={{ marginBottom: 24, display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between' }}>
+    <style>{`
+      @keyframes nlpulse{0%,100%{opacity:0.4;transform:scale(0.8)}50%{opacity:1;transform:scale(1.2)}}
+      @keyframes ring-in{from{stroke-dasharray:0 ${circumference}}to{stroke-dasharray:${dash} ${circumference}}}
+      .mv-main{background:#070d0a;min-height:100vh;color:#fff;font-family:inherit}
+      .mv-hero{display:grid;grid-template-columns:1fr 260px;gap:24px;align-items:start;padding:28px 24px 20px;max-width:960px;margin:0 auto}
+      .mv-metrics{display:grid;grid-template-columns:1fr 1fr;gap:10px;padding:0 24px 16px;max-width:960px;margin:0 auto}
+      .mv-bottom{display:grid;grid-template-columns:1fr 1fr;gap:10px;padding:0 24px 16px;max-width:960px;margin:0 auto}
+      .mv-full{padding:0 24px 16px;max-width:960px;margin:0 auto}
+      .mv-card{background:#0d1a12;border:1px solid rgba(52,211,153,0.1);border-radius:16px;padding:14px 16px}
+      .mv-label{font-size:11px;font-weight:700;color:rgba(255,255,255,0.3);letter-spacing:.08em;text-transform:uppercase;margin-bottom:8px}
+      input[type=range]{-webkit-appearance:none;appearance:none;width:100%;height:4px;border-radius:99px;background:rgba(255,255,255,0.08);cursor:pointer;outline:none}
+      input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:18px;height:18px;border-radius:50%;background:#fff;box-shadow:0 0 8px rgba(52,211,153,0.4);cursor:pointer}
+      @media(max-width:640px){.mv-hero{grid-template-columns:1fr}.mv-metrics{grid-template-columns:1fr}.mv-bottom{grid-template-columns:1fr}.mv-score-col{display:none}}
+    `}</style>
+
+    <div className="mv-main">
+
+      {/* ── HERO: 2-col above fold ─────────────────────────────────── */}
+      <div className="mv-hero">
+
+        {/* LEFT: headline + NL log */}
         <div>
-          <h1 style={{ fontSize: 28, fontWeight: 800, color: '#fff', letterSpacing: '-0.5px' }}>
-            {greeting()}, <span style={{ color: GREEN }}>{profile.name}</span> 👋
+          {/* Streak bar */}
+          <div style={{ display:'flex', alignItems:'center', gap:12, marginBottom:16 }}>
+            <span style={{ fontSize:13, fontWeight:800, color:'rgba(255,255,255,0.55)', letterSpacing:'-0.2px' }}>
+              My<span style={{ color:GREEN }}>Vitals</span>
+            </span>
+            {streak > 0 && (
+              <div style={{ display:'flex', alignItems:'center', gap:5, padding:'3px 10px', borderRadius:20, background:'rgba(245,158,11,0.1)', border:'1px solid rgba(245,158,11,0.2)' }}>
+                <span style={{ fontSize:12 }}>🔥</span>
+                <span style={{ fontSize:11, fontWeight:700, color:'#f59e0b' }}>{streak}d streak</span>
+              </div>
+            )}
+            <span style={{ marginLeft:'auto', fontSize:12, color:'rgba(255,255,255,0.25)' }}>
+              {new Date().toLocaleDateString('en-GB', { weekday:'short', day:'numeric', month:'short' })}
+            </span>
+          </div>
+
+          <h1 style={{ fontSize:26, fontWeight:900, color:'#fff', letterSpacing:'-0.6px', lineHeight:1.2, marginBottom:6 }}>
+            Track your health.<br /><span style={{ color:GREEN }}>Every single day.</span>
           </h1>
-          <p style={{ color: 'rgba(255,255,255,0.4)', marginTop: 4, fontSize: 14 }}>
-            {new Date().toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })}
+          <p style={{ fontSize:13, color:'rgba(255,255,255,0.35)', marginBottom:16, lineHeight:1.5 }}>
+            {greeting()}, <strong style={{ color:'rgba(255,255,255,0.6)' }}>{profile.name}</strong>. Log your day in one sentence.
+          </p>
+
+          {/* NL Quick Log */}
+          <div id="nl-quick-log" style={{ background:'#0d1a12', border:'1px solid rgba(52,211,153,0.15)', borderRadius:14, padding:'12px 14px' }}>
+            <p className="mv-label" style={{ marginBottom:8 }}>✨ AI Quick Log</p>
+            <div style={{ display:'flex', gap:8 }}>
+              <input
+                value={nlText}
+                onChange={e => setNlText(e.target.value)}
+                onKeyDown={e => e.key === 'Enter' && !e.shiftKey && parseNL()}
+                placeholder='"8k steps, 7h sleep, oats for breakfast"'
+                style={{ flex:1, minWidth:0, padding:'11px 14px', borderRadius:10, fontSize:14, color:'#fff', background:'rgba(255,255,255,0.04)', border:'1px solid rgba(255,255,255,0.08)', outline:'none', fontFamily:'inherit' }}
+              />
+              <button onClick={parseNL} disabled={nlParsing || !nlText.trim()}
+                style={{ flexShrink:0, padding:'11px 18px', borderRadius:10, fontWeight:700, fontSize:14, cursor: nlParsing || !nlText.trim() ? 'not-allowed' : 'pointer', border:'none', background: nlText.trim() ? `linear-gradient(135deg,${GREEN},${TEAL})` : 'rgba(255,255,255,0.06)', color: nlText.trim() ? '#000' : 'rgba(255,255,255,0.2)', transition:'all 0.2s', minHeight:44 }}>
+                {nlParsing ? '…' : 'AI →'}
+              </button>
+            </div>
+            {nlConfirm && (
+              <div style={{ marginTop:12 }} className="animate-fade-in">
+                {nlConfirm.anomalies.length > 0 && (
+                  <div style={{ marginBottom:8, padding:'8px 12px', borderRadius:8, background:'rgba(245,158,11,0.08)', border:'1px solid rgba(245,158,11,0.2)' }}>
+                    <p style={{ fontSize:11, color:'#f59e0b', fontWeight:700, marginBottom:3 }}>⚠️ AI flagged — please confirm:</p>
+                    {nlConfirm.anomalies.map((a, i) => <p key={i} style={{ fontSize:12, color:'rgba(255,255,255,0.6)' }}>• {a}</p>)}
+                  </div>
+                )}
+                <div style={{ display:'flex', flexWrap:'wrap', gap:6, marginBottom:10 }}>
+                  {Object.entries(nlConfirm.parsed).filter(([, v]) => v != null && (Array.isArray(v) ? (v as any[]).length > 0 : true)).map(([k, v]) => (
+                    <ConfirmPill key={k} field={k} value={v} />
+                  ))}
+                </div>
+                <div style={{ display:'flex', gap:8 }}>
+                  <button onClick={applyNLParsed} style={{ flex:1, padding:'9px', borderRadius:9, fontWeight:700, fontSize:13, cursor:'pointer', border:'none', background:`linear-gradient(135deg,${GREEN},${TEAL})`, color:'#000' }}>
+                    ✓ Apply
+                  </button>
+                  <button onClick={() => setNlConfirm(null)} style={{ padding:'9px 14px', borderRadius:9, fontWeight:600, fontSize:13, cursor:'pointer', border:'1px solid rgba(255,255,255,0.08)', background:'transparent', color:'rgba(255,255,255,0.4)' }}>
+                    Cancel
+                  </button>
+                </div>
+              </div>
+            )}
+          </div>
+
+          {/* AI Narrative (post-save) */}
+          {(narrativeLoading || narrative) && (
+            <div style={{ marginTop:12, padding:'12px 14px', borderRadius:12, background:'rgba(52,211,153,0.06)', border:'1px solid rgba(52,211,153,0.15)', display:'flex', gap:10, alignItems:'flex-start' }} className="animate-fade-in">
+              <span style={{ fontSize:18, flexShrink:0, marginTop:1 }}>🩺</span>
+              <div>
+                <p style={{ fontSize:10, fontWeight:700, color:GREEN, letterSpacing:'0.06em', textTransform:'uppercase', marginBottom:4 }}>AI Coach</p>
+                {narrativeLoading
+                  ? <div style={{ display:'flex', gap:5, alignItems:'center' }}>
+                      {[0, 0.15, 0.3].map((d, i) => <div key={i} style={{ width:6, height:6, borderRadius:'50%', background:GREEN, animation:`nlpulse 1.2s ease-in-out ${d}s infinite` }} />)}
+                    </div>
+                  : <p style={{ fontSize:13, color:'rgba(255,255,255,0.8)', lineHeight:1.6 }}>{narrative}</p>
+                }
+              </div>
+            </div>
+          )}
+        </div>
+
+        {/* RIGHT: wellness score ring */}
+        <div id="wellness-score" className="mv-score-col" style={{ background:'#0d1a12', border:'1px solid rgba(52,211,153,0.12)', borderRadius:20, padding:'20px 16px', textAlign:'center', position:'sticky', top:20 }}>
+          <p className="mv-label" style={{ marginBottom:12 }}>Today&apos;s Wellness</p>
+          <svg width={160} height={160} viewBox="0 0 160 160" style={{ display:'block', margin:'0 auto' }}>
+            <circle cx={80} cy={80} r={r} fill="none" stroke="rgba(255,255,255,0.05)" strokeWidth={12} />
+            <circle cx={80} cy={80} r={r} fill="none" stroke={scoreColor} strokeWidth={12} opacity={0.12} strokeDasharray={`${circumference} 0`} />
+            <circle cx={80} cy={80} r={r} fill="none" stroke={scoreColor} strokeWidth={12}
+              strokeDasharray={`${dash} ${circumference}`} strokeLinecap="round"
+              transform="rotate(-90 80 80)"
+              style={{ transition:'stroke-dasharray 0.8s cubic-bezier(0.4,0,0.2,1), stroke 0.4s',
+                filter:`drop-shadow(0 0 8px ${scoreColor}60)` }} />
+            <text x={80} y={74} textAnchor="middle" fill="#fff" fontSize={36} fontWeight={800}>{score}</text>
+            <text x={80} y={92} textAnchor="middle" fill="rgba(255,255,255,0.3)" fontSize={13}>/100</text>
+          </svg>
+          <p style={{ fontSize:13, color:scoreColor, fontWeight:700, marginTop:10, marginBottom:16 }}>
+            {score >= 80 ? 'Excellent day' : score >= 60 ? 'Good progress' : score >= 40 ? 'Keep going' : score >= 20 ? 'Getting started' : 'Log your day'}
+          </p>
+          {/* 5 mini metric bars */}
+          {[
+            { icon:'💧', label:'Water', v:log.water, max:8, color:'#38bdf8', fmt:(v:number)=>`${v} gl` },
+            { icon:'😴', label:'Sleep', v:log.sleep, max:8, color:'#818cf8', fmt:(v:number)=>`${v}h` },
+            { icon:'👟', label:'Steps', v:log.steps, max:10000, color:GREEN, fmt:(v:number)=>v>=1000?`${(v/1000).toFixed(1)}k`:String(v) },
+            { icon:'😊', label:'Mood', v:log.mood, max:5, color:'#f472b6', fmt:(v:number)=>`${v}/5` },
+            { icon:'🏃', label:'Exercise', v:log.exercise, max:30, color:'#fb923c', fmt:(v:number)=>`${v}m` },
+          ].map(m => (
+            <div key={m.label} style={{ marginBottom:8 }}>
+              <div style={{ display:'flex', justifyContent:'space-between', marginBottom:3 }}>
+                <span style={{ fontSize:11, color:'rgba(255,255,255,0.4)' }}>{m.icon} {m.label}</span>
+                <span style={{ fontSize:11, fontWeight:700, color: Math.min(m.v/m.max,1)>=1 ? m.color : 'rgba(255,255,255,0.35)' }}>{m.fmt(m.v)}</span>
+              </div>
+              <div style={{ height:3, borderRadius:99, background:'rgba(255,255,255,0.07)', overflow:'hidden' }}>
+                <div style={{ height:'100%', width:`${Math.min((m.v/m.max)*100,100)}%`, background:m.color, borderRadius:99, transition:'width 0.5s' }} />
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* ── METRIC INPUTS: 2-col compact grid ─────────────────────── */}
+      <div className="mv-metrics">
+        {/* Water */}
+        <div className="mv-card">
+          <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center', marginBottom:8 }}>
+            <span style={{ fontSize:12, color:'rgba(255,255,255,0.5)', fontWeight:600 }}>💧 Water</span>
+            <span style={{ fontSize:18, fontWeight:800, color:'#38bdf8' }}>{log.water} <span style={{ fontSize:11, color:'rgba(255,255,255,0.3)', fontWeight:400 }}>gl</span></span>
+          </div>
+          <input type="range" min={0} max={12} value={log.water} onChange={e => update('water', parseInt(e.target.value))} style={{ accentColor:'#38bdf8' }} />
+          <div style={{ display:'flex', gap:4, marginTop:8, flexWrap:'wrap' }}>
+            {[2,4,6,8].map(n => (
+              <button key={n} onClick={() => update('water', n)} style={{ padding:'3px 9px', borderRadius:20, fontSize:11, fontWeight:600, cursor:'pointer', border:`1px solid ${log.water===n?'#38bdf8':'rgba(56,189,248,0.2)'}`, background:log.water===n?'rgba(56,189,248,0.15)':'transparent', color:log.water===n?'#38bdf8':'rgba(56,189,248,0.4)', minHeight:28 }}>{n}</button>
+            ))}
+          </div>
+        </div>
+
+        {/* Sleep */}
+        <div className="mv-card">
+          <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center', marginBottom:8 }}>
+            <span style={{ fontSize:12, color:'rgba(255,255,255,0.5)', fontWeight:600 }}>😴 Sleep</span>
+            <span style={{ fontSize:18, fontWeight:800, color:'#818cf8' }}>{log.sleep}<span style={{ fontSize:11, color:'rgba(255,255,255,0.3)', fontWeight:400 }}>h</span></span>
+          </div>
+          <input type="range" min={0} max={12} step={0.5} value={log.sleep} onChange={e => update('sleep', parseFloat(e.target.value))} style={{ accentColor:'#818cf8' }} />
+          <p style={{ fontSize:11, color:'rgba(255,255,255,0.25)', marginTop:6 }}>
+            {log.sleep >= 7 && log.sleep <= 9 ? '✅ Optimal' : log.sleep < 6 && log.sleep > 0 ? '⚠️ Below 7h' : log.sleep > 9 ? '💤 Slightly long' : ''}
           </p>
         </div>
-        {streak > 0 && (
-          <div style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '8px 16px', borderRadius: 20, background: 'rgba(245,158,11,0.12)', border: '1px solid rgba(245,158,11,0.25)' }}>
-            <span style={{ fontSize: 18 }}>🔥</span>
-            <span style={{ fontWeight: 700, color: '#f59e0b', fontSize: 15 }}>{streak} day streak</span>
-          </div>
-        )}
-      </div>
 
-      {/* Empty state — first visit of the day, nothing logged yet */}
-      {score === 0 && !narrativeLoading && !narrative && (
-        <div style={{ marginBottom: 20, padding: '16px 20px', borderRadius: 16, background: 'rgba(52,211,153,0.05)', border: '1px solid rgba(52,211,153,0.12)', display: 'flex', alignItems: 'center', gap: 14 }} className="animate-fade-in">
-          <span style={{ fontSize: 28, flexShrink: 0 }}>✨</span>
-          <div>
-            <p style={{ fontSize: 14, fontWeight: 700, color: '#34d399', marginBottom: 3 }}>Start logging your day</p>
-            <p style={{ fontSize: 13, color: 'rgba(255,255,255,0.4)', lineHeight: 1.5 }}>
-              Try the <strong style={{ color: 'rgba(255,255,255,0.6)' }}>Quick Log</strong> below — type something like &ldquo;8k steps, 7h sleep, oats for breakfast&rdquo; and AI will fill in all fields instantly.
-            </p>
+        {/* Steps */}
+        <div className="mv-card">
+          <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center', marginBottom:8 }}>
+            <span style={{ fontSize:12, color:'rgba(255,255,255,0.5)', fontWeight:600 }}>👟 Steps</span>
+            <span style={{ fontSize:11, color:GREEN, fontWeight:700 }}>{log.steps >= 10000 ? '✓ Goal' : `${Math.round((log.steps/10000)*100)}%`}</span>
+          </div>
+          <input type="number" value={log.steps || ''} placeholder="0"
+            onChange={e => update('steps', parseInt(e.target.value) || 0)}
+            style={{ width:'100%', padding:'8px 12px', fontSize:20, fontWeight:800, borderRadius:9, background:'rgba(255,255,255,0.04)', border:`1px solid rgba(52,211,153,0.18)`, color:'#fff', outline:'none', boxSizing:'border-box', marginBottom:8 }} />
+          <div style={{ height:3, borderRadius:99, background:'rgba(255,255,255,0.06)', overflow:'hidden' }}>
+            <div style={{ height:'100%', background:`linear-gradient(90deg,${GREEN},${TEAL})`, width:`${Math.min((log.steps/10000)*100,100)}%`, borderRadius:99, transition:'width 0.5s' }} />
           </div>
         </div>
-      )}
 
-      {/* AI Narrative Card (post-save) */}
-      {(narrativeLoading || narrative) && (
-        <div style={{ marginBottom: 20, padding: '18px 20px', borderRadius: 16, background: 'linear-gradient(135deg, rgba(52,211,153,0.08), rgba(16,185,129,0.04))', border: '1px solid rgba(52,211,153,0.2)', display: 'flex', gap: 14, alignItems: 'flex-start' }} className="animate-fade-in">
-          <span style={{ fontSize: 24, flexShrink: 0, marginTop: 2 }}>🩺</span>
-          <div>
-            <p style={{ fontSize: 12, fontWeight: 700, color: GREEN, letterSpacing: '0.06em', textTransform: 'uppercase', marginBottom: 6 }}>AI Health Coach</p>
-            {narrativeLoading
-              ? <div style={{ display: 'flex', gap: 6, alignItems: 'center' }}>
-                  {[0, 0.15, 0.3].map((d, i) => <div key={i} style={{ width: 7, height: 7, borderRadius: '50%', background: GREEN, animation: `nlpulse 1.2s ease-in-out ${d}s infinite` }} />)}
-                </div>
-              : <p style={{ fontSize: 15, color: 'rgba(255,255,255,0.85)', lineHeight: 1.65 }}>{narrative}</p>
-            }
+        {/* Exercise */}
+        <div className="mv-card">
+          <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center', marginBottom:8 }}>
+            <span style={{ fontSize:12, color:'rgba(255,255,255,0.5)', fontWeight:600 }}>🏃 Exercise</span>
+            <span style={{ fontSize:18, fontWeight:800, color:'#fb923c' }}>{log.exercise}<span style={{ fontSize:11, color:'rgba(255,255,255,0.3)', fontWeight:400 }}>m</span></span>
           </div>
-        </div>
-      )}
-
-      {/* NL Quick Log */}
-      <div id="nl-quick-log" style={{ marginBottom: 20, padding: '16px 18px', borderRadius: 16, background: 'rgba(255,255,255,0.025)', border: '1px solid rgba(255,255,255,0.07)' }}>
-        <p style={{ fontSize: 12, fontWeight: 700, color: 'rgba(255,255,255,0.35)', letterSpacing: '0.08em', textTransform: 'uppercase', marginBottom: 10 }}>✨ Quick Log with AI</p>
-        <div className="nl-row" style={{ display: 'flex', gap: 10 }}>
-          <input
-            value={nlText}
-            onChange={e => setNlText(e.target.value)}
-            onKeyDown={e => e.key === 'Enter' && !e.shiftKey && parseNL()}
-            placeholder='"8k steps, 7h sleep, oats for breakfast"'
-            style={{ flex: 1, minWidth: 0, padding: '12px 16px', borderRadius: 12, fontSize: 14, color: '#fff', background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)', outline: 'none', fontFamily: 'inherit' }}
-          />
-          <button onClick={parseNL} disabled={nlParsing || !nlText.trim()}
-            style={{ flexShrink: 0, padding: '12px 20px', borderRadius: 12, fontWeight: 700, fontSize: 14, cursor: nlParsing || !nlText.trim() ? 'not-allowed' : 'pointer', border: 'none', background: nlText.trim() ? `linear-gradient(135deg, ${GREEN}, ${TEAL})` : 'rgba(255,255,255,0.06)', color: nlText.trim() ? '#000' : 'rgba(255,255,255,0.2)', whiteSpace: 'nowrap', transition: 'all 0.2s' }}>
-            {nlParsing ? '…' : 'AI →'}
-          </button>
-        </div>
-        {nlConfirm && (
-          <div style={{ marginTop: 14 }} className="animate-fade-in">
-            {nlConfirm.anomalies.length > 0 && (
-              <div style={{ marginBottom: 10, padding: '10px 14px', borderRadius: 10, background: 'rgba(245,158,11,0.08)', border: '1px solid rgba(245,158,11,0.2)' }}>
-                <p style={{ fontSize: 12, color: '#f59e0b', fontWeight: 700, marginBottom: 4 }}>⚠️ AI flagged — please confirm:</p>
-                {nlConfirm.anomalies.map((a, i) => <p key={i} style={{ fontSize: 13, color: 'rgba(255,255,255,0.6)' }}>• {a}</p>)}
-              </div>
-            )}
-            <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, marginBottom: 12 }}>
-              {Object.entries(nlConfirm.parsed).filter(([, v]) => v != null && (Array.isArray(v) ? (v as any[]).length > 0 : true)).map(([k, v]) => (
-                <ConfirmPill key={k} field={k} value={v} />
-              ))}
-            </div>
-            <div style={{ display: 'flex', gap: 8 }}>
-              <button onClick={applyNLParsed} style={{ flex: 1, padding: '11px', borderRadius: 10, fontWeight: 700, fontSize: 14, cursor: 'pointer', border: 'none', background: `linear-gradient(135deg, ${GREEN}, ${TEAL})`, color: '#000' }}>
-                ✓ Apply these fields
+          <input type="range" min={0} max={120} step={5} value={log.exercise} onChange={e => update('exercise', parseInt(e.target.value))} style={{ accentColor:'#fb923c' }} />
+          <div style={{ display:'flex', gap:4, marginTop:8 }}>
+            {[0,15,30,60].map(n => (
+              <button key={n} onClick={() => update('exercise', n)} style={{ flex:1, padding:'3px 4px', borderRadius:8, fontSize:11, fontWeight:600, cursor:'pointer', border:`1px solid ${log.exercise===n?'#fb923c':'rgba(251,146,60,0.15)'}`, background:log.exercise===n?'rgba(251,146,60,0.18)':'transparent', color:log.exercise===n?'#fb923c':'rgba(251,146,60,0.4)', minHeight:28 }}>
+                {n === 0 ? 'Rest' : `${n}m`}
               </button>
-              <button onClick={() => setNlConfirm(null)} style={{ padding: '11px 16px', borderRadius: 10, fontWeight: 600, fontSize: 14, cursor: 'pointer', border: '1px solid rgba(255,255,255,0.08)', background: 'transparent', color: 'rgba(255,255,255,0.4)' }}>
-                Cancel
-              </button>
-            </div>
+            ))}
           </div>
-        )}
+        </div>
+
+        {/* Mood */}
+        <div className="mv-card" style={{ gridColumn:'span 2' }}>
+          <p className="mv-label">😊 Mood</p>
+          <div style={{ display:'flex', gap:8 }}>
+            {([1,2,3,4,5] as const).map(m => (
+              <button key={m} onClick={() => update('mood', m)}
+                style={{ flex:'1 1 0', padding:'10px 6px', borderRadius:10, cursor:'pointer', border:`2px solid ${log.mood===m?MOOD_COLORS[m]:'rgba(255,255,255,0.06)'}`, background:log.mood===m?`${MOOD_COLORS[m]}18`:'rgba(255,255,255,0.02)', color:log.mood===m?MOOD_COLORS[m]:'rgba(255,255,255,0.35)', fontSize:12, fontWeight:log.mood===m?700:400, textAlign:'center', transition:'all 0.2s', minHeight:44 }}>
+                {MOOD_LABELS[m]}
+              </button>
+            ))}
+          </div>
+        </div>
       </div>
 
-      {/* 3-col stats */}
-      <div className="stats-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: 14, marginBottom: 24 }}>
-        <GlassStatCard icon="💧" label="Water" value={log.water} max={8} unit="glasses" color="#38bdf8" />
-        <GlassStatCard icon="😴" label="Sleep" value={log.sleep} max={8} unit="hrs" color="#818cf8" />
-        <GlassStatCard icon="👟" label="Steps" value={log.steps} max={10000} unit="" color={GREEN} format={v => v >= 1000 ? `${(v/1000).toFixed(1)}k` : String(v)} />
-      </div>
-
-      {/* ── Goals progress bar — like MyFitnessPal rings ── */}
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(160px, 1fr))', gap: 10, marginBottom: 20 }}>
-        {[
-          { label: 'Water', icon: '💧', value: log.water, target: 8, unit: 'glasses', color: '#38bdf8' },
-          { label: 'Sleep', icon: '😴', value: log.sleep, target: 8, unit: 'hrs', color: '#818cf8' },
-          { label: 'Steps', icon: '👟', value: log.steps, target: 10000, unit: '', color: GREEN, fmt: (v: number) => v >= 1000 ? `${(v/1000).toFixed(1)}k` : String(v) },
-          { label: 'Exercise', icon: '🏃', value: log.exercise, target: 30, unit: 'min', color: '#f97316' },
-        ].map(g => {
-          const pct = Math.min(100, Math.round((g.value / g.target) * 100))
-          const done = pct >= 100
-          const disp = g.fmt ? g.fmt(g.value) : g.value
-          return (
-            <div key={g.label} style={{ background: 'rgba(255,255,255,0.03)', border: `1px solid ${done ? g.color + '50' : 'rgba(255,255,255,0.07)'}`, borderRadius: 14, padding: '12px 14px' }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 }}>
-                <span style={{ fontSize: 12, fontWeight: 600, color: 'rgba(255,255,255,0.6)' }}>{g.icon} {g.label}</span>
-                <span style={{ fontSize: 11, fontWeight: 700, color: done ? g.color : 'rgba(255,255,255,0.3)' }}>
-                  {done ? '✓ Goal!' : `${pct}%`}
+      {/* ── MEALS + NOTES: 2-col ───────────────────────────────────── */}
+      <div className="mv-bottom">
+        {/* Meals — compact chip input */}
+        <div className="mv-card">
+          <p className="mv-label">🍽️ Meals</p>
+          <div style={{ display:'flex', gap:6 }}>
+            <input value={mealInput} onChange={e => setMealInput(e.target.value)}
+              onKeyDown={e => e.key === 'Enter' && addMeal()}
+              placeholder="Add meal…"
+              style={{ flex:1, padding:'8px 12px', borderRadius:9, fontSize:13, color:'#fff', background:'rgba(255,255,255,0.04)', border:'1px solid rgba(167,139,250,0.2)', outline:'none', minHeight:36 }} />
+            <button onClick={addMeal} style={{ padding:'8px 12px', borderRadius:9, background:'rgba(167,139,250,0.18)', border:'1px solid rgba(167,139,250,0.28)', color:'#a78bfa', fontWeight:700, fontSize:15, cursor:'pointer', minHeight:36 }}>+</button>
+          </div>
+          {(log.meals ?? []).length > 0 && (
+            <div style={{ display:'flex', flexWrap:'wrap', gap:5, marginTop:8 }}>
+              {(log.meals ?? []).map((m: string, i: number) => (
+                <span key={i} style={{ display:'flex', alignItems:'center', gap:4, padding:'3px 8px 3px 10px', borderRadius:20, background:'rgba(167,139,250,0.1)', border:'1px solid rgba(167,139,250,0.18)', fontSize:11, color:'#c4b5fd' }}>
+                  {m}
+                  <button onClick={() => removeMeal(i)} style={{ background:'none', border:'none', color:'rgba(167,139,250,0.5)', cursor:'pointer', padding:'0 0 0 2px', fontSize:13, lineHeight:1 }}>×</button>
                 </span>
-              </div>
-              <div style={{ height: 4, background: 'rgba(255,255,255,0.07)', borderRadius: 99, marginBottom: 6, overflow: 'hidden' }}>
-                <div style={{ height: '100%', width: `${pct}%`, background: g.color, borderRadius: 99, transition: 'width 0.5s ease' }} />
-              </div>
-              <div style={{ fontSize: 11, color: 'rgba(255,255,255,0.3)' }}>
-                <span style={{ color: g.color, fontWeight: 700 }}>{disp}</span> / {g.target}{g.unit ? ' '+g.unit : ''}
-              </div>
-            </div>
-          )
-        })}
-      </div>
-
-      {/* Main layout: log form + score sidebar */}
-      <div className="main-grid" style={{ display: 'grid', gridTemplateColumns: '1fr 280px', gap: 20, alignItems: 'start' }}>
-
-        {/* LOG FORM */}
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
-
-          {/* Water */}
-          <GlassCard accentColor="#38bdf8" title="💧 Hydration">
-            <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 10 }}>
-              <span style={{ fontSize: 13, color: 'rgba(255,255,255,0.45)' }}>Glasses of water today</span>
-              <span style={{ fontSize: 22, fontWeight: 800, color: '#38bdf8' }}>{log.water}</span>
-            </div>
-            <input type="range" min={0} max={12} value={log.water} onChange={e => update('water', parseInt(e.target.value))}
-              style={{ width: '100%', accentColor: '#38bdf8', height: 4 }} />
-            <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', marginTop: 12 }}>
-              {[2,4,6,8,10,12].map(n => (
-                <button key={n} onClick={() => update('water', n)}
-                  style={{ padding: '5px 12px', borderRadius: 20, fontSize: 12, fontWeight: 600, cursor: 'pointer',
-                    border: `1px solid ${log.water === n ? '#38bdf8' : 'rgba(56,189,248,0.2)'}`,
-                    background: log.water === n ? 'rgba(56,189,248,0.2)' : 'transparent',
-                    color: log.water === n ? '#38bdf8' : 'rgba(56,189,248,0.5)' }}>
-                  {n} 💧
-                </button>
               ))}
             </div>
-          </GlassCard>
-
-          {/* Sleep */}
-          <GlassCard accentColor="#818cf8" title="😴 Sleep">
-            <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 10 }}>
-              <span style={{ fontSize: 13, color: 'rgba(255,255,255,0.45)' }}>Hours slept last night</span>
-              <span style={{ fontSize: 22, fontWeight: 800, color: '#818cf8' }}>{log.sleep}h</span>
-            </div>
-            <input type="range" min={0} max={12} step={0.5} value={log.sleep} onChange={e => update('sleep', parseFloat(e.target.value))}
-              style={{ width: '100%', accentColor: '#818cf8' }} />
-            <p style={{ fontSize: 12, color: 'rgba(255,255,255,0.3)', marginTop: 8 }}>
-              {log.sleep >= 7 && log.sleep <= 9 ? '✅ Optimal 7–9h range' : log.sleep < 6 && log.sleep > 0 ? '⚠️ Below recommended 7h — try sleeping earlier' : log.sleep > 9 ? '💤 Slightly long — check for sleep quality issues' : ''}
-            </p>
-          </GlassCard>
-
-          {/* Steps */}
-          <GlassCard accentColor={GREEN} title="👟 Steps">
-            <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 10 }}>
-              <input type="number" value={log.steps || ''} placeholder="0"
-                onChange={e => update('steps', parseInt(e.target.value) || 0)}
-                style={{ flex: 1, padding: '12px 16px', fontSize: 24, fontWeight: 800, borderRadius: 12,
-                  background: 'rgba(255,255,255,0.04)', border: `1px solid rgba(52,211,153,0.2)`, color: '#fff', outline: 'none' }} />
-              <div style={{ textAlign: 'right' }}>
-                <div style={{ fontSize: 11, color: 'rgba(255,255,255,0.3)' }}>goal</div>
-                <div style={{ fontSize: 16, fontWeight: 700, color: GREEN }}>10k</div>
-              </div>
-            </div>
-            <div style={{ height: 6, borderRadius: 3, background: 'rgba(255,255,255,0.06)', overflow: 'hidden' }}>
-              <div style={{ height: '100%', borderRadius: 3, background: `linear-gradient(90deg, ${GREEN}, ${TEAL})`,
-                width: `${Math.min((log.steps / 10000) * 100, 100)}%`, transition: 'width 0.5s ease' }} />
-            </div>
-            <p style={{ fontSize: 12, color: 'rgba(255,255,255,0.3)', marginTop: 6 }}>
-              {log.steps >= 10000 ? '🎉 Goal reached!' : log.steps > 0 ? `${(10000 - log.steps).toLocaleString()} steps to goal` : 'Enter your step count'}
-            </p>
-          </GlassCard>
-
-          {/* Mood */}
-          <GlassCard accentColor="#f472b6" title="😊 Mood">
-            <div className="mood-row" style={{ display: 'flex', gap: 8 }}>
-              {([1,2,3,4,5] as const).map(m => (
-                <button key={m} className="mood-btn" onClick={() => update('mood', m)}
-                  style={{ flex: '1 1 0', padding: '12px 6px', borderRadius: 12, cursor: 'pointer',
-                    border: `2px solid ${log.mood === m ? MOOD_COLORS[m] : 'rgba(255,255,255,0.06)'}`,
-                    background: log.mood === m ? `${MOOD_COLORS[m]}18` : 'rgba(255,255,255,0.02)',
-                    color: log.mood === m ? MOOD_COLORS[m] : 'rgba(255,255,255,0.35)',
-                    fontSize: 12, fontWeight: log.mood === m ? 700 : 400, textAlign: 'center',
-                    transition: 'all 0.2s' }}>
-                  {MOOD_LABELS[m]}
-                </button>
-              ))}
-            </div>
-          </GlassCard>
-
-          {/* Exercise */}
-          <GlassCard accentColor="#fb923c" title="🏃 Exercise">
-            <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 10 }}>
-              <span style={{ fontSize: 13, color: 'rgba(255,255,255,0.45)' }}>Minutes of activity</span>
-              <span style={{ fontSize: 22, fontWeight: 800, color: '#fb923c' }}>{log.exercise}m</span>
-            </div>
-            <input type="range" min={0} max={120} step={5} value={log.exercise} onChange={e => update('exercise', parseInt(e.target.value))}
-              style={{ width: '100%', accentColor: '#fb923c' }} />
-            <div className="exercise-row" style={{ display: 'flex', gap: 6, marginTop: 12 }}>
-              {[0,15,30,45,60,90].map(n => (
-                <button key={n} className="exercise-btn" onClick={() => update('exercise', n)}
-                  style={{ flex: 1, padding: '5px 4px', borderRadius: 8, fontSize: 12, fontWeight: 600, cursor: 'pointer',
-                    border: `1px solid ${log.exercise === n ? '#fb923c' : 'rgba(251,146,60,0.15)'}`,
-                    background: log.exercise === n ? 'rgba(251,146,60,0.2)' : 'transparent',
-                    color: log.exercise === n ? '#fb923c' : 'rgba(251,146,60,0.45)' }}>
-                  {n === 0 ? 'Rest' : `${n}m`}
-                </button>
-              ))}
-            </div>
-          </GlassCard>
-
-          {/* Meals */}
-          <GlassCard accentColor="#a78bfa" title="🍽️ Meals">
-            <div style={{ display: 'flex', gap: 8 }}>
-              <input value={mealInput} onChange={e => setMealInput(e.target.value)}
-                onKeyDown={e => e.key === 'Enter' && addMeal()}
-                placeholder="What did you eat? Press Enter to add"
-                style={{ flex: 1, padding: '10px 14px', borderRadius: 10, fontSize: 14, color: '#fff',
-                  background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(167,139,250,0.2)', outline: 'none' }} />
-              <button onClick={addMeal} style={{ padding: '10px 16px', borderRadius: 10, background: 'rgba(167,139,250,0.2)', border: '1px solid rgba(167,139,250,0.3)', color: '#a78bfa', fontWeight: 700, fontSize: 14, cursor: 'pointer' }}>
-                +
-              </button>
-            </div>
-            {(log.meals ?? []).length > 0 && (
-              <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6, marginTop: 12 }}>
-                {(log.meals ?? []).map((m: string, i: number) => (
-                  <span key={i} style={{ display: 'flex', alignItems: 'center', gap: 5, padding: '4px 10px 4px 12px', borderRadius: 20,
-                    background: 'rgba(167,139,250,0.1)', border: '1px solid rgba(167,139,250,0.18)', fontSize: 12, color: '#c4b5fd' }}>
-                    {m}
-                    <button onClick={() => removeMeal(i)} style={{ background: 'none', border: 'none', color: 'rgba(167,139,250,0.6)', cursor: 'pointer', padding: '0 0 0 2px', fontSize: 14, lineHeight: 1 }}>×</button>
-                  </span>
-                ))}
-              </div>
-            )}
-          </GlassCard>
-
-          {/* Notes */}
-          <GlassCard accentColor="#94a3b8" title="📝 Notes">
-            <textarea value={log.notes ?? ''} onChange={e => update('notes', e.target.value)}
-              placeholder="Anything notable today — stress, energy, symptoms, travel…"
-              rows={2}
-              style={{ width: '100%', padding: '10px 14px', borderRadius: 10, fontSize: 14, color: '#fff', resize: 'none',
-                background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.07)', outline: 'none', fontFamily: 'inherit' }} />
-          </GlassCard>
-
-          {/* Save button */}
-          <button id="save-btn" onClick={save} style={{
-            padding: '15px', borderRadius: 14, fontWeight: 700, fontSize: 16, cursor: 'pointer',
-            background: saved ? 'rgba(52,211,153,0.15)' : `linear-gradient(135deg, ${GREEN}, ${TEAL})`,
-            color: saved ? GREEN : '#000', border: saved ? `1px solid ${GREEN}40` : 'none',
-            boxShadow: saved ? 'none' : '0 0 24px rgba(52,211,153,0.25)',
-            transition: 'all 0.3s',
-          }}>
-            {saved ? '✓ Saved! Getting AI summary…' : '💾 Save Today\'s Log'}
-          </button>
+          )}
         </div>
 
-        {/* SIDEBAR */}
-        <div className="sidebar-sticky" style={{ display: 'flex', flexDirection: 'column', gap: 14, position: 'sticky', top: 70 }}>
-
-          {/* Score ring */}
-          <div id="wellness-score" className="score-card" style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.07)', borderRadius: 20, padding: '24px 20px', textAlign: 'center', backdropFilter: 'blur(12px)' }}>
-            <p style={{ fontSize: 11, fontWeight: 700, color: 'rgba(255,255,255,0.35)', letterSpacing: '0.1em', textTransform: 'uppercase', marginBottom: 16 }}>Today's Wellness</p>
-            <svg className="score-svg" width={140} height={140} viewBox="0 0 140 140" style={{ display: 'block', margin: '0 auto' }}>
-              {/* bg track */}
-              <circle cx={70} cy={70} r={r} fill="none" stroke="rgba(255,255,255,0.05)" strokeWidth={11} />
-              {/* glow */}
-              <circle cx={70} cy={70} r={r} fill="none" stroke={scoreColor} strokeWidth={11} opacity={0.15}
-                strokeDasharray={`${circumference} 0`} />
-              {/* actual ring */}
-              <circle cx={70} cy={70} r={r} fill="none" stroke={scoreColor} strokeWidth={11}
-                strokeDasharray={`${dash} ${circumference}`} strokeLinecap="round"
-                transform="rotate(-90 70 70)"
-                style={{ transition: 'stroke-dasharray 0.8s cubic-bezier(0.4,0,0.2,1), stroke 0.4s' }} />
-              <text x={70} y={64} textAnchor="middle" fill="#fff" fontSize={32} fontWeight={800}>{score}</text>
-              <text x={70} y={80} textAnchor="middle" fill="rgba(255,255,255,0.35)" fontSize={12}>/100</text>
-            </svg>
-            <p style={{ fontSize: 14, color: scoreColor, fontWeight: 700, marginTop: 14 }}>
-              {score >= 80 ? '🌟 Excellent day!' : score >= 60 ? '👍 Good progress' : score >= 40 ? '💪 Keep going' : score >= 20 ? '🌱 Getting started' : '📝 Log your day'}
-            </p>
-          </div>
-
-          {/* Daily targets */}
-          <div style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.07)', borderRadius: 16, padding: '18px 20px' }}>
-            <p style={{ fontSize: 11, fontWeight: 700, color: 'rgba(255,255,255,0.35)', letterSpacing: '0.08em', textTransform: 'uppercase', marginBottom: 14 }}>Daily Targets</p>
-            <TargetBar icon="💧" label="Water" current={log.water} target={8} unit="gl" color="#38bdf8" />
-            <TargetBar icon="😴" label="Sleep" current={log.sleep} target={8} unit="h" color="#818cf8" />
-            <TargetBar icon="👟" label="Steps" current={log.steps} target={10000} unit="" color={GREEN} format={v => v >= 1000 ? `${(v/1000).toFixed(1)}k` : String(v)} />
-            <TargetBar icon="🏃" label="Exercise" current={log.exercise} target={30} unit="m" color="#fb923c" />
-          </div>
-
-          {/* AI CTA */}
-          <a id="ai-insight-cta" href="/insights" style={{ display: 'block', textDecoration: 'none', borderRadius: 16, overflow: 'hidden',
-            background: 'linear-gradient(135deg, rgba(52,211,153,0.12), rgba(16,185,129,0.06))',
-            border: '1px solid rgba(52,211,153,0.18)', padding: 20 }}>
-            <div style={{ fontSize: 24, marginBottom: 8 }}>🩺</div>
-            <p style={{ fontSize: 14, fontWeight: 800, color: GREEN, marginBottom: 6 }}>AI Weekly Insight</p>
-            <p style={{ fontSize: 12, color: 'rgba(255,255,255,0.45)', lineHeight: 1.6, marginBottom: 14 }}>
-              Get a personalised health narrative — like your doctor-friend reviewing your week.
-            </p>
-            <span style={{ display: 'inline-block', padding: '6px 14px', borderRadius: 20, background: GREEN, color: '#000', fontSize: 12, fontWeight: 800 }}>
-              Analyse my week →
-            </span>
-          </a>
+        {/* Notes */}
+        <div className="mv-card">
+          <p className="mv-label">📝 Notes</p>
+          <textarea value={log.notes ?? ''} onChange={e => update('notes', e.target.value)}
+            placeholder="Energy, stress, symptoms…"
+            rows={3}
+            style={{ width:'100%', padding:'8px 12px', borderRadius:9, fontSize:13, color:'#fff', resize:'none', background:'rgba(255,255,255,0.04)', border:'1px solid rgba(255,255,255,0.07)', outline:'none', fontFamily:'inherit', boxSizing:'border-box' }} />
         </div>
       </div>
-      <style>{`@keyframes nlpulse{0%,100%{opacity:0.4;transform:scale(0.8)}50%{opacity:1;transform:scale(1.2)}}`}</style>
+
+      {/* ── SAVE + AI CTA ──────────────────────────────────────────── */}
+      <div className="mv-full" style={{ display:'flex', gap:10, alignItems:'stretch' }}>
+        <button id="save-btn" onClick={save} style={{
+          flex:1, padding:'14px', borderRadius:14, fontWeight:700, fontSize:16, cursor:'pointer',
+          background: saved ? 'rgba(52,211,153,0.12)' : `linear-gradient(135deg,${GREEN},${TEAL})`,
+          color: saved ? GREEN : '#000', border: saved ? `1px solid ${GREEN}30` : 'none',
+          boxShadow: saved ? 'none' : '0 0 20px rgba(52,211,153,0.2)',
+          transition:'all 0.3s',
+        }}>
+          {saved ? '✓ Saved! Getting AI summary…' : 'Save Today\'s Log'}
+        </button>
+        <a id="ai-insight-cta" href="/insights" style={{ flexShrink:0, display:'flex', alignItems:'center', gap:8, padding:'14px 18px', borderRadius:14, textDecoration:'none', background:'rgba(52,211,153,0.08)', border:'1px solid rgba(52,211,153,0.18)', color:GREEN, fontWeight:700, fontSize:13, whiteSpace:'nowrap' }}>
+          🩺 Weekly insight →
+        </a>
+      </div>
+
       <GuidedTour steps={TOUR_STEPS} storageKey="myvitals_tour_v1" accentColor={GREEN} delay={800} />
 
-      {/* Competitor comparison */}
-      <section style={{ borderTop:'1px solid rgba(74,222,128,0.1)', padding:'48px 20px' }}>
-        <div style={{ maxWidth:760, margin:'0 auto' }}>
-          <div style={{ textAlign:'center', marginBottom:28 }}>
-            <p style={{ fontSize:10, color:'rgba(74,222,128,0.4)', letterSpacing:'0.15em', textTransform:'uppercase', marginBottom:8 }}>How we compare</p>
-            <h2 style={{ fontSize:20, fontWeight:800, color:'#f0fdf4' }}>MyVitals vs alternatives</h2>
-          </div>
-          <div style={{ overflowX:'auto' }}>
-            <table style={{ width:'100%', borderCollapse:'collapse', fontSize:12 }}>
-              <thead>
-                <tr style={{ borderBottom:'1px solid rgba(74,222,128,0.15)' }}>
-                  {['Feature','MyVitals','MyFitnessPal','Apple Health','Cronometer'].map((h,i) => (
-                    <th key={h} style={{ padding:'10px 12px', textAlign:i===0?'left':'center',
-                      color: i===1 ? GREEN : 'rgba(255,255,255,0.25)', fontWeight:700, fontSize:11, letterSpacing:'0.05em' }}>{h}</th>
+      {/* ── Competitor comparison (compact) ───────────────────────── */}
+      <section style={{ borderTop:'1px solid rgba(52,211,153,0.08)', padding:'32px 24px', maxWidth:960, margin:'0 auto' }}>
+        <div style={{ textAlign:'center', marginBottom:20 }}>
+          <p style={{ fontSize:10, color:'rgba(52,211,153,0.4)', letterSpacing:'.15em', textTransform:'uppercase', marginBottom:6 }}>How we compare</p>
+          <h2 style={{ fontSize:18, fontWeight:800, color:'#f0fdf4' }}>MyVitals vs alternatives</h2>
+        </div>
+        <div style={{ overflowX:'auto' }}>
+          <table style={{ width:'100%', borderCollapse:'collapse', fontSize:11 }}>
+            <thead>
+              <tr style={{ borderBottom:'1px solid rgba(52,211,153,0.12)' }}>
+                {['Feature','MyVitals','MyFitnessPal','Apple Health','Cronometer'].map((h,i) => (
+                  <th key={h} style={{ padding:'8px 10px', textAlign:i===0?'left':'center', color:i===1?GREEN:'rgba(255,255,255,0.22)', fontWeight:700, fontSize:10, letterSpacing:'0.05em' }}>{h}</th>
+                ))}
+              </tr>
+            </thead>
+            <tbody>
+              {[
+                ['AI natural language logging','✅ Built-in','❌','❌','❌'],
+                ['No account required','✅','❌','❌','❌'],
+                ['AI weekly insights','✅','❌','❌','❌'],
+                ['Mood + sleep + steps tracking','✅ All-in-one','⚠️ Steps only','✅','⚠️ Nutrition focus'],
+                ['Works offline','✅','⚠️','✅','⚠️'],
+                ['Cost','Free','Free / $10 mo','Free (iPhone)','Free / $9 mo'],
+              ].map(row => (
+                <tr key={row[0]} style={{ borderBottom:'1px solid rgba(52,211,153,0.05)' }}>
+                  {row.map((cell,i) => (
+                    <td key={i} style={{ padding:'7px 10px', textAlign:i===0?'left':'center', color:i===1?GREEN:i===0?'rgba(255,255,255,0.5)':'rgba(255,255,255,0.22)', background:i===1?'rgba(52,211,153,0.03)':'transparent', fontSize:11 }}>{cell}</td>
                   ))}
                 </tr>
-              </thead>
-              <tbody>
-                {[
-                  ['AI natural language logging','✅ Built-in','❌','❌','❌'],
-                  ['No account required','✅','❌','❌','❌'],
-                  ['AI weekly insights','✅','❌','❌','❌'],
-                  ['Mood + sleep + steps tracking','✅ All-in-one','⚠️ Steps only','✅','⚠️ Nutrition focus'],
-                  ['Works offline','✅','⚠️','✅','⚠️'],
-                  ['Cost','Free','Free / $10 mo','Free (iPhone)','Free / $9 mo'],
-                ].map(row => (
-                  <tr key={row[0]} style={{ borderBottom:'1px solid rgba(74,222,128,0.06)' }}>
-                    {row.map((cell,i) => (
-                      <td key={i} style={{ padding:'9px 12px', textAlign:i===0?'left':'center',
-                        color: i===1 ? GREEN : i===0 ? 'rgba(255,255,255,0.55)' : 'rgba(255,255,255,0.25)',
-                        background: i===1 ? 'rgba(74,222,128,0.04)' : 'transparent', fontSize:11 }}>{cell}</td>
-                    ))}
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
+              ))}
+            </tbody>
+          </table>
         </div>
       </section>
 
       {/* Footer */}
-      <footer style={{ borderTop:'1px solid rgba(74,222,128,0.1)', padding:'24px', background:'rgba(0,0,0,0.3)' }}>
-        <div style={{ maxWidth:900, margin:'0 auto', display:'flex', flexWrap:'wrap', justifyContent:'space-between', alignItems:'center', gap:16 }}>
-          <div>
-            <span style={{ fontWeight:900, fontSize:15, color:GREEN }}>MyVitals</span>
-            <p style={{ fontSize:11, color:'rgba(255,255,255,0.25)', marginTop:4 }}>AI health tracker — log your day in seconds.</p>
-          </div>
-          <div style={{ display:'flex', gap:20, flexWrap:'wrap' }}>
-            {[['About','/about'],['Privacy','/privacy'],['Terms','/terms'],['Cookie Policy','/cookies']].map(([label,href]) => (
-              <a key={label} href={href} style={{ fontSize:11, color:'rgba(255,255,255,0.25)', textDecoration:'none' }}
-                onMouseOver={e=>(e.currentTarget.style.color=GREEN)} onMouseOut={e=>(e.currentTarget.style.color='rgba(255,255,255,0.25)')}>{label}</a>
+      <footer style={{ borderTop:'1px solid rgba(52,211,153,0.07)', padding:'16px 24px' }}>
+        <div style={{ maxWidth:960, margin:'0 auto', display:'flex', flexWrap:'wrap', justifyContent:'space-between', alignItems:'center', gap:12 }}>
+          <span style={{ fontWeight:900, fontSize:13, color:GREEN }}>MyVitals</span>
+          <div style={{ display:'flex', gap:16, flexWrap:'wrap' }}>
+            {[['Privacy','/privacy'],['Terms','/terms'],['About','/about']].map(([label,href]) => (
+              <a key={label} href={href} style={{ fontSize:11, color:'rgba(255,255,255,0.22)', textDecoration:'none' }}
+                onMouseOver={e=>(e.currentTarget.style.color=GREEN)} onMouseOut={e=>(e.currentTarget.style.color='rgba(255,255,255,0.22)')}>{label}</a>
             ))}
           </div>
-          <p style={{ fontSize:10, color:'rgba(255,255,255,0.15)' }}>© 2026 MyVitals</p>
+          <p style={{ fontSize:10, color:'rgba(255,255,255,0.12)' }}>© 2026 MyVitals</p>
         </div>
       </footer>
-    </main>
+
+    </div>
     <MyVitalsCookieBanner green={GREEN} />
     </>
   )
