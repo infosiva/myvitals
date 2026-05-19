@@ -5,6 +5,8 @@ import { getProfile, getLog, saveLog, saveProfile, today, getStreak, healthScore
 import type { HealthProfile, DayLog } from '@/lib/types'
 import { MOOD_LABELS, MOOD_COLORS } from '@/lib/types'
 import GuidedTour, { type TourStep } from '@/components/GuidedTour'
+import { useGate } from '@/lib/shared/useGate'
+import RegisterGate from '@/lib/shared/RegisterGate'
 
 const TOUR_STEPS: TourStep[] = [
   {
@@ -48,6 +50,7 @@ export default function Dashboard() {
   const [saved, setSaved] = useState(false)
   const [mealInput, setMealInput] = useState('')
   const [mounted, setMounted] = useState(false)
+  const { count: gateCount, showGate, increment: gateIncrement, onRegistered, dismissGate } = useGate('myvitals', 7, 'save')
   // NL log state
   const [nlText, setNlText] = useState('')
   const [nlParsing, setNlParsing] = useState(false)
@@ -83,6 +86,8 @@ export default function Dashboard() {
   }
 
   async function save() {
+    const allowed = await gateIncrement()
+    if (!allowed) return
     saveLog(log)
     setStreak(getStreak())
     setSaved(true)
@@ -151,6 +156,18 @@ export default function Dashboard() {
 
   return (
     <>
+    {showGate && (
+      <RegisterGate
+        freeUsed={gateCount}
+        freeLimit={7}
+        freeFeature="days of tracking"
+        lockedFeature="unlimited history + trends + export"
+        accentColor="#10b981"
+        site="myvitals"
+        onSuccess={onRegistered}
+        onDismiss={dismissGate}
+      />
+    )}
     <style>{`
       @keyframes nlpulse{0%,100%{opacity:0.4;transform:scale(0.8)}50%{opacity:1;transform:scale(1.2)}}
       @keyframes ring-in{from{stroke-dasharray:0 ${circumference}}to{stroke-dasharray:${dash} ${circumference}}}
