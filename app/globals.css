@@ -94,6 +94,7 @@ button { font-family: inherit; cursor: pointer; border: none; }
   transition: color 0.2s, background 0.2s;
 }
 .nav-link:hover { color: #fff; background: rgba(255,255,255,0.06); }
+.nav-auth { flex-shrink: 0; margin-left: 12px; }
 
 /* ── Mobile nav ── */
 @media (max-width: 640px) {

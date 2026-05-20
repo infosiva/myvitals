@@ -107,7 +107,7 @@ export default function FeedbackWidget({
           onClick={() => setOpen(false)}
           style={{
             position: 'fixed', inset: 0, zIndex: 90,
-            background: 'rgba(0,0,0,0.6)', backdropFilter: 'blur(4px)',
+            background: 'rgba(0,0,0,0.55)',
           }}
         />
       )}

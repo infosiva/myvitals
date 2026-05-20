@@ -1,5 +1,6 @@
 'use client'
 
+import React from 'react'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 
@@ -10,7 +11,7 @@ const NAV = [
   { href: '/profile', label: 'Profile' },
 ]
 
-export default function NavBar() {
+export default function NavBar({ authSlot }: { authSlot?: React.ReactNode }) {
   const pathname = usePathname()
 
   return (
@@ -38,6 +39,7 @@ export default function NavBar() {
           )
         })}
       </div>
+      {authSlot && <div className="nav-auth">{authSlot}</div>}
     </nav>
   )
 }
