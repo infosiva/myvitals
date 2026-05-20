@@ -180,7 +180,18 @@ export default function Dashboard() {
       .mv-label{font-size:11px;font-weight:700;color:rgba(255,255,255,0.3);letter-spacing:.08em;text-transform:uppercase;margin-bottom:8px}
       input[type=range]{-webkit-appearance:none;appearance:none;width:100%;height:4px;border-radius:99px;background:rgba(255,255,255,0.08);cursor:pointer;outline:none}
       input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:18px;height:18px;border-radius:50%;background:#fff;box-shadow:0 0 8px rgba(52,211,153,0.4);cursor:pointer}
-      @media(max-width:640px){.mv-hero{grid-template-columns:1fr}.mv-metrics{grid-template-columns:1fr}.mv-bottom{grid-template-columns:1fr}.mv-score-col{display:none}}
+      .mv-compare{display:block}
+      @media(max-width:640px){
+        .mv-hero{grid-template-columns:1fr;padding:16px 14px 12px}
+        .mv-metrics{grid-template-columns:1fr 1fr;gap:8px;padding:0 14px 10px}
+        .mv-bottom{grid-template-columns:1fr 1fr;gap:8px;padding:0 14px 10px}
+        .mv-full{padding:0 14px 12px}
+        .mv-score-col{display:none}
+        .mv-card{padding:10px 12px;border-radius:12px}
+        .mv-compare{overflow-x:auto;-webkit-overflow-scrolling:touch}
+        .mv-compare table{min-width:480px}
+        .mv-metrics .mv-card:last-child{grid-column:span 2}
+      }
     `}</style>
 
     <div className="mv-main">
@@ -215,13 +226,16 @@ export default function Dashboard() {
 
           {/* NL Quick Log */}
           <div id="nl-quick-log" style={{ background:'#0d1a12', border:'1px solid rgba(52,211,153,0.15)', borderRadius:14, padding:'12px 14px' }}>
-            <p className="mv-label" style={{ marginBottom:8 }}>✨ AI Quick Log</p>
+            <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between', marginBottom:8 }}>
+              <p className="mv-label" style={{ marginBottom:0 }}>✨ AI Quick Log</p>
+              <span style={{ fontSize:10, color:'rgba(52,211,153,0.5)', fontWeight:600 }}>type → AI fills fields</span>
+            </div>
             <div style={{ display:'flex', gap:8 }}>
               <input
                 value={nlText}
                 onChange={e => setNlText(e.target.value)}
                 onKeyDown={e => e.key === 'Enter' && !e.shiftKey && parseNL()}
-                placeholder='"8k steps, 7h sleep, oats for breakfast"'
+                placeholder='e.g. "8k steps, 7h sleep, oats, feeling good"'
                 style={{ flex:1, minWidth:0, padding:'11px 14px', borderRadius:10, fontSize:14, color:'#fff', background:'rgba(255,255,255,0.04)', border:'1px solid rgba(255,255,255,0.08)', outline:'none', fontFamily:'inherit' }}
               />
               <button onClick={parseNL} disabled={nlParsing || !nlText.trim()}
@@ -229,6 +243,23 @@ export default function Dashboard() {
                 {nlParsing ? '…' : 'AI →'}
               </button>
             </div>
+            {!nlConfirm && !nlText && (
+              <div style={{ display:'flex', gap:5, flexWrap:'wrap', marginTop:8 }}>
+                {[
+                  '8k steps, 7h sleep, oats, good mood',
+                  'barely moved, 5h sleep, stressed',
+                  '10k steps, 8h sleep, salad, feeling great',
+                ].map(ex => (
+                  <button key={ex} onClick={() => setNlText(ex)}
+                    style={{ padding:'4px 10px', borderRadius:20, fontSize:11, cursor:'pointer', border:'1px solid rgba(52,211,153,0.18)', background:'rgba(52,211,153,0.05)', color:'rgba(52,211,153,0.6)', fontFamily:'inherit', transition:'all 0.15s' }}
+                    onMouseEnter={e => { (e.currentTarget as HTMLButtonElement).style.background='rgba(52,211,153,0.12)'; (e.currentTarget as HTMLButtonElement).style.color='#34d399' }}
+                    onMouseLeave={e => { (e.currentTarget as HTMLButtonElement).style.background='rgba(52,211,153,0.05)'; (e.currentTarget as HTMLButtonElement).style.color='rgba(52,211,153,0.6)' }}
+                  >
+                    {ex}
+                  </button>
+                ))}
+              </div>
+            )}
             {nlConfirm && (
               <div style={{ marginTop:12 }} className="animate-fade-in">
                 {nlConfirm.anomalies.length > 0 && (
@@ -434,7 +465,7 @@ export default function Dashboard() {
       <GuidedTour steps={TOUR_STEPS} storageKey="myvitals_tour_v1" accentColor={GREEN} delay={800} />
 
       {/* ── Competitor comparison (compact) ───────────────────────── */}
-      <section style={{ borderTop:'1px solid rgba(52,211,153,0.08)', padding:'32px 24px', maxWidth:960, margin:'0 auto' }}>
+      <section className="mv-compare" style={{ borderTop:'1px solid rgba(52,211,153,0.08)', padding:'32px 24px', maxWidth:960, margin:'0 auto' }}>
         <div style={{ textAlign:'center', marginBottom:20 }}>
           <p style={{ fontSize:10, color:'rgba(52,211,153,0.4)', letterSpacing:'.15em', textTransform:'uppercase', marginBottom:6 }}>How we compare</p>
           <h2 style={{ fontSize:18, fontWeight:800, color:'#f0fdf4' }}>MyVitals vs alternatives</h2>
