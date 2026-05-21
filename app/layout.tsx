@@ -11,6 +11,21 @@ import AffiliateStrip from '@/components/AffiliateStrip'
 export const metadata: Metadata = {
   title: 'MyVitals — AI Health Coach',
   description: 'Track daily wellness. Get personalised AI insights like a doctor-friend.',
+  metadataBase: new URL('https://myvitals.app'),
+  openGraph: {
+    title: 'MyVitals — AI Health Coach',
+    description: 'Track daily wellness. Get personalised AI insights like a doctor-friend.',
+    url: 'https://myvitals.app',
+    siteName: 'MyVitals',
+    type: 'website',
+    images: [{ url: '/og.png', width: 1200, height: 630 }],
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: 'MyVitals — AI Health Coach',
+    description: 'Track daily wellness. Get personalised AI insights like a doctor-friend.',
+  },
+  robots: { index: true, follow: true },
 }
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
