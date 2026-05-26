@@ -54,6 +54,10 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         ` }} />
       </head>
       <body>
+        <div className="aurora aurora-primary" aria-hidden />
+        <div className="aurora aurora-secondary" aria-hidden />
+        <div className="aurora aurora-third" aria-hidden />
+        <div className="grain" aria-hidden />
         <NavBar authSlot={<AuthButton />} />
         <div style={{ paddingTop: 58 }}>{children}</div>
         <FeedbackWidget siteName="MyVitals" accentColor="#34d399" accentColor2="#10b981" />
