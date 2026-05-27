@@ -7,6 +7,7 @@ import CookieConsent from "../components/CookieConsent";
 import Footer from "../components/Footer";
 import AuthButton from '@/components/AuthButton'
 import AffiliateStrip from '@/components/AffiliateStrip'
+import ChatBot from '@/components/ChatBot'
 
 export const metadata: Metadata = {
   title: 'MyVitals — AI Health Coach',
@@ -60,6 +61,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <div className="grain" aria-hidden />
         <NavBar authSlot={<AuthButton />} />
         <div style={{ paddingTop: 58 }}>{children}</div>
+        <ChatBot />
         <FeedbackWidget siteName="MyVitals" accentColor="#34d399" accentColor2="#10b981" />
         <AffiliateStrip />
         <Footer siteName="MyVitals" />
