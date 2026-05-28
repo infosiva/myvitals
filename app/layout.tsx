@@ -8,6 +8,7 @@ import Footer from "../components/Footer";
 import AuthButton from '@/components/AuthButton'
 import AffiliateStrip from '@/components/AffiliateStrip'
 import ChatBot from '@/components/ChatBot'
+import { getSiteFlags } from '@/lib/flags'
 
 export const metadata: Metadata = {
   title: 'MyVitals — AI Health Coach',
@@ -29,7 +30,8 @@ export const metadata: Metadata = {
   robots: { index: true, follow: true },
 }
 
-export default function RootLayout({ children }: { children: React.ReactNode }) {
+export default async function RootLayout({ children }: { children: React.ReactNode }) {
+  const flags = await getSiteFlags('myvitals')
   return (
     <html lang="en">
       <head>
@@ -61,7 +63,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <div className="grain" aria-hidden />
         <NavBar authSlot={<AuthButton />} />
         <div style={{ paddingTop: 58 }}>{children}</div>
-        <ChatBot />
+        {flags.chatbot && <ChatBot />}
         <FeedbackWidget siteName="MyVitals" accentColor="#34d399" accentColor2="#10b981" />
         <AffiliateStrip />
         <Footer siteName="MyVitals" />
