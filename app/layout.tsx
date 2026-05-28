@@ -64,7 +64,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
         <NavBar authSlot={<AuthButton />} />
         <div style={{ paddingTop: 58 }}>{children}</div>
         {flags.chatbot && <ChatBot />}
-        <FeedbackWidget siteName="MyVitals" accentColor="#34d399" accentColor2="#10b981" />
+        <FeedbackWidget siteName="MyVitals" accentColor="#34d399" accentColor2="#10b981" position={flags.chatbot ? 'left' : 'right'} />
         <AffiliateStrip />
         <Footer siteName="MyVitals" />
       <CookieConsent />
