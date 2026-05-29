@@ -5,7 +5,7 @@ import { useState, useRef, useEffect, useCallback } from 'react'
 const ACCENT = '#34d399'
 const ACCENT2 = '#10b981'
 const BOT_NAME = 'VitalsBot'
-const WELCOME = '💚 Hi! I\'m VitalsBot — your AI health coach. Ask me about nutrition, fitness, sleep, stress, or get personalised wellness tips based on your goals!'
+const WELCOME = 'What vital are you most curious about today — sleep, stress, nutrition, or heart rate? I\'ll explain what your numbers actually mean.'
 const SYSTEM_PROMPT = `You are VitalsBot, the AI health coach for MyVitals — a personal wellness tracking platform.
 Help users understand their health metrics, give evidence-based nutrition and fitness advice, explain sleep and stress management, and suggest healthy habits.
 Keep responses concise, encouraging, and practical. Always recommend consulting a doctor for medical decisions.
@@ -126,6 +126,8 @@ export default function ChatBot() {
         }}
         onMouseEnter={e => (e.currentTarget.style.transform = 'scale(1.1)')}
         onMouseLeave={e => (e.currentTarget.style.transform = 'scale(1)')}
+        onMouseDown={e => (e.currentTarget.style.transform = 'scale(0.97)')}
+        onMouseUp={e => (e.currentTarget.style.transform = 'scale(1.1)')}
       >
         {open ? (
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="2.5" strokeLinecap="round">

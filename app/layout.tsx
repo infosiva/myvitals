@@ -11,12 +11,12 @@ import ChatBot from '@/components/ChatBot'
 import { getSiteFlags } from '@/lib/flags'
 
 export const metadata: Metadata = {
-  title: 'MyVitals — AI Health Coach',
-  description: 'Track daily wellness. Get personalised AI insights like a doctor-friend.',
+  title: 'MyVitals — Your Vitals, Explained by AI Daily',
+  description: 'Apple Health logs everything but explains nothing. MyVitals reads your data and tells you what to fix — sleep, stress, nutrition, in plain English.',
   metadataBase: new URL('https://myvitals.app'),
   openGraph: {
-    title: 'MyVitals — AI Health Coach',
-    description: 'Track daily wellness. Get personalised AI insights like a doctor-friend.',
+    title: 'MyVitals — Your Vitals, Explained by AI Daily',
+    description: 'Apple Health logs everything but explains nothing. MyVitals reads your data and tells you what to fix — sleep, stress, nutrition, in plain English.',
     url: 'https://myvitals.app',
     siteName: 'MyVitals',
     type: 'website',
@@ -24,8 +24,8 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'MyVitals — AI Health Coach',
-    description: 'Track daily wellness. Get personalised AI insights like a doctor-friend.',
+    title: 'MyVitals — Your Vitals, Explained by AI Daily',
+    description: 'Apple Health logs everything but explains nothing. MyVitals reads your data and tells you what to fix.',
   },
   robots: { index: true, follow: true },
 }
