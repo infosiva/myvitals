@@ -3,18 +3,18 @@
 * { box-sizing: border-box; margin: 0; padding: 0; }
 
 body {
-  background: #050510;
+  background: #040c14;
   color: #fff;
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
   min-height: 100vh;
   background-image:
-    radial-gradient(ellipse 80% 50% at 50% -20%, rgba(52,211,153,0.08) 0%, transparent 60%),
-    radial-gradient(ellipse 60% 40% at 80% 80%, rgba(99,102,241,0.06) 0%, transparent 50%);
+    radial-gradient(ellipse 80% 50% at 50% -20%, rgba(14,165,233,0.09) 0%, transparent 60%),
+    radial-gradient(ellipse 60% 40% at 80% 80%, rgba(56,189,248,0.05) 0%, transparent 50%);
 }
 
 ::-webkit-scrollbar { width: 5px; }
 ::-webkit-scrollbar-track { background: transparent; }
-::-webkit-scrollbar-thumb { background: rgba(52,211,153,0.2); border-radius: 3px; }
+::-webkit-scrollbar-thumb { background: rgba(14,165,233,0.2); border-radius: 3px; }
 
 input, textarea, select {
   background: rgba(255,255,255,0.04);
@@ -26,7 +26,7 @@ input, textarea, select {
   transition: border-color 0.2s;
 }
 input::placeholder, textarea::placeholder { color: rgba(255,255,255,0.25); }
-input:focus, textarea:focus { border-color: rgba(52,211,153,0.4); box-shadow: 0 0 0 3px rgba(52,211,153,0.06); }
+input:focus, textarea:focus { border-color: rgba(14,165,233,0.4); box-shadow: 0 0 0 3px rgba(14,165,233,0.06); }
 
 button { font-family: inherit; cursor: pointer; border: none; }
 
@@ -60,10 +60,10 @@ button { font-family: inherit; cursor: pointer; border: none; }
   height: 58px;
   display: flex; align-items: center; justify-content: space-between;
   padding: 0 20px;
-  background: rgba(5,5,16,0.85);
+  background: rgba(4,12,20,0.88);
   backdrop-filter: blur(20px);
   -webkit-backdrop-filter: blur(20px);
-  border-bottom: 1px solid rgba(52,211,153,0.08);
+  border-bottom: 1px solid rgba(14,165,233,0.08);
 }
 .nav-brand {
   display: flex; align-items: center; gap: 10px;
@@ -72,13 +72,13 @@ button { font-family: inherit; cursor: pointer; border: none; }
 }
 .nav-logo {
   width: 32px; height: 32px; border-radius: 10px;
-  background: linear-gradient(135deg, #34d399, #10b981);
+  background: linear-gradient(135deg, #0ea5e9, #38bdf8);
   display: flex; align-items: center; justify-content: center;
   font-size: 16px;
-  box-shadow: 0 0 16px rgba(52,211,153,0.35);
+  box-shadow: 0 0 16px rgba(14,165,233,0.35);
   flex-shrink: 0;
 }
-.brand-accent { color: #34d399; }
+.brand-accent { color: #0ea5e9; }
 .nav-links {
   display: flex; gap: 4px;
   background: rgba(255,255,255,0.04);
@@ -103,7 +103,7 @@ button { font-family: inherit; cursor: pointer; border: none; }
     border-radius: 0; border-top: 1px solid rgba(255,255,255,0.07);
     border-bottom: none; border-left: none; border-right: none;
     padding: 8px 4px env(safe-area-inset-bottom);
-    background: rgba(5,5,16,0.95);
+    background: rgba(4,12,20,0.95);
     justify-content: space-around;
     gap: 0;
   }
@@ -199,16 +199,16 @@ button { font-family: inherit; cursor: pointer; border: none; }
   transition: all 0.15s;
 }
 .goal-pill.active {
-  border-color: #34d399;
-  background: rgba(52,211,153,0.15);
-  color: #34d399;
+  border-color: #0ea5e9;
+  background: rgba(14,165,233,0.15);
+  color: #0ea5e9;
 }
 .btn-primary {
   width: 100%; padding: 15px;
   border-radius: 14px; font-weight: 800; font-size: 16px;
-  background: linear-gradient(135deg, #34d399, #10b981);
+  background: linear-gradient(135deg, #0ea5e9, #38bdf8);
   color: #000; border: none;
-  box-shadow: 0 0 24px rgba(52,211,153,0.25);
+  box-shadow: 0 0 24px rgba(14,165,233,0.25);
   transition: opacity 0.2s, transform 0.1s;
 }
 .btn-primary:disabled {
@@ -259,7 +259,7 @@ pre {
   left: -8%;
   width: 600px;
   height: 600px;
-  background: radial-gradient(circle, rgba(139,92,246,0.18) 0%, transparent 70%);
+  background: radial-gradient(circle, rgba(14,165,233,0.15) 0%, transparent 70%);
   animation: drift-a 16s ease-in-out infinite;
 }
 .aurora-secondary {
@@ -267,7 +267,7 @@ pre {
   right: -6%;
   width: 500px;
   height: 500px;
-  background: radial-gradient(circle, rgba(14,165,233,0.12) 0%, transparent 70%);
+  background: radial-gradient(circle, rgba(56,189,248,0.10) 0%, transparent 70%);
   animation: drift-b 20s ease-in-out infinite;
 }
 .aurora-third {
@@ -275,7 +275,7 @@ pre {
   left: 50%;
   width: 400px;
   height: 400px;
-  background: radial-gradient(circle, rgba(236,72,153,0.08) 0%, transparent 70%);
+  background: radial-gradient(circle, rgba(14,165,233,0.06) 0%, transparent 70%);
   animation: drift-c 24s ease-in-out infinite;
 }
 @keyframes drift-a {

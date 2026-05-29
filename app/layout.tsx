@@ -11,12 +11,12 @@ import ChatBot from '@/components/ChatBot'
 import { getSiteFlags } from '@/lib/flags'
 
 export const metadata: Metadata = {
-  title: 'MyVitals — Your Vitals, Explained by AI Daily',
-  description: 'Apple Health logs everything but explains nothing. MyVitals reads your data and tells you what to fix — sleep, stress, nutrition, in plain English.',
+  title: 'MyVitals — Your health, finally explained.',
+  description: 'AI connects your food, sleep, symptoms and mood — and tells you what\'s actually driving how you feel. No paywall on insights.',
   metadataBase: new URL('https://myvitals.app'),
   openGraph: {
-    title: 'MyVitals — Your Vitals, Explained by AI Daily',
-    description: 'Apple Health logs everything but explains nothing. MyVitals reads your data and tells you what to fix — sleep, stress, nutrition, in plain English.',
+    title: 'MyVitals — Your health, finally explained.',
+    description: 'AI connects your food, sleep, symptoms and mood — and tells you what\'s actually driving how you feel.',
     url: 'https://myvitals.app',
     siteName: 'MyVitals',
     type: 'website',
@@ -24,10 +24,21 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'MyVitals — Your Vitals, Explained by AI Daily',
-    description: 'Apple Health logs everything but explains nothing. MyVitals reads your data and tells you what to fix.',
+    title: 'MyVitals — Your health, finally explained.',
+    description: 'AI connects your food, sleep, symptoms and mood — and tells you what\'s actually driving how you feel.',
   },
   robots: { index: true, follow: true },
+}
+
+const jsonLd = {
+  "@context": "https://schema.org",
+  "@type": "WebApplication",
+  "name": "MyVitals",
+  "url": "https://myvitals.app",
+  "description": "Apple Health logs everything but explains nothing. MyVitals reads your data and tells you what to fix — sleep, stress, nutrition, in plain English.",
+  "applicationCategory": "HealthApplication",
+  "operatingSystem": "Web",
+  "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" },
 }
 
 export default async function RootLayout({ children }: { children: React.ReactNode }) {
@@ -35,22 +46,23 @@ export default async function RootLayout({ children }: { children: React.ReactNo
   return (
     <html lang="en">
       <head>
+        <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
         <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700&display=swap" rel="stylesheet" />
         <style dangerouslySetInnerHTML={{ __html: `
           :root {
-            --theme-primary: #34d399;
-            --theme-secondary: #10b981;
-            --background: #050510;
+            --theme-primary: #0ea5e9;
+            --theme-secondary: #38bdf8;
+            --background: #040c14;
             --surface-1: rgba(255,255,255,0.04);
             --surface-2: rgba(255,255,255,0.07);
             --foreground: #f1f5f9;
             --text-2: rgba(255,255,255,0.55);
             --border-default: rgba(255,255,255,0.08);
-            --border-strong: rgba(52,211,153,0.25);
+            --border-strong: rgba(14,165,233,0.25);
           }
-          html, body { background: #050510 !important; color: #f1f5f9 !important; }
+          html, body { background: #040c14 !important; color: #f1f5f9 !important; }
           body { font-family: 'DM Sans', system-ui, sans-serif !important; }
           h1, h2, h3 { font-weight: 700 !important; }
           .glass { background: rgba(255,255,255,0.04) !important; border-color: rgba(255,255,255,0.08) !important; }

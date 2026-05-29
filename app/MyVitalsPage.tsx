@@ -1,5 +1,6 @@
 'use client'
 import { useState, useEffect, useRef } from 'react'
+import { motion, useMotionValue, useSpring, animate } from 'framer-motion'
 import AnimatedHeroGuide from '@/components/AnimatedHeroGuide'
 import { getProfile, getLog, saveLog, saveProfile, today, getStreak, healthScore } from '@/lib/storage'
 import type { HealthProfile, DayLog } from '@/lib/types'
@@ -8,6 +9,7 @@ import GuidedTour, { type TourStep } from '@/components/GuidedTour'
 import { useGate } from '@/lib/shared/useGate'
 import RegisterGate from '@/lib/shared/RegisterGate'
 import type { ContentOverrides } from '@/lib/content'
+import GoalProgressBars from '@/components/GoalProgressBars'
 
 const TOUR_STEPS: TourStep[] = [
   {
@@ -40,8 +42,8 @@ const TOUR_STEPS: TourStep[] = [
   },
 ]
 
-const GREEN = '#34d399'
-const TEAL = '#10b981'
+const GREEN = '#0ea5e9'
+const TEAL = '#38bdf8'
 
 export default function MyVitalsPage({ overrides }: { overrides: ContentOverrides }) {
   const [profile, setProfile] = useState<HealthProfile | null>(null)
@@ -58,8 +60,48 @@ export default function MyVitalsPage({ overrides }: { overrides: ContentOverride
   const [narrative, setNarrative] = useState('')
   const [narrativeLoading, setNarrativeLoading] = useState(false)
 
-  const headline = overrides.headline ?? 'Track your health.'
+  const headline = overrides.headline ?? 'Your health, finally explained.'
+  const subheadline = overrides.subheadline ?? 'AI connects your food, sleep, symptoms and mood — and tells you what\'s actually driving how you feel.'
   const ctaLabel = overrides.cta ?? "Save Today's Log"
+
+  // Daily Health Index — 0-100 from today's log
+  function dailyHealthIndex(l: DayLog): number {
+    const water = Math.min((l.water / 8) * 100, 100)
+    const sleep = Math.min((l.sleep / 8) * 100, 100)
+    const steps = Math.min((l.steps / 10000) * 100, 100)
+    const mood = Math.min((l.mood / 10) * 100, 100)
+    const exercise = Math.min((l.exercise / 30) * 100, 100)
+    return Math.round((water + sleep + steps + mood + exercise) / 5)
+  }
+
+  const dhi = dailyHealthIndex(log)
+  const dhiColor = dhi >= 75 ? '#10b981' : dhi >= 50 ? '#f59e0b' : '#ef4444'
+
+  // Morning brief — compute from localStorage history
+  function getMorningBrief(): string {
+    if (typeof window === 'undefined') return ''
+    const history: DayLog[] = []
+    for (let i = 1; i <= 7; i++) {
+      const d = new Date(Date.now() - i * 86400000).toISOString().split('T')[0]
+      try {
+        const raw = localStorage.getItem('healthtracker_log_' + d)
+        if (raw) history.push(JSON.parse(raw))
+      } catch {}
+    }
+    if (history.length < 3) return ''
+    const goodSleepDays = history.filter(l => l.sleep >= 7).length
+    if (goodSleepDays >= 2) {
+      return `Your energy tends to peak on days with 7+ hours sleep — you hit that ${goodSleepDays} of the last ${history.length} days. Log tonight to keep tracking the pattern.`
+    }
+    const goodStepDays = history.filter(l => l.steps >= 8000).length
+    if (goodStepDays >= 2) {
+      return `You hit 8k+ steps on ${goodStepDays} of the last ${history.length} days. Activity is your strongest habit right now.`
+    }
+    return `You've logged ${history.length} of the last 7 days. Keep it up — patterns become clear after 5+ days.`
+  }
+
+  const todayLogged = log.water > 0 || log.sleep > 0 || log.steps > 0 || log.mood > 0
+  const morningBrief = getMorningBrief()
 
   useEffect(() => {
     setMounted(true)
@@ -147,6 +189,16 @@ export default function MyVitalsPage({ overrides }: { overrides: ContentOverride
   const circumference = 2 * Math.PI * r
   const dash = circumference * (score / 100)
 
+  // Animated score counter
+  const motionScore = useMotionValue(0)
+  const springScore = useSpring(motionScore, { stiffness: 60, damping: 14 })
+  const [displayScore, setDisplayScore] = useState(0)
+  useEffect(() => {
+    const controls = animate(motionScore, score, { duration: 1.2, ease: 'easeOut' })
+    const unsubscribe = springScore.on('change', v => setDisplayScore(Math.round(v)))
+    return () => { controls.stop(); unsubscribe() }
+  }, [score]) // eslint-disable-line react-hooks/exhaustive-deps
+
   if (!mounted) return null
   if (!profile) return (
     <>
@@ -172,12 +224,14 @@ export default function MyVitalsPage({ overrides }: { overrides: ContentOverride
     <style>{`
       @keyframes nlpulse{0%,100%{opacity:0.4;transform:scale(0.8)}50%{opacity:1;transform:scale(1.2)}}
       @keyframes ring-in{from{stroke-dasharray:0 ${circumference}}to{stroke-dasharray:${dash} ${circumference}}}
-      .mv-main{background:#070d0a;min-height:100vh;color:#fff;font-family:inherit}
+      @keyframes dhi-count{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+      @keyframes strip-up{from{opacity:0;transform:translateY(100%)}to{opacity:1;transform:translateY(0)}}
+      .mv-main{background:#040c14;min-height:100vh;color:#fff;font-family:inherit}
       .mv-hero{display:grid;grid-template-columns:1fr 260px;gap:24px;align-items:start;padding:28px 24px 20px;max-width:960px;margin:0 auto}
       .mv-metrics{display:grid;grid-template-columns:1fr 1fr;gap:10px;padding:0 24px 16px;max-width:960px;margin:0 auto}
       .mv-bottom{display:grid;grid-template-columns:1fr 1fr;gap:10px;padding:0 24px 16px;max-width:960px;margin:0 auto}
       .mv-full{padding:0 24px 16px;max-width:960px;margin:0 auto}
-      .mv-card{background:#0d1a12;border:1px solid rgba(52,211,153,0.1);border-radius:16px;padding:14px 16px}
+      .mv-card{background:#0a1628;border:1px solid rgba(14,165,233,0.1);border-radius:16px;padding:14px 16px}
       .mv-label{font-size:11px;font-weight:700;color:rgba(255,255,255,0.3);letter-spacing:.08em;text-transform:uppercase;margin-bottom:8px}
       input[type=range]{-webkit-appearance:none;appearance:none;width:100%;height:4px;border-radius:99px;background:rgba(255,255,255,0.08);cursor:pointer;outline:none}
       input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:18px;height:18px;border-radius:50%;background:#fff;box-shadow:0 0 8px rgba(52,211,153,0.4);cursor:pointer}
@@ -196,6 +250,41 @@ export default function MyVitalsPage({ overrides }: { overrides: ContentOverride
     `}</style>
 
     <div className="mv-main">
+
+      {/* ── DAILY HEALTH INDEX ────────────────────────────────────── */}
+      <div style={{ maxWidth:960, margin:'0 auto', padding:'20px 24px 0', textAlign:'center' }}>
+        <motion.div
+          initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5, ease: [0.23, 1, 0.32, 1] }}
+          style={{ display:'inline-block', padding:'18px 32px', borderRadius:20, background:`${dhiColor}0d`, border:`1px solid ${dhiColor}30` }}
+        >
+          <DailyHealthIndexCounter value={dhi} color={dhiColor} />
+          <p style={{ fontSize:11, fontWeight:700, color:'rgba(255,255,255,0.35)', letterSpacing:'0.1em', textTransform:'uppercase', marginTop:4 }}>
+            Daily Health Index — {new Date().toLocaleDateString('en-GB', { weekday:'long', day:'numeric', month:'short' })}
+          </p>
+        </motion.div>
+      </div>
+
+      {/* ── MORNING BRIEF / EMPTY STATE ───────────────────────────── */}
+      {!todayLogged && (
+        <motion.div
+          initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.4, delay: 0.15, ease: [0.23, 1, 0.32, 1] }}
+          style={{ maxWidth:960, margin:'12px auto 0', padding:'0 24px' }}
+        >
+          <div style={{ background:'#0a1628', border:`1px solid ${GREEN}20`, borderLeft:`3px solid ${GREEN}`, borderRadius:14, padding:'14px 18px', display:'flex', gap:12, alignItems:'flex-start' }}>
+            <span style={{ fontSize:22, flexShrink:0 }}>🌅</span>
+            <div>
+              <p style={{ fontSize:13, fontWeight:700, color:'rgba(255,255,255,0.8)', marginBottom:4 }}>
+                {greeting()} — here&apos;s your health brief
+              </p>
+              <p style={{ fontSize:12, color:'rgba(255,255,255,0.45)', lineHeight:1.6 }}>
+                {morningBrief || 'Start logging today to unlock AI insights about your patterns — food, sleep, mood and energy all connected.'}
+              </p>
+            </div>
+          </div>
+        </motion.div>
+      )}
 
       {/* ── HERO: 2-col above fold ─────────────────────────────────── */}
       <div className="mv-hero">
@@ -218,15 +307,18 @@ export default function MyVitalsPage({ overrides }: { overrides: ContentOverride
             </span>
           </div>
 
-          <h1 style={{ fontSize:26, fontWeight:900, color:'#fff', letterSpacing:'-0.6px', lineHeight:1.2, marginBottom:6 }}>
-            {headline}<br /><span style={{ color:GREEN }}>Every single day.</span>
+          <h1 style={{ fontSize:24, fontWeight:900, color:'#fff', letterSpacing:'-0.5px', lineHeight:1.25, marginBottom:6 }}>
+            {headline}
           </h1>
-          <p style={{ fontSize:13, color:'rgba(255,255,255,0.35)', marginBottom:16, lineHeight:1.5 }}>
-            {greeting()}, <strong style={{ color:'rgba(255,255,255,0.6)' }}>{profile.name}</strong>. Log your day in one sentence.
+          <p style={{ fontSize:13, color:'rgba(255,255,255,0.4)', marginBottom:16, lineHeight:1.6 }}>
+            {subheadline}
+          </p>
+          <p style={{ fontSize:12, color:'rgba(255,255,255,0.3)', marginBottom:16, lineHeight:1.5 }}>
+            {greeting()}, <strong style={{ color:'rgba(255,255,255,0.55)' }}>{profile.name}</strong>. Log your day in one sentence below.
           </p>
 
           {/* NL Quick Log */}
-          <div id="nl-quick-log" style={{ background:'#0d1a12', border:'1px solid rgba(52,211,153,0.15)', borderRadius:14, padding:'12px 14px' }}>
+          <div id="nl-quick-log" style={{ background:'#0a1628', border:`1px solid ${GREEN}20`, borderRadius:14, padding:'12px 14px' }}>
             <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between', marginBottom:8 }}>
               <p className="mv-label" style={{ marginBottom:0 }}>✨ AI Quick Log</p>
               <span style={{ fontSize:10, color:'rgba(52,211,153,0.5)', fontWeight:600 }}>type → AI fills fields</span>
@@ -288,7 +380,10 @@ export default function MyVitalsPage({ overrides }: { overrides: ContentOverride
 
           {/* AI Narrative (post-save) */}
           {(narrativeLoading || narrative) && (
-            <div style={{ marginTop:12, padding:'12px 14px', borderRadius:12, background:'rgba(52,211,153,0.06)', border:'1px solid rgba(52,211,153,0.15)', display:'flex', gap:10, alignItems:'flex-start' }} className="animate-fade-in">
+            <motion.div
+              style={{ marginTop:12, padding:'12px 14px', borderRadius:12, background:'rgba(52,211,153,0.06)', border:'1px solid rgba(52,211,153,0.15)', display:'flex', gap:10, alignItems:'flex-start' }}
+              initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4, delay: 0.3, ease: [0.23, 1, 0.32, 1] }}
+            >
               <span style={{ fontSize:18, flexShrink:0, marginTop:1 }}>🩺</span>
               <div>
                 <p style={{ fontSize:10, fontWeight:700, color:GREEN, letterSpacing:'0.06em', textTransform:'uppercase', marginBottom:4 }}>AI Coach</p>
@@ -299,12 +394,12 @@ export default function MyVitalsPage({ overrides }: { overrides: ContentOverride
                   : <p style={{ fontSize:13, color:'rgba(255,255,255,0.8)', lineHeight:1.6 }}>{narrative}</p>
                 }
               </div>
-            </div>
+            </motion.div>
           )}
         </div>
 
         {/* RIGHT: wellness score ring */}
-        <div id="wellness-score" className="mv-score-col" style={{ background:'#0d1a12', border:'1px solid rgba(52,211,153,0.12)', borderRadius:20, padding:'20px 16px', textAlign:'center', position:'sticky', top:20 }}>
+        <div id="wellness-score" className="mv-score-col" style={{ background:'#0a1628', border:`1px solid ${GREEN}18`, borderRadius:20, padding:'20px 16px', textAlign:'center', position:'sticky', top:20 }}>
           <p className="mv-label" style={{ marginBottom:12 }}>Today&apos;s Wellness</p>
           <svg width={160} height={160} viewBox="0 0 160 160" style={{ display:'block', margin:'0 auto' }}>
             <circle cx={80} cy={80} r={r} fill="none" stroke="rgba(255,255,255,0.05)" strokeWidth={12} />
@@ -314,7 +409,7 @@ export default function MyVitalsPage({ overrides }: { overrides: ContentOverride
               transform="rotate(-90 80 80)"
               style={{ transition:'stroke-dasharray 0.8s cubic-bezier(0.4,0,0.2,1), stroke 0.4s',
                 filter:`drop-shadow(0 0 8px ${scoreColor}60)` }} />
-            <text x={80} y={74} textAnchor="middle" fill="#fff" fontSize={36} fontWeight={800}>{score}</text>
+            <text x={80} y={74} textAnchor="middle" fill="#fff" fontSize={36} fontWeight={800}>{displayScore}</text>
             <text x={80} y={92} textAnchor="middle" fill="rgba(255,255,255,0.3)" fontSize={13}>/100</text>
           </svg>
           <p style={{ fontSize:13, color:scoreColor, fontWeight:700, marginTop:10, marginBottom:16 }}>
@@ -341,10 +436,13 @@ export default function MyVitalsPage({ overrides }: { overrides: ContentOverride
         </div>
       </div>
 
+      {/* ── GOAL PROGRESS BARS ─────────────────────────────────────── */}
+      <GoalProgressBars log={log} profile={profile} />
+
       {/* ── METRIC INPUTS: 2-col compact grid ─────────────────────── */}
       <div className="mv-metrics">
         {/* Water */}
-        <div className="mv-card">
+        <motion.div className="mv-card" initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.35, delay: 0.05, ease: [0.23, 1, 0.32, 1] }}>
           <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center', marginBottom:8 }}>
             <span style={{ fontSize:12, color:'rgba(255,255,255,0.5)', fontWeight:600 }}>💧 Water</span>
             <span style={{ fontSize:18, fontWeight:800, color:'#38bdf8' }}>{log.water} <span style={{ fontSize:11, color:'rgba(255,255,255,0.3)', fontWeight:400 }}>gl</span></span>
@@ -355,10 +453,10 @@ export default function MyVitalsPage({ overrides }: { overrides: ContentOverride
               <button key={n} onClick={() => update('water', n)} style={{ padding:'3px 9px', borderRadius:20, fontSize:11, fontWeight:600, cursor:'pointer', border:`1px solid ${log.water===n?'#38bdf8':'rgba(56,189,248,0.2)'}`, background:log.water===n?'rgba(56,189,248,0.15)':'transparent', color:log.water===n?'#38bdf8':'rgba(56,189,248,0.4)', minHeight:28 }}>{n}</button>
             ))}
           </div>
-        </div>
+        </motion.div>
 
         {/* Sleep */}
-        <div className="mv-card">
+        <motion.div className="mv-card" initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.35, delay: 0.10, ease: [0.23, 1, 0.32, 1] }}>
           <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center', marginBottom:8 }}>
             <span style={{ fontSize:12, color:'rgba(255,255,255,0.5)', fontWeight:600 }}>😴 Sleep</span>
             <span style={{ fontSize:18, fontWeight:800, color:'#818cf8' }}>{log.sleep}<span style={{ fontSize:11, color:'rgba(255,255,255,0.3)', fontWeight:400 }}>h</span></span>
@@ -367,10 +465,10 @@ export default function MyVitalsPage({ overrides }: { overrides: ContentOverride
           <p style={{ fontSize:11, color:'rgba(255,255,255,0.25)', marginTop:6 }}>
             {log.sleep >= 7 && log.sleep <= 9 ? '✅ Optimal' : log.sleep < 6 && log.sleep > 0 ? '⚠️ Below 7h' : log.sleep > 9 ? '💤 Slightly long' : ''}
           </p>
-        </div>
+        </motion.div>
 
         {/* Steps */}
-        <div className="mv-card">
+        <motion.div className="mv-card" initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.35, delay: 0.15, ease: [0.23, 1, 0.32, 1] }}>
           <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center', marginBottom:8 }}>
             <span style={{ fontSize:12, color:'rgba(255,255,255,0.5)', fontWeight:600 }}>👟 Steps</span>
             <span style={{ fontSize:11, color:GREEN, fontWeight:700 }}>{log.steps >= 10000 ? '✓ Goal' : `${Math.round((log.steps/10000)*100)}%`}</span>
@@ -381,10 +479,10 @@ export default function MyVitalsPage({ overrides }: { overrides: ContentOverride
           <div style={{ height:3, borderRadius:99, background:'rgba(255,255,255,0.06)', overflow:'hidden' }}>
             <div style={{ height:'100%', background:`linear-gradient(90deg,${GREEN},${TEAL})`, width:`${Math.min((log.steps/10000)*100,100)}%`, borderRadius:99, transition:'width 0.5s' }} />
           </div>
-        </div>
+        </motion.div>
 
         {/* Exercise */}
-        <div className="mv-card">
+        <motion.div className="mv-card" initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.35, delay: 0.20, ease: [0.23, 1, 0.32, 1] }}>
           <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center', marginBottom:8 }}>
             <span style={{ fontSize:12, color:'rgba(255,255,255,0.5)', fontWeight:600 }}>🏃 Exercise</span>
             <span style={{ fontSize:18, fontWeight:800, color:'#fb923c' }}>{log.exercise}<span style={{ fontSize:11, color:'rgba(255,255,255,0.3)', fontWeight:400 }}>m</span></span>
@@ -397,10 +495,10 @@ export default function MyVitalsPage({ overrides }: { overrides: ContentOverride
               </button>
             ))}
           </div>
-        </div>
+        </motion.div>
 
         {/* Mood */}
-        <div className="mv-card" style={{ gridColumn:'span 2' }}>
+        <motion.div className="mv-card" style={{ gridColumn:'span 2' }} initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.35, delay: 0.25, ease: [0.23, 1, 0.32, 1] }}>
           <p className="mv-label">😊 Mood</p>
           <div style={{ display:'flex', gap:8 }}>
             {([1,2,3,4,5] as const).map(m => (
@@ -410,7 +508,7 @@ export default function MyVitalsPage({ overrides }: { overrides: ContentOverride
               </button>
             ))}
           </div>
-        </div>
+        </motion.div>
       </div>
 
       {/* ── MEALS + NOTES: 2-col ───────────────────────────────────── */}
@@ -449,19 +547,22 @@ export default function MyVitalsPage({ overrides }: { overrides: ContentOverride
 
       {/* ── SAVE + AI CTA ──────────────────────────────────────────── */}
       <div className="mv-full" style={{ display:'flex', gap:10, alignItems:'stretch' }}>
-        <button id="save-btn" onClick={save} style={{
+        <motion.button id="save-btn" onClick={save} whileTap={{ scale: 0.97 }} style={{
           flex:1, padding:'14px', borderRadius:14, fontWeight:700, fontSize:16, cursor:'pointer',
           background: saved ? 'rgba(52,211,153,0.12)' : `linear-gradient(135deg,${GREEN},${TEAL})`,
           color: saved ? GREEN : '#000', border: saved ? `1px solid ${GREEN}30` : 'none',
           boxShadow: saved ? 'none' : '0 0 20px rgba(52,211,153,0.2)',
-          transition:'all 0.3s',
+          transition:'background 0.3s, color 0.3s, border 0.3s, box-shadow 0.3s',
         }}>
           {saved ? '✓ Saved! Getting AI summary…' : ctaLabel}
-        </button>
+        </motion.button>
         <a id="ai-insight-cta" href="/insights" style={{ flexShrink:0, display:'flex', alignItems:'center', gap:8, padding:'14px 18px', borderRadius:14, textDecoration:'none', background:'rgba(52,211,153,0.08)', border:'1px solid rgba(52,211,153,0.18)', color:GREEN, fontWeight:700, fontSize:13, whiteSpace:'nowrap' }}>
           🩺 Weekly insight →
         </a>
       </div>
+
+      {/* ── 3-TAP MOBILE LOG STRIP ────────────────────────────────── */}
+      <QuickLogStrip log={log} onUpdate={update} accent={GREEN} />
 
       <GuidedTour steps={TOUR_STEPS} storageKey="myvitals_tour_v1" accentColor={GREEN} delay={800} />
 
@@ -521,6 +622,128 @@ export default function MyVitalsPage({ overrides }: { overrides: ContentOverride
   )
 }
 
+// ── Daily Health Index animated counter ────────────────────────────────────
+function DailyHealthIndexCounter({ value, color }: { value: number; color: string }) {
+  const motionVal = useMotionValue(0)
+  const spring = useSpring(motionVal, { stiffness: 50, damping: 14 })
+  const [display, setDisplay] = useState(0)
+
+  useEffect(() => {
+    const controls = animate(motionVal, value, { duration: 1.4, ease: 'easeOut' })
+    const unsub = spring.on('change', v => setDisplay(Math.round(v)))
+    return () => { controls.stop(); unsub() }
+  }, [value]) // eslint-disable-line react-hooks/exhaustive-deps
+
+  return (
+    <motion.div
+      initial={{ scale: 0.85, opacity: 0 }}
+      animate={{ scale: 1, opacity: 1 }}
+      transition={{ duration: 0.5, ease: [0.23, 1, 0.32, 1] }}
+    >
+      <span style={{ fontSize:64, fontWeight:900, color, lineHeight:1, display:'block',
+        textShadow:`0 0 30px ${color}60`, fontVariantNumeric:'tabular-nums' }}>
+        {display}
+      </span>
+    </motion.div>
+  )
+}
+
+// ── 3-tap Quick Log Strip (mobile) ─────────────────────────────────────────
+function QuickLogStrip({ log, onUpdate, accent }: { log: DayLog; onUpdate: (f: keyof DayLog, v: any) => void; accent: string }) {
+  const [active, setActive] = useState<string | null>(null)
+  const [tempVal, setTempVal] = useState(0)
+
+  const items = [
+    { key: 'water', emoji: '💧', label: 'Water', min: 0, max: 12, step: 1, current: log.water, unit: 'gl' },
+    { key: 'sleep', emoji: '😴', label: 'Sleep', min: 0, max: 12, step: 0.5, current: log.sleep, unit: 'h' },
+    { key: 'steps', emoji: '👟', label: 'Steps', min: 0, max: 20000, step: 500, current: log.steps, unit: 'k' },
+    { key: 'mood', emoji: '😊', label: 'Mood', min: 1, max: 10, step: 1, current: log.mood, unit: '/10' },
+  ]
+
+  function openItem(key: string, current: number) {
+    setActive(key)
+    setTempVal(current)
+  }
+
+  function confirm() {
+    if (!active) return
+    onUpdate(active as keyof DayLog, tempVal)
+    setActive(null)
+  }
+
+  const activeItem = items.find(i => i.key === active)
+
+  return (
+    <>
+      <style>{`
+        @media(min-width:641px){.quick-log-strip{display:none!important}}
+        @keyframes strip-slide-up{from{transform:translateY(100%);opacity:0}to{transform:translateY(0);opacity:1}}
+      `}</style>
+
+      {/* Overlay picker */}
+      {active && activeItem && (
+        <motion.div
+          initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+          style={{ position:'fixed', inset:0, background:'rgba(0,0,0,0.65)', zIndex:900, display:'flex', alignItems:'flex-end' }}
+          onClick={() => setActive(null)}
+        >
+          <motion.div
+            initial={{ y: 200 }} animate={{ y: 0 }} transition={{ type:'spring', stiffness:400, damping:35 }}
+            onClick={e => e.stopPropagation()}
+            style={{ width:'100%', background:'#0a1628', borderTop:`2px solid ${accent}30`, borderRadius:'20px 20px 0 0', padding:'20px 24px 32px' }}
+          >
+            <div style={{ width:36, height:4, borderRadius:99, background:'rgba(255,255,255,0.12)', margin:'0 auto 16px' }} />
+            <p style={{ textAlign:'center', fontSize:13, fontWeight:700, color:'rgba(255,255,255,0.5)', marginBottom:6 }}>
+              {activeItem.emoji} {activeItem.label}
+            </p>
+            <p style={{ textAlign:'center', fontSize:48, fontWeight:900, color:accent, marginBottom:16 }}>
+              {activeItem.key === 'steps' ? `${(tempVal/1000).toFixed(1)}k` : tempVal}{activeItem.unit}
+            </p>
+            <input type="range" min={activeItem.min} max={activeItem.max} step={activeItem.step} value={tempVal}
+              onChange={e => setTempVal(activeItem.step < 1 ? parseFloat(e.target.value) : parseInt(e.target.value))}
+              style={{ width:'100%', accentColor:accent, marginBottom:16 }} />
+            <div style={{ display:'flex', gap:10 }}>
+              <button onClick={() => setActive(null)} style={{ flex:1, padding:'13px', borderRadius:12, border:'1px solid rgba(255,255,255,0.1)', background:'transparent', color:'rgba(255,255,255,0.4)', fontWeight:600, fontSize:14, cursor:'pointer' }}>
+                Cancel
+              </button>
+              <button onClick={confirm} style={{ flex:2, padding:'13px', borderRadius:12, border:'none', background:`linear-gradient(135deg,${accent},${accent}cc)`, color:'#000', fontWeight:800, fontSize:14, cursor:'pointer' }}>
+                Save {activeItem.emoji}
+              </button>
+            </div>
+          </motion.div>
+        </motion.div>
+      )}
+
+      {/* Fixed strip */}
+      <div className="quick-log-strip" style={{
+        position:'fixed', bottom:60, left:0, right:0, zIndex:800,
+        background:'rgba(10,22,40,0.96)', backdropFilter:'blur(16px)',
+        borderTop:`1px solid ${accent}18`,
+        padding:'10px 16px 10px',
+        display:'flex', gap:6,
+        animation:'strip-slide-up 0.3s cubic-bezier(0.23,1,0.32,1) both'
+      }}>
+        {items.map(item => (
+          <button key={item.key} onClick={() => openItem(item.key, item.current)}
+            style={{
+              flex:1, display:'flex', flexDirection:'column', alignItems:'center', gap:3,
+              padding:'8px 4px', borderRadius:12,
+              border:`1px solid ${item.current > 0 ? accent + '30' : 'rgba(255,255,255,0.07)'}`,
+              background:item.current > 0 ? `${accent}0a` : 'rgba(255,255,255,0.03)',
+              cursor:'pointer', transition:'all 0.15s'
+            }}
+          >
+            <span style={{ fontSize:18 }}>{item.emoji}</span>
+            <span style={{ fontSize:10, fontWeight:700, color:item.current > 0 ? accent : 'rgba(255,255,255,0.3)' }}>
+              {item.key === 'steps' && item.current > 0 ? `${(item.current/1000).toFixed(1)}k` : item.current > 0 ? `${item.current}${item.unit}` : '+'}
+            </span>
+          </button>
+        ))}
+      </div>
+    </>
+  )
+}
+
 // ── Sub-components ──────────────────────────────────────────────────────────
 
 function FloatingChat() {
@@ -556,7 +779,7 @@ function FloatingChat() {
   return (
     <div style={{ position:'fixed', bottom:20, right:20, zIndex:1000 }}>
       {open && (
-        <div style={{ width:320, height:400, background:'#0d1a12', border:'1px solid rgba(52,211,153,0.2)', borderRadius:20, display:'flex', flexDirection:'column', marginBottom:10, boxShadow:'0 20px 60px rgba(0,0,0,0.5)' }}>
+        <div style={{ width:320, height:400, background:'#0a1628', border:`1px solid ${GREEN}28`, borderRadius:20, display:'flex', flexDirection:'column', marginBottom:10, boxShadow:'0 20px 60px rgba(0,0,0,0.5)' }}>
           <div style={{ padding:'12px 16px', borderBottom:'1px solid rgba(52,211,153,0.1)', display:'flex', justifyContent:'space-between', alignItems:'center' }}>
             <span style={{ fontWeight:800, fontSize:13, color:GREEN }}>🩺 AI Coach</span>
             <button onClick={() => setOpen(false)} style={{ background:'none', border:'none', color:'rgba(255,255,255,0.3)', cursor:'pointer', fontSize:18 }}>×</button>
@@ -617,36 +840,6 @@ function greeting() {
   return h < 12 ? 'Good morning' : h < 17 ? 'Good afternoon' : 'Good evening'
 }
 
-function GlassCard({ children, style }: { children: React.ReactNode; style?: React.CSSProperties }) {
-  return <div style={{ background:'rgba(255,255,255,0.03)', border:'1px solid rgba(255,255,255,0.07)', borderRadius:16, padding:'16px', ...style }}>{children}</div>
-}
-
-function GlassStatCard({ icon, label, value, color }: { icon: string; label: string; value: string | number; color: string }) {
-  return (
-    <GlassCard>
-      <div style={{ display:'flex', alignItems:'center', gap:8, marginBottom:4 }}>
-        <span style={{ fontSize:18 }}>{icon}</span>
-        <span style={{ fontSize:11, color:'rgba(255,255,255,0.35)', fontWeight:600, letterSpacing:'0.05em', textTransform:'uppercase' }}>{label}</span>
-      </div>
-      <p style={{ fontSize:24, fontWeight:800, color, margin:0 }}>{value}</p>
-    </GlassCard>
-  )
-}
-
-function TargetBar({ label, value, max, color }: { label: string; value: number; max: number; color: string }) {
-  return (
-    <div style={{ marginBottom:8 }}>
-      <div style={{ display:'flex', justifyContent:'space-between', marginBottom:4 }}>
-        <span style={{ fontSize:12, color:'rgba(255,255,255,0.4)' }}>{label}</span>
-        <span style={{ fontSize:12, fontWeight:700, color }}>{value}/{max}</span>
-      </div>
-      <div style={{ height:4, borderRadius:99, background:'rgba(255,255,255,0.07)', overflow:'hidden' }}>
-        <div style={{ height:'100%', width:`${Math.min((value/max)*100,100)}%`, background:color, borderRadius:99, transition:'width 0.5s' }} />
-      </div>
-    </div>
-  )
-}
-
 // ── Manual Onboarding ───────────────────────────────────────────────────────
 function ManualOnboarding({ onDone }: { onDone: (p: HealthProfile) => void }) {
   const [step, setStep] = useState(0)
@@ -666,7 +859,7 @@ function ManualOnboarding({ onDone }: { onDone: (p: HealthProfile) => void }) {
     // Step 0: Name + age
     <div key="step0" style={{ maxWidth:480, margin:'0 auto', padding:'0 20px' }}>
       <div style={{ textAlign:'center', marginBottom:32 }}>
-        <div style={{ width:48, height:48, borderRadius:14, background:'linear-gradient(135deg,#34d399,#10b981)', display:'flex', alignItems:'center', justifyContent:'center', margin:'0 auto 12px', fontSize:22, boxShadow:'0 0 24px rgba(52,211,153,0.28)' }}>💚</div>
+        <div style={{ width:48, height:48, borderRadius:14, background:'linear-gradient(135deg,#0ea5e9,#38bdf8)', display:'flex', alignItems:'center', justifyContent:'center', margin:'0 auto 12px', fontSize:22, boxShadow:'0 0 24px rgba(14,165,233,0.28)' }}>💙</div>
         <h2 style={{ fontSize:22, fontWeight:800, color:'#fff', marginBottom:6 }}>Let&apos;s set up your profile</h2>
         <p style={{ fontSize:13, color:'rgba(255,255,255,0.35)' }}>Takes 30 seconds. No account needed.</p>
       </div>
@@ -686,14 +879,14 @@ function ManualOnboarding({ onDone }: { onDone: (p: HealthProfile) => void }) {
           <div style={{ display:'flex', gap:8 }}>
             {(['male','female','other'] as const).map(g => (
               <button key={g} onClick={() => setForm(f => ({ ...f, gender: g }))}
-                style={{ flex:1, padding:'11px', borderRadius:10, cursor:'pointer', border:`2px solid ${form.gender===g?'#34d399':'rgba(255,255,255,0.08)'}`, background:form.gender===g?'rgba(52,211,153,0.12)':'rgba(255,255,255,0.02)', color:form.gender===g?'#34d399':'rgba(255,255,255,0.4)', fontWeight:600, fontSize:13, textTransform:'capitalize', transition:'all 0.15s' }}>
+                style={{ flex:1, padding:'11px', borderRadius:10, cursor:'pointer', border:`2px solid ${form.gender===g?'#0ea5e9':'rgba(255,255,255,0.08)'}`, background:form.gender===g?'rgba(14,165,233,0.12)':'rgba(255,255,255,0.02)', color:form.gender===g?'#0ea5e9':'rgba(255,255,255,0.4)', fontWeight:600, fontSize:13, textTransform:'capitalize', transition:'all 0.15s' }}>
                 {g}
               </button>
             ))}
           </div>
         </div>
         <button onClick={() => form.name.trim() && setStep(1)} disabled={!form.name.trim()}
-          style={{ marginTop:8, padding:'15px', borderRadius:14, fontWeight:800, fontSize:16, cursor:form.name.trim()?'pointer':'not-allowed', border:'none', background:form.name.trim()?'linear-gradient(135deg,#34d399,#10b981)':'rgba(255,255,255,0.06)', color:form.name.trim()?'#000':'rgba(255,255,255,0.2)', transition:'all 0.2s', boxShadow:form.name.trim()?'0 0 24px rgba(52,211,153,0.28)':'none' }}>
+          style={{ marginTop:8, padding:'15px', borderRadius:14, fontWeight:800, fontSize:16, cursor:form.name.trim()?'pointer':'not-allowed', border:'none', background:form.name.trim()?'linear-gradient(135deg,#0ea5e9,#38bdf8)':'rgba(255,255,255,0.06)', color:form.name.trim()?'#000':'rgba(255,255,255,0.2)', transition:'all 0.2s', boxShadow:form.name.trim()?'0 0 24px rgba(14,165,233,0.28)':'none' }}>
           Continue →
         </button>
       </div>
@@ -718,7 +911,7 @@ function ManualOnboarding({ onDone }: { onDone: (p: HealthProfile) => void }) {
         </div>
         <div style={{ display:'flex', gap:8 }}>
           <button onClick={() => setStep(0)} style={{ flex:'0 0 auto', padding:'15px 20px', borderRadius:14, fontWeight:700, fontSize:15, cursor:'pointer', border:'1px solid rgba(255,255,255,0.08)', background:'transparent', color:'rgba(255,255,255,0.4)' }}>← Back</button>
-          <button onClick={() => setStep(2)} style={{ flex:1, padding:'15px', borderRadius:14, fontWeight:800, fontSize:16, cursor:'pointer', border:'none', background:'linear-gradient(135deg,#34d399,#10b981)', color:'#000', boxShadow:'0 0 24px rgba(52,211,153,0.28)' }}>Continue →</button>
+          <button onClick={() => setStep(2)} style={{ flex:1, padding:'15px', borderRadius:14, fontWeight:800, fontSize:16, cursor:'pointer', border:'none', background:'linear-gradient(135deg,#0ea5e9,#38bdf8)', color:'#000', boxShadow:'0 0 24px rgba(14,165,233,0.28)' }}>Continue →</button>
         </div>
       </div>
     </div>,
@@ -732,14 +925,14 @@ function ManualOnboarding({ onDone }: { onDone: (p: HealthProfile) => void }) {
       <div style={{ display:'flex', flexWrap:'wrap', gap:8, marginBottom:20 }}>
         {GOAL_OPTIONS.map(g => (
           <button key={g} onClick={() => toggleGoal(g)}
-            style={{ padding:'8px 14px', borderRadius:20, cursor:'pointer', border:`1.5px solid ${form.goals.includes(g)?'#34d399':'rgba(255,255,255,0.08)'}`, background:form.goals.includes(g)?'rgba(52,211,153,0.12)':'rgba(255,255,255,0.02)', color:form.goals.includes(g)?'#34d399':'rgba(255,255,255,0.5)', fontSize:13, fontWeight:form.goals.includes(g)?700:400, transition:'all 0.15s' }}>
+            style={{ padding:'8px 14px', borderRadius:20, cursor:'pointer', border:`1.5px solid ${form.goals.includes(g)?'#0ea5e9':'rgba(255,255,255,0.08)'}`, background:form.goals.includes(g)?'rgba(14,165,233,0.12)':'rgba(255,255,255,0.02)', color:form.goals.includes(g)?'#0ea5e9':'rgba(255,255,255,0.5)', fontSize:13, fontWeight:form.goals.includes(g)?700:400, transition:'all 0.15s' }}>
             {g}
           </button>
         ))}
       </div>
       <div style={{ display:'flex', gap:8 }}>
         <button onClick={() => setStep(1)} style={{ flex:'0 0 auto', padding:'15px 20px', borderRadius:14, fontWeight:700, fontSize:15, cursor:'pointer', border:'1px solid rgba(255,255,255,0.08)', background:'transparent', color:'rgba(255,255,255,0.4)' }}>← Back</button>
-        <button onClick={submit} style={{ flex:1, padding:'15px', borderRadius:14, fontWeight:800, fontSize:16, cursor:'pointer', border:'none', background:'linear-gradient(135deg,#34d399,#10b981)', color:'#000', boxShadow:'0 0 24px rgba(52,211,153,0.28)' }}>
+        <button onClick={submit} style={{ flex:1, padding:'15px', borderRadius:14, fontWeight:800, fontSize:16, cursor:'pointer', border:'none', background:'linear-gradient(135deg,#0ea5e9,#38bdf8)', color:'#000', boxShadow:'0 0 24px rgba(14,165,233,0.28)' }}>
           Start tracking 🚀
         </button>
       </div>
@@ -811,7 +1004,7 @@ function AIChatOnboarding({ onDone }: { onDone: (p: HealthProfile) => void }) {
   return (
     <div style={{ maxWidth: 540, margin: '0 auto', padding: '0 20px', display: 'flex', flexDirection: 'column', minHeight: 'calc(100vh - 58px)', justifyContent: 'center' }}>
       <div style={{ textAlign: 'center', marginBottom: 24 }}>
-        <div style={{ width: 48, height: 48, borderRadius: 14, background: 'linear-gradient(135deg, #34d399, #10b981)', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 10px', fontSize: 22, boxShadow: '0 0 24px rgba(52,211,153,0.28)' }}>💚</div>
+        <div style={{ width: 48, height: 48, borderRadius: 14, background: 'linear-gradient(135deg, #0ea5e9, #38bdf8)', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 10px', fontSize: 22, boxShadow: '0 0 24px rgba(14,165,233,0.28)' }}>💙</div>
         <p style={{ fontSize: 18, fontWeight: 800, color: '#fff' }}>My<span style={{ color: GREEN }}>Vitals</span> <span style={{ fontSize: 13, color: 'rgba(255,255,255,0.3)', fontWeight: 400 }}>— Setup</span></p>
       </div>
       <div ref={scrollRef} style={{ background: 'rgba(255,255,255,0.025)', border: '1px solid rgba(255,255,255,0.07)', borderRadius: 20, padding: 20, maxHeight: 320, overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: 10, marginBottom: 12 }}>
@@ -830,10 +1023,11 @@ function AIChatOnboarding({ onDone }: { onDone: (p: HealthProfile) => void }) {
       </div>
       <div style={{ display: 'flex', gap: 10, marginBottom: 12 }}>
         <input autoFocus value={input} onChange={e => setInput(e.target.value)} onKeyDown={e => e.key === 'Enter' && send()} placeholder="Type your answer…" style={{ flex: 1, padding: '13px 16px', borderRadius: 12, fontSize: 15, color: '#fff', background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.09)', outline: 'none', fontFamily: 'inherit' }} />
-        <button onClick={send} disabled={loading || !input.trim()} style={{ padding: '13px 20px', borderRadius: 12, fontWeight: 700, fontSize: 14, cursor: 'pointer', border: 'none', background: input.trim() ? `linear-gradient(135deg, ${GREEN}, ${TEAL})` : 'rgba(255,255,255,0.06)', color: input.trim() ? '#000' : 'rgba(255,255,255,0.2)', transition: 'all 0.2s' }}>Send</button>
+        <button onClick={send} disabled={loading || !input.trim()} style={{ padding: '13px 20px', borderRadius: 12, fontWeight: 700, fontSize: 14, cursor: 'pointer', border: 'none', background: input.trim() ? `linear-gradient(135deg, ${GREEN}, ${TEAL})` : 'rgba(255,255,255,0.06)', color: input.trim() ? '#000' : 'rgba(255,255,255,0.2)', transition: 'all 0.2s' }}>Send
+        </button>
       </div>
       {extracted.complete && (
-        <button onClick={confirmAndStart} className="animate-fade-in" style={{ width: '100%', padding: 15, borderRadius: 14, fontWeight: 800, fontSize: 16, cursor: 'pointer', border: 'none', background: `linear-gradient(135deg, ${GREEN}, ${TEAL})`, color: '#000', boxShadow: '0 0 28px rgba(52,211,153,0.28)', marginBottom: 10 }}>
+        <button onClick={confirmAndStart} className="animate-fade-in" style={{ width: '100%', padding: 15, borderRadius: 14, fontWeight: 800, fontSize: 16, cursor: 'pointer', border: 'none', background: `linear-gradient(135deg, ${GREEN}, ${TEAL})`, color: '#000', boxShadow: '0 0 28px rgba(14,165,233,0.28)', marginBottom: 10 }}>
           Start tracking my health 🚀
         </button>
       )}
