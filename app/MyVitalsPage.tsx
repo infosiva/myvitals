@@ -199,7 +199,9 @@ export default function MyVitalsPage({ overrides }: { overrides: ContentOverride
     return () => { controls.stop(); unsubscribe() }
   }, [score]) // eslint-disable-line react-hooks/exhaustive-deps
 
-  if (!mounted) return null
+  if (!mounted) return (
+    <div style={{ minHeight: '100vh', background: '#040c14' }} />
+  )
   if (!profile) return (
     <>
       <AnimatedHeroGuide />
