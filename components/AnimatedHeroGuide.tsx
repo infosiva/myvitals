@@ -125,29 +125,58 @@ export default function AnimatedHeroGuide() {
       <section style={{ position: 'relative', overflow: 'hidden', background: 'linear-gradient(180deg, #020d08 0%, #050d0a 60%, #050510 100%)', padding: '80px 24px 60px' }}>
         <ParticleBg />
 
-        {/* Radial glow blobs */}
-        <div style={{ position: 'absolute', top: -100, left: '20%', width: 400, height: 400, borderRadius: '50%', background: 'radial-gradient(circle, rgba(52,211,153,0.12) 0%, transparent 70%)', animation: 'hg-glow 6s ease-in-out infinite', pointerEvents: 'none' }} />
-        <div style={{ position: 'absolute', bottom: -80, right: '10%', width: 300, height: 300, borderRadius: '50%', background: 'radial-gradient(circle, rgba(16,185,129,0.1) 0%, transparent 70%)', animation: 'hg-glow 8s ease-in-out infinite 2s', pointerEvents: 'none' }} />
+        {/* Parallax blobs — Securify-inspired health adaptation */}
+        <div style={{ position: 'absolute', top: -120, left: '15%', width: 500, height: 500, borderRadius: '50%', background: 'radial-gradient(circle, rgba(52,211,153,0.14) 0%, transparent 70%)', filter: 'blur(80px)', animation: 'hg-glow 7s ease-in-out infinite', pointerEvents: 'none' }} />
+        <div style={{ position: 'absolute', bottom: -100, right: '8%', width: 380, height: 380, borderRadius: '50%', background: 'radial-gradient(circle, rgba(16,185,129,0.11) 0%, transparent 70%)', filter: 'blur(70px)', animation: 'hg-glow 9s ease-in-out infinite 2.5s', pointerEvents: 'none' }} />
+        <div style={{ position: 'absolute', top: '30%', right: '25%', width: 200, height: 200, borderRadius: '50%', background: 'radial-gradient(circle, rgba(110,231,183,0.07) 0%, transparent 70%)', filter: 'blur(50px)', pointerEvents: 'none' }} />
 
         {/* Hero */}
-        <div style={{ position: 'relative', maxWidth: 720, margin: '0 auto', textAlign: 'center', opacity: visible ? 1 : 0, animation: visible ? 'hg-fade-up 0.6s ease-out' : 'none' }}>
-          <div style={{ display: 'inline-flex', alignItems: 'center', gap: 8, background: 'rgba(52,211,153,0.1)', border: '1px solid rgba(52,211,153,0.25)', borderRadius: 99, padding: '6px 16px', marginBottom: 24 }}>
-            <span style={{ fontSize: 14 }}>💚</span>
-            <span style={{ fontSize: 12, color: ACCENT, fontWeight: 600, letterSpacing: '0.05em' }}>AI HEALTH COACH · FREE TO START</span>
+        <div style={{ position: 'relative', maxWidth: 760, margin: '0 auto', textAlign: 'center', opacity: visible ? 1 : 0, animation: visible ? 'hg-fade-up 0.6s cubic-bezier(0.23,1,0.32,1)' : 'none' }}>
+
+          {/* Liquid-glass badge */}
+          <div style={{
+            display: 'inline-flex', alignItems: 'center', gap: 8,
+            background: 'rgba(255,255,255,0.04)',
+            backdropFilter: 'blur(12px)', WebkitBackdropFilter: 'blur(12px)',
+            border: '1px solid rgba(255,255,255,0.10)',
+            boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.08)',
+            borderRadius: 9999, padding: '6px 16px', marginBottom: 28,
+          }}>
+            <span style={{ width: 7, height: 7, borderRadius: '50%', background: ACCENT, boxShadow: `0 0 8px ${ACCENT}`, display: 'inline-block' }} />
+            <span style={{ fontSize: 11, color: 'rgba(167,243,208,0.85)', fontWeight: 700, letterSpacing: '0.12em', textTransform: 'uppercase' }}>AI Health Coach · Free to start</span>
           </div>
-          <h1 style={{ fontSize: 'clamp(2rem, 5vw, 3.25rem)', fontWeight: 800, lineHeight: 1.1, marginBottom: 20, color: '#f1f5f9' }}>
+
+          {/* Headline — larger, tighter */}
+          <h1 style={{ fontSize: 'clamp(2.25rem, 5.5vw, 3.75rem)', fontWeight: 900, lineHeight: 1.0, marginBottom: 22, color: '#f1f5f9', letterSpacing: '-0.03em' }}>
             Your body has patterns.<br />
             <span className="hg-shimmer-text">AI helps you read them.</span>
           </h1>
-          <p style={{ fontSize: 17, color: 'rgba(241,245,249,0.65)', lineHeight: 1.7, marginBottom: 36, maxWidth: 560, margin: '0 auto 36px' }}>
-            MyVitals tracks your daily wellness — sleep, mood, nutrition, movement — and your AI coach spots what's working, what's not, and exactly what to do next.
+
+          {/* Trust pills row — Securify data security pattern */}
+          <div style={{ display: 'flex', gap: 8, justifyContent: 'center', flexWrap: 'wrap', marginBottom: 24 }}>
+            {['🔒 HIPAA-aware', '💚 Evidence-based', '⚡ No signup needed'].map(p => (
+              <span key={p} style={{
+                fontSize: 11, fontWeight: 600, padding: '5px 12px', borderRadius: 9999,
+                background: 'rgba(52,211,153,0.08)', border: '1px solid rgba(52,211,153,0.18)',
+                color: 'rgba(167,243,208,0.70)', letterSpacing: '0.04em',
+              }}>{p}</span>
+            ))}
+          </div>
+
+          <p style={{ fontSize: 16, color: 'rgba(241,245,249,0.55)', lineHeight: 1.75, marginBottom: 36, maxWidth: 560, margin: '0 auto 36px' }}>
+            Track sleep, mood, nutrition, movement — your AI coach spots what&apos;s working, what&apos;s not, and exactly what to do next.
           </p>
+
           <div style={{ display: 'flex', gap: 12, justifyContent: 'center', flexWrap: 'wrap' }}>
-            <a href="/insights" style={{ display: 'inline-flex', alignItems: 'center', gap: 8, padding: '13px 28px', borderRadius: 12, background: `linear-gradient(135deg, ${ACCENT}, ${ACCENT2})`, color: '#fff', fontWeight: 700, fontSize: 15, textDecoration: 'none', boxShadow: '0 4px 20px rgba(52,211,153,0.3)', transition: 'transform 150ms ease, box-shadow 150ms ease' }}
-              onMouseEnter={e => { (e.currentTarget as HTMLElement).style.transform = 'scale(1.04)'; (e.currentTarget as HTMLElement).style.boxShadow = '0 8px 30px rgba(52,211,153,0.45)' }}
-              onMouseLeave={e => { (e.currentTarget as HTMLElement).style.transform = 'scale(1)'; (e.currentTarget as HTMLElement).style.boxShadow = '0 4px 20px rgba(52,211,153,0.3)' }}
+            <a href="/insights" style={{ display: 'inline-flex', alignItems: 'center', gap: 8, padding: '14px 30px', borderRadius: 14, background: `linear-gradient(135deg, ${ACCENT}, ${ACCENT2})`, color: '#fff', fontWeight: 700, fontSize: 15, textDecoration: 'none', boxShadow: '0 4px 24px rgba(52,211,153,0.35)', transition: 'transform 150ms cubic-bezier(0.23,1,0.32,1), box-shadow 150ms ease' }}
+              onMouseEnter={e => { (e.currentTarget as HTMLElement).style.transform = 'scale(1.03)'; (e.currentTarget as HTMLElement).style.boxShadow = '0 8px 32px rgba(52,211,153,0.50)' }}
+              onMouseLeave={e => { (e.currentTarget as HTMLElement).style.transform = 'scale(1)'; (e.currentTarget as HTMLElement).style.boxShadow = '0 4px 24px rgba(52,211,153,0.35)' }}
+              onMouseDown={e => { (e.currentTarget as HTMLElement).style.transform = 'scale(0.97)' }}
             >Start tracking free →</a>
-            <a href="#how-it-works" style={{ display: 'inline-flex', alignItems: 'center', gap: 8, padding: '13px 24px', borderRadius: 12, border: '1px solid rgba(52,211,153,0.25)', color: ACCENT, fontWeight: 600, fontSize: 15, textDecoration: 'none', background: 'rgba(52,211,153,0.05)' }}>How it works</a>
+            <a href="#how-it-works" style={{ display: 'inline-flex', alignItems: 'center', gap: 8, padding: '14px 26px', borderRadius: 14, border: '1px solid rgba(52,211,153,0.22)', color: ACCENT, fontWeight: 600, fontSize: 15, textDecoration: 'none', background: 'rgba(52,211,153,0.05)', transition: 'background 150ms ease, border-color 150ms ease' }}
+              onMouseEnter={e => { (e.currentTarget as HTMLElement).style.background = 'rgba(52,211,153,0.10)'; (e.currentTarget as HTMLElement).style.borderColor = 'rgba(52,211,153,0.35)' }}
+              onMouseLeave={e => { (e.currentTarget as HTMLElement).style.background = 'rgba(52,211,153,0.05)'; (e.currentTarget as HTMLElement).style.borderColor = 'rgba(52,211,153,0.22)' }}
+            >How it works</a>
           </div>
         </div>
       </section>
