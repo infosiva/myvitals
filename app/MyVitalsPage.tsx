@@ -200,7 +200,9 @@ export default function MyVitalsPage({ overrides }: { overrides: ContentOverride
   }, [score]) // eslint-disable-line react-hooks/exhaustive-deps
 
   if (!mounted) return (
-    <div style={{ minHeight: '100vh', background: '#040c14' }} />
+    <div style={{ minHeight: '100vh', background: '#040c14', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+      <div style={{ width: 32, height: 32, borderRadius: '50%', border: '2px solid rgba(52,211,153,0.2)', borderTopColor: '#34d399', animation: 'spin 0.8s linear infinite' }} />
+    </div>
   )
   if (!profile) return (
     <>
@@ -229,72 +231,35 @@ export default function MyVitalsPage({ overrides }: { overrides: ContentOverride
       @keyframes dhi-count{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
       @keyframes strip-up{from{opacity:0;transform:translateY(100%)}to{opacity:1;transform:translateY(0)}}
       .mv-main{background:#040c14;min-height:100vh;color:#fff;font-family:inherit}
-      .mv-hero{display:grid;grid-template-columns:1fr 260px;gap:24px;align-items:start;padding:28px 24px 20px;max-width:960px;margin:0 auto}
-      .mv-metrics{display:grid;grid-template-columns:1fr 1fr;gap:10px;padding:0 24px 16px;max-width:960px;margin:0 auto}
-      .mv-bottom{display:grid;grid-template-columns:1fr 1fr;gap:10px;padding:0 24px 16px;max-width:960px;margin:0 auto}
-      .mv-full{padding:0 24px 16px;max-width:960px;margin:0 auto}
+      .mv-hero{display:grid;grid-template-columns:1fr 250px;gap:20px;align-items:start;padding:18px 20px 14px;max-width:960px;margin:0 auto}
+      .mv-metrics{display:grid;grid-template-columns:1fr 1fr;gap:8px;padding:0 20px 10px;max-width:960px;margin:0 auto}
+      .mv-bottom{display:grid;grid-template-columns:1fr 1fr;gap:8px;padding:0 20px 10px;max-width:960px;margin:0 auto}
+      .mv-full{padding:0 20px 10px;max-width:960px;margin:0 auto}
       .mv-card{background:#0a1628;border:1px solid rgba(14,165,233,0.1);border-radius:16px;padding:14px 16px}
       .mv-label{font-size:11px;font-weight:700;color:rgba(255,255,255,0.3);letter-spacing:.08em;text-transform:uppercase;margin-bottom:8px}
       input[type=range]{-webkit-appearance:none;appearance:none;width:100%;height:4px;border-radius:99px;background:rgba(255,255,255,0.08);cursor:pointer;outline:none}
       input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:18px;height:18px;border-radius:50%;background:#fff;box-shadow:0 0 8px rgba(52,211,153,0.4);cursor:pointer}
       .mv-compare{display:block}
       @media(max-width:640px){
-        .mv-hero{grid-template-columns:1fr;padding:16px 14px 12px}
-        .mv-metrics{grid-template-columns:1fr 1fr;gap:8px;padding:0 14px 10px}
-        .mv-bottom{grid-template-columns:1fr 1fr;gap:8px;padding:0 14px 10px}
-        .mv-full{padding:0 14px 12px}
+        .mv-hero{grid-template-columns:1fr;padding:12px 12px 10px}
+        .mv-metrics{grid-template-columns:1fr 1fr;gap:6px;padding:0 12px 8px}
+        .mv-bottom{grid-template-columns:1fr 1fr;gap:6px;padding:0 12px 8px}
+        .mv-full{padding:0 12px 10px}
         .mv-score-col{display:none}
         .mv-card{padding:10px 12px;border-radius:12px}
-        .mv-compare{overflow-x:auto;-webkit-overflow-scrolling:touch}
-        .mv-compare table{min-width:480px}
         .mv-metrics .mv-card:last-child{grid-column:span 2}
       }
     `}</style>
 
     <div className="mv-main">
 
-      {/* ── DAILY HEALTH INDEX ────────────────────────────────────── */}
-      <div style={{ maxWidth:960, margin:'0 auto', padding:'20px 24px 0', textAlign:'center' }}>
-        <motion.div
-          initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5, ease: [0.23, 1, 0.32, 1] }}
-          style={{ display:'inline-block', padding:'18px 32px', borderRadius:20, background:`${dhiColor}0d`, border:`1px solid ${dhiColor}30` }}
-        >
-          <DailyHealthIndexCounter value={dhi} color={dhiColor} />
-          <p style={{ fontSize:11, fontWeight:700, color:'rgba(255,255,255,0.35)', letterSpacing:'0.1em', textTransform:'uppercase', marginTop:4 }}>
-            Daily Health Index — {new Date().toLocaleDateString('en-GB', { weekday:'long', day:'numeric', month:'short' })}
-          </p>
-        </motion.div>
-      </div>
-
-      {/* ── MORNING BRIEF / EMPTY STATE ───────────────────────────── */}
-      {!todayLogged && (
-        <motion.div
-          initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.4, delay: 0.15, ease: [0.23, 1, 0.32, 1] }}
-          style={{ maxWidth:960, margin:'12px auto 0', padding:'0 24px' }}
-        >
-          <div style={{ background:'#0a1628', border:`1px solid ${GREEN}20`, borderLeft:`3px solid ${GREEN}`, borderRadius:14, padding:'14px 18px', display:'flex', gap:12, alignItems:'flex-start' }}>
-            <span style={{ fontSize:22, flexShrink:0 }}>🌅</span>
-            <div>
-              <p style={{ fontSize:13, fontWeight:700, color:'rgba(255,255,255,0.8)', marginBottom:4 }}>
-                {greeting()} — here&apos;s your health brief
-              </p>
-              <p style={{ fontSize:12, color:'rgba(255,255,255,0.45)', lineHeight:1.6 }}>
-                {morningBrief || 'Start logging today to unlock AI insights about your patterns — food, sleep, mood and energy all connected.'}
-              </p>
-            </div>
-          </div>
-        </motion.div>
-      )}
-
       {/* ── HERO: 2-col above fold ─────────────────────────────────── */}
       <div className="mv-hero">
 
-        {/* LEFT: headline + NL log */}
+        {/* LEFT: DHI inline + headline + NL log */}
         <div>
-          {/* Streak bar */}
-          <div style={{ display:'flex', alignItems:'center', gap:12, marginBottom:16 }}>
+          {/* Top bar: brand + streak + date + DHI pill */}
+          <div style={{ display:'flex', alignItems:'center', gap:10, marginBottom:14, flexWrap:'wrap' }}>
             <span style={{ fontSize:13, fontWeight:800, color:'rgba(255,255,255,0.55)', letterSpacing:'-0.2px' }}>
               My<span style={{ color:GREEN }}>Vitals</span>
             </span>
@@ -304,19 +269,26 @@ export default function MyVitalsPage({ overrides }: { overrides: ContentOverride
                 <span style={{ fontSize:11, fontWeight:700, color:'#f59e0b' }}>{streak}d streak</span>
               </div>
             )}
-            <span style={{ marginLeft:'auto', fontSize:12, color:'rgba(255,255,255,0.25)' }}>
+            {/* DHI pill — inline, no separate block */}
+            <motion.div
+              initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }}
+              transition={{ duration: 0.4, ease: [0.23, 1, 0.32, 1] }}
+              style={{ display:'flex', alignItems:'center', gap:6, padding:'4px 12px', borderRadius:20, background:`${dhiColor}0d`, border:`1px solid ${dhiColor}30` }}
+            >
+              <DailyHealthIndexCounter value={dhi} color={dhiColor} compact />
+              <span style={{ fontSize:10, fontWeight:700, color:'rgba(255,255,255,0.3)', letterSpacing:'0.06em', textTransform:'uppercase' }}>DHI</span>
+            </motion.div>
+            <span style={{ marginLeft:'auto', fontSize:11, color:'rgba(255,255,255,0.2)' }}>
               {new Date().toLocaleDateString('en-GB', { weekday:'short', day:'numeric', month:'short' })}
             </span>
           </div>
 
-          <h1 style={{ fontSize:24, fontWeight:900, color:'#fff', letterSpacing:'-0.5px', lineHeight:1.25, marginBottom:6 }}>
+          <h1 style={{ fontSize:22, fontWeight:900, color:'#fff', letterSpacing:'-0.5px', lineHeight:1.2, marginBottom:5 }}>
             {headline}
           </h1>
-          <p style={{ fontSize:13, color:'rgba(255,255,255,0.4)', marginBottom:16, lineHeight:1.6 }}>
-            {subheadline}
-          </p>
-          <p style={{ fontSize:12, color:'rgba(255,255,255,0.3)', marginBottom:16, lineHeight:1.5 }}>
-            {greeting()}, <strong style={{ color:'rgba(255,255,255,0.55)' }}>{profile.name}</strong>. Log your day in one sentence below.
+          <p style={{ fontSize:12, color:'rgba(255,255,255,0.35)', marginBottom:12, lineHeight:1.55 }}>
+            {!todayLogged && (morningBrief || subheadline)}
+            {todayLogged && subheadline}
           </p>
 
           {/* NL Quick Log */}
@@ -401,9 +373,9 @@ export default function MyVitalsPage({ overrides }: { overrides: ContentOverride
         </div>
 
         {/* RIGHT: wellness score ring */}
-        <div id="wellness-score" className="mv-score-col" style={{ background:'#0a1628', border:`1px solid ${GREEN}18`, borderRadius:20, padding:'20px 16px', textAlign:'center', position:'sticky', top:20 }}>
-          <p className="mv-label" style={{ marginBottom:12 }}>Today&apos;s Wellness</p>
-          <svg width={160} height={160} viewBox="0 0 160 160" style={{ display:'block', margin:'0 auto' }}>
+        <div id="wellness-score" className="mv-score-col" style={{ background:'#0a1628', border:`1px solid ${GREEN}18`, borderRadius:16, padding:'14px 12px', textAlign:'center', position:'sticky', top:16 }}>
+          <p className="mv-label" style={{ marginBottom:8 }}>Today&apos;s Wellness</p>
+          <svg width={130} height={130} viewBox="0 0 160 160" style={{ display:'block', margin:'0 auto' }}>
             <circle cx={80} cy={80} r={r} fill="none" stroke="rgba(255,255,255,0.05)" strokeWidth={12} />
             <circle cx={80} cy={80} r={r} fill="none" stroke={scoreColor} strokeWidth={12} opacity={0.12} strokeDasharray={`${circumference} 0`} />
             <circle cx={80} cy={80} r={r} fill="none" stroke={scoreColor} strokeWidth={12}
@@ -568,41 +540,6 @@ export default function MyVitalsPage({ overrides }: { overrides: ContentOverride
 
       <GuidedTour steps={TOUR_STEPS} storageKey="myvitals_tour_v1" accentColor={GREEN} delay={800} />
 
-      {/* ── Competitor comparison (compact) ───────────────────────── */}
-      <section className="mv-compare" style={{ borderTop:'1px solid rgba(52,211,153,0.08)', padding:'32px 24px', maxWidth:960, margin:'0 auto' }}>
-        <div style={{ textAlign:'center', marginBottom:20 }}>
-          <p style={{ fontSize:10, color:'rgba(52,211,153,0.4)', letterSpacing:'.15em', textTransform:'uppercase', marginBottom:6 }}>How we compare</p>
-          <h2 style={{ fontSize:18, fontWeight:800, color:'#f0fdf4' }}>MyVitals vs alternatives</h2>
-        </div>
-        <div style={{ overflowX:'auto' }}>
-          <table style={{ width:'100%', borderCollapse:'collapse', fontSize:11 }}>
-            <thead>
-              <tr style={{ borderBottom:'1px solid rgba(52,211,153,0.12)' }}>
-                {['Feature','MyVitals','MyFitnessPal','Apple Health','Cronometer'].map((h,i) => (
-                  <th key={h} style={{ padding:'8px 10px', textAlign:i===0?'left':'center', color:i===1?GREEN:'rgba(255,255,255,0.22)', fontWeight:700, fontSize:10, letterSpacing:'0.05em' }}>{h}</th>
-                ))}
-              </tr>
-            </thead>
-            <tbody>
-              {[
-                ['AI natural language logging','✅ Built-in','❌','❌','❌'],
-                ['No account required','✅','❌','❌','❌'],
-                ['AI weekly insights','✅','❌','❌','❌'],
-                ['Mood + sleep + steps tracking','✅ All-in-one','⚠️ Steps only','✅','⚠️ Nutrition focus'],
-                ['Works offline','✅','⚠️','✅','⚠️'],
-                ['Cost','Free','Free / $10 mo','Free (iPhone)','Free / $9 mo'],
-              ].map(row => (
-                <tr key={row[0]} style={{ borderBottom:'1px solid rgba(52,211,153,0.05)' }}>
-                  {row.map((cell,i) => (
-                    <td key={i} style={{ padding:'7px 10px', textAlign:i===0?'left':'center', color:i===1?GREEN:i===0?'rgba(255,255,255,0.5)':'rgba(255,255,255,0.22)', background:i===1?'rgba(52,211,153,0.03)':'transparent', fontSize:11 }}>{cell}</td>
-                  ))}
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-      </section>
-
       {/* Footer */}
       <footer style={{ borderTop:'1px solid rgba(52,211,153,0.07)', padding:'16px 24px' }}>
         <div style={{ maxWidth:960, margin:'0 auto', display:'flex', flexWrap:'wrap', justifyContent:'space-between', alignItems:'center', gap:12 }}>
@@ -625,7 +562,7 @@ export default function MyVitalsPage({ overrides }: { overrides: ContentOverride
 }
 
 // ── Daily Health Index animated counter ────────────────────────────────────
-function DailyHealthIndexCounter({ value, color }: { value: number; color: string }) {
+function DailyHealthIndexCounter({ value, color, compact }: { value: number; color: string; compact?: boolean }) {
   const motionVal = useMotionValue(0)
   const spring = useSpring(motionVal, { stiffness: 50, damping: 14 })
   const [display, setDisplay] = useState(0)
@@ -635,6 +572,14 @@ function DailyHealthIndexCounter({ value, color }: { value: number; color: strin
     const unsub = spring.on('change', v => setDisplay(Math.round(v)))
     return () => { controls.stop(); unsub() }
   }, [value]) // eslint-disable-line react-hooks/exhaustive-deps
+
+  if (compact) {
+    return (
+      <span style={{ fontSize:18, fontWeight:900, color, fontVariantNumeric:'tabular-nums', textShadow:`0 0 12px ${color}60` }}>
+        {display}
+      </span>
+    )
+  }
 
   return (
     <motion.div
