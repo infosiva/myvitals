@@ -1,226 +1,417 @@
 'use client'
 
-import { useEffect, useRef, useState } from 'react'
+// Compact landing — max 3 desktop viewport scrolls
+// bg-[#070b14], accent emerald #10b981
+// Sections: Hero (split ~70vh) | Pill strip | 3-col features | CTA strip | Footer
 
-const ACCENT = '#34d399'
-const ACCENT2 = '#10b981'
+import { useState } from 'react'
+import { motion } from 'framer-motion'
 
-const features = [
-  { icon: '📊', title: 'Smart Health Dashboard', desc: 'Track vitals, mood, sleep and nutrition in one unified view. AI spots patterns you\'d miss.' },
-  { icon: '🤖', title: 'AI Health Coach', desc: 'VitalsBot gives personalised advice based on your actual data — like a doctor-friend on call 24/7.' },
-  { icon: '🔥', title: 'Streak & Habit Engine', desc: 'Daily check-ins build momentum. Streak tracking keeps you consistent with science-backed nudges.' },
-  { icon: '🧬', title: 'Evidence-Based Insights', desc: 'Every recommendation cites research. No pseudoscience — just what works for your body type and goals.' },
+const ACCENT = '#10b981'
+const ACCENT2 = '#34d399'
+const BG = '#070b14'
+const CARD_BG = 'rgba(16,185,129,0.05)'
+const CARD_BORDER = 'rgba(16,185,129,0.14)'
+
+const ease: [number, number, number, number] = [0.23, 1, 0.32, 1]
+const fadeUp = (delay = 0) => ({
+  initial: { opacity: 0, y: 20 },
+  animate: { opacity: 1, y: 0 },
+  transition: { duration: 0.45, delay, ease },
+})
+
+// ── Mini dashboard mockup ───────────────────────────────────────────────────
+const READINGS = [
+  { label: 'Blood Pressure', value: '118/76', unit: 'mmHg', status: 'normal', dot: '#10b981' },
+  { label: 'Heart Rate', value: '72', unit: 'bpm', status: 'normal', dot: '#10b981' },
+  { label: 'Glucose', value: '98', unit: 'mg/dL', status: 'normal', dot: '#10b981' },
+  { label: 'Weight', value: '74.2', unit: 'kg', status: 'stable', dot: '#f59e0b' },
+  { label: 'Sleep', value: '6.5', unit: 'hrs', status: 'low', dot: '#ef4444' },
 ]
 
-const steps = [
-  { num: '01', title: 'Log your day', desc: 'Quick 30-second check-in: mood, sleep, meals, movement. No friction.' },
-  { num: '02', title: 'AI analyses trends', desc: 'VitalsBot surfaces patterns across 7-day, 30-day windows. Alerts when something\'s off.' },
-  { num: '03', title: 'Get actionable tips', desc: 'Specific, personalised recommendations — not generic "drink water" advice.' },
-  { num: '04', title: 'Watch metrics improve', desc: 'Track your health score week over week. Real progress, visualised.' },
-]
-
-function ParticleBg() {
-  const canvasRef = useRef<HTMLCanvasElement>(null)
-
-  useEffect(() => {
-    const canvas = canvasRef.current
-    if (!canvas) return
-    const ctx = canvas.getContext('2d')!
-    let raf: number
-    let w = canvas.offsetWidth, h = canvas.offsetHeight
-    canvas.width = w; canvas.height = h
-
-    const particles = Array.from({ length: 55 }, () => ({
-      x: Math.random() * w, y: Math.random() * h,
-      vx: (Math.random() - 0.5) * 0.4, vy: (Math.random() - 0.5) * 0.4,
-      r: Math.random() * 2 + 0.5,
-      opacity: Math.random() * 0.5 + 0.1,
-    }))
-
-    function draw() {
-      ctx.clearRect(0, 0, w, h)
-      for (const p of particles) {
-        p.x += p.vx; p.y += p.vy
-        if (p.x < 0) p.x = w; if (p.x > w) p.x = 0
-        if (p.y < 0) p.y = h; if (p.y > h) p.y = 0
-        ctx.beginPath()
-        ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2)
-        ctx.fillStyle = `rgba(52,211,153,${p.opacity})`
-        ctx.fill()
-      }
-      // draw connections
-      for (let i = 0; i < particles.length; i++) {
-        for (let j = i + 1; j < particles.length; j++) {
-          const dx = particles[i].x - particles[j].x
-          const dy = particles[i].y - particles[j].y
-          const dist = Math.sqrt(dx * dx + dy * dy)
-          if (dist < 100) {
-            ctx.beginPath()
-            ctx.moveTo(particles[i].x, particles[i].y)
-            ctx.lineTo(particles[j].x, particles[j].y)
-            ctx.strokeStyle = `rgba(52,211,153,${0.08 * (1 - dist / 100)})`
-            ctx.lineWidth = 0.5
-            ctx.stroke()
-          }
-        }
-      }
-      raf = requestAnimationFrame(draw)
-    }
-    draw()
-
-    const resize = () => {
-      w = canvas.offsetWidth; h = canvas.offsetHeight
-      canvas.width = w; canvas.height = h
-    }
-    window.addEventListener('resize', resize)
-    return () => { cancelAnimationFrame(raf); window.removeEventListener('resize', resize) }
-  }, [])
-
+function DashMockup() {
   return (
-    <canvas
-      ref={canvasRef}
-      style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', opacity: 0.6, pointerEvents: 'none' }}
-    />
+    <motion.div
+      {...fadeUp(0.3)}
+      style={{
+        background: 'rgba(7,11,20,0.92)',
+        border: `1px solid ${CARD_BORDER}`,
+        borderRadius: 20,
+        padding: '18px 20px',
+        backdropFilter: 'blur(20px)',
+        boxShadow: `0 0 48px rgba(16,185,129,0.08), 0 20px 60px rgba(0,0,0,0.4)`,
+        width: '100%',
+        maxWidth: 360,
+      }}
+    >
+      {/* header row */}
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 16 }}>
+        <div>
+          <p style={{ fontSize: 11, fontWeight: 700, color: 'rgba(255,255,255,0.3)', letterSpacing: '0.08em', textTransform: 'uppercase', marginBottom: 2 }}>
+            Health Dashboard
+          </p>
+          <p style={{ fontSize: 13, fontWeight: 700, color: '#fff' }}>Today&apos;s snapshot</p>
+        </div>
+        <div style={{
+          padding: '4px 10px', borderRadius: 20,
+          background: 'rgba(16,185,129,0.1)', border: '1px solid rgba(16,185,129,0.25)',
+          fontSize: 11, fontWeight: 700, color: ACCENT,
+        }}>
+          Score 82
+        </div>
+      </div>
+
+      {/* readings */}
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+        {READINGS.map((r, i) => (
+          <motion.div
+            key={r.label}
+            initial={{ opacity: 0, x: -10 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ delay: 0.45 + i * 0.07, duration: 0.35, ease }}
+            style={{
+              display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+              padding: '9px 12px', borderRadius: 10,
+              background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.05)',
+            }}
+          >
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+              <div style={{
+                width: 7, height: 7, borderRadius: '50%', background: r.dot, flexShrink: 0,
+                boxShadow: `0 0 6px ${r.dot}80`,
+              }} />
+              <span style={{ fontSize: 12, color: 'rgba(255,255,255,0.5)' }}>{r.label}</span>
+            </div>
+            <div style={{ display: 'flex', alignItems: 'baseline', gap: 3 }}>
+              <span style={{ fontSize: 14, fontWeight: 800, color: '#fff', fontVariantNumeric: 'tabular-nums' }}>{r.value}</span>
+              <span style={{ fontSize: 10, color: 'rgba(255,255,255,0.25)' }}>{r.unit}</span>
+            </div>
+          </motion.div>
+        ))}
+      </div>
+
+      {/* AI insight strip */}
+      <motion.div
+        initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.85, duration: 0.4 }}
+        style={{
+          marginTop: 12, padding: '10px 12px', borderRadius: 10,
+          background: 'rgba(16,185,129,0.06)', border: '1px solid rgba(16,185,129,0.15)',
+          display: 'flex', alignItems: 'center', gap: 8,
+        }}
+      >
+        <span style={{ fontSize: 14 }}>🩺</span>
+        <p style={{ fontSize: 11, color: 'rgba(255,255,255,0.55)', lineHeight: 1.5, margin: 0 }}>
+          Sleep is below 7h for 3 days. Try a consistent 10pm bedtime.
+        </p>
+      </motion.div>
+    </motion.div>
   )
 }
 
-export default function AnimatedHeroGuide() {
-  const [visible, setVisible] = useState(false)
-  const [activeStep, setActiveStep] = useState(0)
+// ── Metric pill strip ───────────────────────────────────────────────────────
+const METRIC_PILLS = [
+  'Blood Pressure', 'Heart Rate', 'Glucose', 'Weight', 'Sleep', 'Temperature',
+]
 
-  useEffect(() => {
-    setVisible(true)
-    const t = setInterval(() => setActiveStep(s => (s + 1) % steps.length), 3000)
-    return () => clearInterval(t)
-  }, [])
+// ── 3-col feature cards ─────────────────────────────────────────────────────
+const FEATURES = [
+  {
+    icon: '🤖',
+    title: 'AI Analysis',
+    desc: 'Natural language insights on your readings. Spot trends before they become issues.',
+  },
+  {
+    icon: '📈',
+    title: 'Trend Charts',
+    desc: '7-day and 30-day sparklines for every metric. See patterns at a glance.',
+  },
+  {
+    icon: '📄',
+    title: 'Export PDF',
+    desc: 'One-tap health report. Share with your doctor or keep for your records.',
+  },
+]
+
+// ── Main component ──────────────────────────────────────────────────────────
+export default function AnimatedHeroGuide() {
+  const [activePill, setActivePill] = useState(0)
 
   return (
-    <>
+    <div style={{ background: BG, color: '#fff', fontFamily: 'inherit', overflowX: 'hidden' }}>
+      {/* ambient glow */}
+      <div aria-hidden style={{ position: 'fixed', inset: 0, pointerEvents: 'none', zIndex: 0, overflow: 'hidden' }}>
+        <div style={{
+          position: 'absolute', top: '-20%', left: '-10%', width: 600, height: 600,
+          borderRadius: '50%', background: 'radial-gradient(circle, rgba(16,185,129,0.18) 0%, transparent 70%)',
+          filter: 'blur(80px)',
+        }} />
+        <div style={{
+          position: 'absolute', bottom: '5%', right: '-8%', width: 400, height: 400,
+          borderRadius: '50%', background: 'radial-gradient(circle, rgba(52,211,153,0.10) 0%, transparent 70%)',
+          filter: 'blur(80px)',
+        }} />
+      </div>
+
       <style>{`
-        @keyframes hg-fade-up { from { opacity:0; transform:translateY(24px); } to { opacity:1; transform:translateY(0); } }
-        @keyframes hg-glow { 0%,100%{opacity:0.4;} 50%{opacity:1;} }
-        @keyframes hg-float { 0%,100%{transform:translateY(0);} 50%{transform:translateY(-8px);} }
-        @keyframes hg-spin { from{transform:rotate(0deg);} to{transform:rotate(360deg);} }
-        @keyframes hg-shimmer { 0%{background-position:200% center;} 100%{background-position:-200% center;} }
-        .hg-shimmer-text {
-          background: linear-gradient(90deg, #34d399, #10b981, #6ee7b7, #34d399);
-          background-size: 200% auto;
-          -webkit-background-clip: text;
-          -webkit-text-fill-color: transparent;
-          animation: hg-shimmer 4s linear infinite;
-        }
-        .hg-card {
-          transition: transform 200ms cubic-bezier(.23,1,.32,1), box-shadow 200ms cubic-bezier(.23,1,.32,1);
-        }
-        .hg-card:hover {
-          transform: translateY(-6px);
-          box-shadow: 0 20px 40px rgba(52,211,153,0.15), 0 0 0 1px rgba(52,211,153,0.2);
+        .mv-hero-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 48px; align-items: center; }
+        .mv-feature-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
+        @media (max-width: 768px) {
+          .mv-hero-grid { grid-template-columns: 1fr !important; gap: 28px !important; }
+          .mv-feature-grid { grid-template-columns: 1fr !important; gap: 12px !important; }
         }
         @media (max-width: 640px) {
-          .hg-grid { grid-template-columns: 1fr !important; }
-          .hg-steps { flex-direction: column !important; }
+          .mv-pill-strip { overflow-x: auto; flex-wrap: nowrap !important; -webkit-overflow-scrolling: touch; scrollbar-width: none; }
+          .mv-pill-strip::-webkit-scrollbar { display: none; }
         }
       `}</style>
 
-      <section style={{ position: 'relative', overflow: 'hidden', background: 'linear-gradient(180deg, #020d08 0%, #050d0a 60%, #050510 100%)', padding: '80px 24px 60px' }}>
-        <ParticleBg />
+      {/* ── SECTION 1: HERO (~70vh) ─────────────────────────────── */}
+      <section style={{ position: 'relative', zIndex: 1, padding: '80px 32px 56px', maxWidth: 1160, margin: '0 auto', boxSizing: 'border-box' }}>
+        <div className="mv-hero-grid">
 
-        {/* Parallax blobs — Securify-inspired health adaptation */}
-        <div style={{ position: 'absolute', top: -120, left: '15%', width: 500, height: 500, borderRadius: '50%', background: 'radial-gradient(circle, rgba(52,211,153,0.14) 0%, transparent 70%)', filter: 'blur(80px)', animation: 'hg-glow 7s ease-in-out infinite', pointerEvents: 'none' }} />
-        <div style={{ position: 'absolute', bottom: -100, right: '8%', width: 380, height: 380, borderRadius: '50%', background: 'radial-gradient(circle, rgba(16,185,129,0.11) 0%, transparent 70%)', filter: 'blur(70px)', animation: 'hg-glow 9s ease-in-out infinite 2.5s', pointerEvents: 'none' }} />
-        <div style={{ position: 'absolute', top: '30%', right: '25%', width: 200, height: 200, borderRadius: '50%', background: 'radial-gradient(circle, rgba(110,231,183,0.07) 0%, transparent 70%)', filter: 'blur(50px)', pointerEvents: 'none' }} />
+          {/* Left */}
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
+            {/* eyebrow */}
+            <motion.div {...fadeUp(0)}>
+              <span style={{
+                display: 'inline-flex', alignItems: 'center', gap: 6,
+                padding: '5px 14px', borderRadius: 999,
+                background: 'rgba(16,185,129,0.08)', border: '1px solid rgba(16,185,129,0.2)',
+                fontSize: 11, fontWeight: 700, color: ACCENT, letterSpacing: '0.08em', textTransform: 'uppercase',
+              }}>
+                <span style={{ width: 6, height: 6, borderRadius: '50%', background: ACCENT, display: 'inline-block' }} />
+                Free · No account needed
+              </span>
+            </motion.div>
 
-        {/* Hero */}
-        <div style={{ position: 'relative', maxWidth: 760, margin: '0 auto', textAlign: 'center', opacity: visible ? 1 : 0, animation: visible ? 'hg-fade-up 0.6s cubic-bezier(0.23,1,0.32,1)' : 'none' }}>
+            {/* headline */}
+            <motion.h1 {...fadeUp(0.08)} style={{ fontSize: 'clamp(2.1rem, 4.5vw, 3.4rem)', fontWeight: 900, lineHeight: 1.0, letterSpacing: '-0.04em', margin: 0, color: '#f0fdf4' }}>
+              Your health,{' '}
+              <span style={{
+                background: `linear-gradient(135deg, ${ACCENT} 0%, ${ACCENT2} 100%)`,
+                WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent',
+                filter: 'drop-shadow(0 0 28px rgba(16,185,129,0.35))',
+              }}>
+                understood.
+              </span>
+            </motion.h1>
 
-          {/* Liquid-glass badge */}
-          <div style={{
-            display: 'inline-flex', alignItems: 'center', gap: 8,
-            background: 'rgba(255,255,255,0.04)',
-            backdropFilter: 'blur(12px)', WebkitBackdropFilter: 'blur(12px)',
-            border: '1px solid rgba(255,255,255,0.10)',
-            boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.08)',
-            borderRadius: 9999, padding: '6px 16px', marginBottom: 28,
-          }}>
-            <span style={{ width: 7, height: 7, borderRadius: '50%', background: ACCENT, boxShadow: `0 0 8px ${ACCENT}`, display: 'inline-block' }} />
-            <span style={{ fontSize: 11, color: 'rgba(167,243,208,0.85)', fontWeight: 700, letterSpacing: '0.12em', textTransform: 'uppercase' }}>AI Health Coach · Free to start</span>
+            <motion.p {...fadeUp(0.14)} style={{ fontSize: 16, color: 'rgba(255,255,255,0.45)', lineHeight: 1.65, margin: 0, maxWidth: 420 }}>
+              Track vitals, get AI analysis, spot trends. Your personal health dashboard — no account, free forever.
+            </motion.p>
+
+            {/* CTA */}
+            <motion.div {...fadeUp(0.2)} style={{ display: 'flex', gap: 12, alignItems: 'center', flexWrap: 'wrap' }}>
+              <motion.button
+                whileHover={{ scale: 1.03, boxShadow: `0 0 28px rgba(16,185,129,0.45)` }}
+                whileTap={{ scale: 0.97 }}
+                onClick={() => document.getElementById('myvitals-onboard')?.scrollIntoView({ behavior: 'smooth' })}
+                style={{
+                  display: 'inline-flex', alignItems: 'center', gap: 8,
+                  padding: '13px 28px', borderRadius: 10,
+                  background: `linear-gradient(135deg, ${ACCENT}, ${ACCENT2})`,
+                  color: '#000', fontWeight: 800, fontSize: 15,
+                  border: 'none', cursor: 'pointer', letterSpacing: '-0.2px',
+                  boxShadow: `0 0 20px rgba(16,185,129,0.25)`,
+                }}
+              >
+                Add first reading
+                <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M2 7h10M8 3l4 4-4 4" stroke="#000" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/></svg>
+              </motion.button>
+
+              <span style={{ fontSize: 12, color: 'rgba(255,255,255,0.28)' }}>
+                ✓ No signup · Works offline · Private
+              </span>
+            </motion.div>
           </div>
 
-          {/* Headline — larger, tighter */}
-          <h1 style={{ fontSize: 'clamp(2.25rem, 5.5vw, 3.75rem)', fontWeight: 900, lineHeight: 1.0, marginBottom: 22, color: '#f1f5f9', letterSpacing: '-0.03em' }}>
-            Your body has patterns.<br />
-            <span className="hg-shimmer-text">AI helps you read them.</span>
-          </h1>
+          {/* Right: dashboard mockup */}
+          <div style={{ display: 'flex', justifyContent: 'center' }}>
+            <DashMockup />
+          </div>
+        </div>
+      </section>
 
-          {/* Trust pills row — Securify data security pattern */}
-          <div style={{ display: 'flex', gap: 8, justifyContent: 'center', flexWrap: 'wrap', marginBottom: 24 }}>
-            {['🔒 HIPAA-aware', '💚 Evidence-based', '⚡ No signup needed'].map(p => (
-              <span key={p} style={{
-                fontSize: 11, fontWeight: 600, padding: '5px 12px', borderRadius: 9999,
-                background: 'rgba(52,211,153,0.08)', border: '1px solid rgba(52,211,153,0.18)',
-                color: 'rgba(167,243,208,0.70)', letterSpacing: '0.04em',
-              }}>{p}</span>
+      {/* ── SECTION 2: PILL STRIP (60px) ───────────────────────── */}
+      <div style={{ position: 'relative', zIndex: 1, borderTop: `1px solid rgba(16,185,129,0.08)`, borderBottom: `1px solid rgba(16,185,129,0.08)`, padding: '0 32px' }}>
+        <div style={{ maxWidth: 1160, margin: '0 auto' }}>
+          <div
+            className="mv-pill-strip"
+            style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '12px 0', flexWrap: 'wrap' }}
+          >
+            <span style={{ fontSize: 10, fontWeight: 700, color: 'rgba(255,255,255,0.25)', letterSpacing: '0.1em', textTransform: 'uppercase', marginRight: 8, whiteSpace: 'nowrap' }}>
+              Track
+            </span>
+            {METRIC_PILLS.map((pill, i) => (
+              <button
+                key={pill}
+                onClick={() => setActivePill(i)}
+                style={{
+                  padding: '5px 14px', borderRadius: 999, fontSize: 12, fontWeight: 600,
+                  cursor: 'pointer', border: `1px solid ${activePill === i ? ACCENT : 'rgba(16,185,129,0.18)'}`,
+                  background: activePill === i ? `rgba(16,185,129,0.12)` : 'transparent',
+                  color: activePill === i ? ACCENT : 'rgba(255,255,255,0.4)',
+                  transition: 'all 0.15s',
+                  whiteSpace: 'nowrap',
+                }}
+              >
+                {pill}
+              </button>
             ))}
           </div>
+        </div>
+      </div>
 
-          <p style={{ fontSize: 16, color: 'rgba(241,245,249,0.55)', lineHeight: 1.75, marginBottom: 36, maxWidth: 560, margin: '0 auto 36px' }}>
-            Track sleep, mood, nutrition, movement — your AI coach spots what&apos;s working, what&apos;s not, and exactly what to do next.
+      {/* ── SECTION 3: 3-COL FEATURES ──────────────────────────── */}
+      <section style={{ position: 'relative', zIndex: 1, padding: '40px 32px', maxWidth: 1160, margin: '0 auto', boxSizing: 'border-box' }}>
+        <div className="mv-feature-grid">
+          {FEATURES.map((f, i) => (
+            <motion.div
+              key={f.title}
+              initial={{ opacity: 0, y: 16 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ delay: i * 0.08, duration: 0.4, ease }}
+              whileHover={{ y: -3, boxShadow: `0 8px 32px rgba(16,185,129,0.12)` }}
+              style={{
+                padding: '20px 22px', borderRadius: 16,
+                background: CARD_BG, border: `1px solid ${CARD_BORDER}`,
+                backdropFilter: 'blur(10px)',
+              }}
+            >
+              <div style={{ fontSize: 24, marginBottom: 10 }}>{f.icon}</div>
+              <h3 style={{ fontSize: 14, fontWeight: 800, color: '#fff', margin: '0 0 6px', letterSpacing: '-0.01em' }}>{f.title}</h3>
+              <p style={{ fontSize: 12, color: 'rgba(255,255,255,0.42)', lineHeight: 1.55, margin: 0 }}>{f.desc}</p>
+            </motion.div>
+          ))}
+        </div>
+      </section>
+
+      {/* ── SECTION 4: PRICING ─────────────────────────────────── */}
+      <section style={{ position: 'relative', zIndex: 1, padding: '40px 32px', maxWidth: 1160, margin: '0 auto', boxSizing: 'border-box' }}>
+        <div style={{ textAlign: 'center', marginBottom: 28 }}>
+          <h2 style={{ fontSize: 'clamp(1.3rem,2.5vw,1.8rem)', fontWeight: 900, letterSpacing: '-0.03em', margin: '0 0 8px', color: '#f0fdf4' }}>
+            Simple pricing.{' '}
+            <span style={{ background: `linear-gradient(135deg, ${ACCENT} 0%, ${ACCENT2} 100%)`, WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>
+              No surprises.
+            </span>
+          </h2>
+          <p style={{ fontSize: 13, color: 'rgba(255,255,255,0.35)', margin: 0 }}>Start free, upgrade when you need more.</p>
+        </div>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: 16, maxWidth: 680, margin: '0 auto' }}>
+          {[
+            {
+              name: 'Free',
+              price: '$0',
+              period: '',
+              note: '7 days of tracking',
+              features: ['Daily health index', 'AI day recap', 'Water, sleep & steps', 'Mood & exercise log'],
+              highlight: false,
+              cta: 'Start tracking free',
+              href: '#myvitals-onboard',
+            },
+            {
+              name: 'Pro',
+              price: '$4',
+              period: '/mo',
+              note: 'Unlimited tracking',
+              features: ['Everything in Free', '30-day trend charts', 'Export PDF reports', 'Weekly AI coach summary'],
+              highlight: true,
+              cta: 'Get Pro',
+              href: '/profile',
+            },
+          ].map((plan, i) => (
+            <motion.div
+              key={plan.name}
+              initial={{ opacity: 0, y: 16 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ delay: i * 0.1, duration: 0.4, ease }}
+              whileHover={{ scale: 1.02, y: -3 }}
+              style={{
+                padding: '22px 20px', borderRadius: 16, position: 'relative', overflow: 'hidden',
+                background: plan.highlight ? 'rgba(16,185,129,0.08)' : 'rgba(255,255,255,0.02)',
+                border: plan.highlight ? '1px solid rgba(16,185,129,0.3)' : `1px solid ${CARD_BORDER}`,
+                backdropFilter: 'blur(10px)',
+              }}
+            >
+              {plan.highlight && (
+                <span style={{ position: 'absolute', top: 12, right: 12, fontSize: 10, padding: '2px 8px', borderRadius: 999, background: 'rgba(16,185,129,0.15)', color: ACCENT, fontWeight: 700 }}>POPULAR</span>
+              )}
+              <p style={{ fontSize: 12, color: 'rgba(255,255,255,0.45)', fontWeight: 600, margin: '0 0 6px' }}>{plan.name}</p>
+              <div style={{ display: 'flex', alignItems: 'baseline', gap: 3, marginBottom: 3 }}>
+                <span style={{ fontSize: 30, fontWeight: 900, letterSpacing: '-0.04em', color: plan.highlight ? ACCENT : '#f0fdf4' }}>{plan.price}</span>
+                <span style={{ fontSize: 13, color: 'rgba(255,255,255,0.35)' }}>{plan.period}</span>
+              </div>
+              <p style={{ fontSize: 11, color: 'rgba(255,255,255,0.28)', margin: '0 0 14px' }}>{plan.note}</p>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 7, marginBottom: 18 }}>
+                {plan.features.map(f => (
+                  <div key={f} style={{ display: 'flex', alignItems: 'center', gap: 7, fontSize: 12, color: 'rgba(255,255,255,0.55)' }}>
+                    <span style={{ color: ACCENT, fontSize: 11 }}>✓</span> {f}
+                  </div>
+                ))}
+              </div>
+              <motion.a
+                href={plan.href}
+                whileHover={{ scale: 1.03 }} whileTap={{ scale: 0.97 }}
+                style={{
+                  display: 'block', padding: '10px', borderRadius: 10, fontWeight: 700, fontSize: 13,
+                  textAlign: 'center', textDecoration: 'none',
+                  background: plan.highlight ? `linear-gradient(135deg, ${ACCENT}, ${ACCENT2})` : 'rgba(16,185,129,0.08)',
+                  color: plan.highlight ? '#000' : ACCENT,
+                  border: plan.highlight ? 'none' : `1px solid rgba(16,185,129,0.2)`,
+                  boxSizing: 'border-box',
+                }}
+              >
+                {plan.cta}
+              </motion.a>
+            </motion.div>
+          ))}
+        </div>
+      </section>
+
+      {/* ── SECTION 5: CTA STRIP ───────────────────────────────── */}
+      <div style={{ position: 'relative', zIndex: 1, borderTop: `1px solid rgba(16,185,129,0.08)`, padding: '20px 32px' }}>
+        <div style={{ maxWidth: 1160, margin: '0 auto', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 16, flexWrap: 'wrap' }}>
+          <p style={{ fontSize: 13, color: 'rgba(255,255,255,0.4)', margin: 0 }}>
+            Free forever for personal use. No account needed to start.
           </p>
-
-          <div style={{ display: 'flex', gap: 12, justifyContent: 'center', flexWrap: 'wrap' }}>
-            <a href="/insights" style={{ display: 'inline-flex', alignItems: 'center', gap: 8, padding: '14px 30px', borderRadius: 14, background: `linear-gradient(135deg, ${ACCENT}, ${ACCENT2})`, color: '#fff', fontWeight: 700, fontSize: 15, textDecoration: 'none', boxShadow: '0 4px 24px rgba(52,211,153,0.35)', transition: 'transform 150ms cubic-bezier(0.23,1,0.32,1), box-shadow 150ms ease' }}
-              onMouseEnter={e => { (e.currentTarget as HTMLElement).style.transform = 'scale(1.03)'; (e.currentTarget as HTMLElement).style.boxShadow = '0 8px 32px rgba(52,211,153,0.50)' }}
-              onMouseLeave={e => { (e.currentTarget as HTMLElement).style.transform = 'scale(1)'; (e.currentTarget as HTMLElement).style.boxShadow = '0 4px 24px rgba(52,211,153,0.35)' }}
-              onMouseDown={e => { (e.currentTarget as HTMLElement).style.transform = 'scale(0.97)' }}
-            >Start tracking free →</a>
-            <a href="#how-it-works" style={{ display: 'inline-flex', alignItems: 'center', gap: 8, padding: '14px 26px', borderRadius: 14, border: '1px solid rgba(52,211,153,0.22)', color: ACCENT, fontWeight: 600, fontSize: 15, textDecoration: 'none', background: 'rgba(52,211,153,0.05)', transition: 'background 150ms ease, border-color 150ms ease' }}
-              onMouseEnter={e => { (e.currentTarget as HTMLElement).style.background = 'rgba(52,211,153,0.10)'; (e.currentTarget as HTMLElement).style.borderColor = 'rgba(52,211,153,0.35)' }}
-              onMouseLeave={e => { (e.currentTarget as HTMLElement).style.background = 'rgba(52,211,153,0.05)'; (e.currentTarget as HTMLElement).style.borderColor = 'rgba(52,211,153,0.22)' }}
-            >How it works</a>
-          </div>
+          <motion.button
+            id="myvitals-onboard"
+            whileHover={{ scale: 1.03 }}
+            whileTap={{ scale: 0.97 }}
+            onClick={() => {
+              // scroll down — onboarding is rendered below by MyVitalsPage
+              window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' })
+            }}
+            style={{
+              padding: '10px 22px', borderRadius: 9,
+              background: `linear-gradient(135deg, ${ACCENT}, ${ACCENT2})`,
+              color: '#000', fontWeight: 700, fontSize: 13,
+              border: 'none', cursor: 'pointer',
+            }}
+          >
+            Get started free →
+          </motion.button>
         </div>
-      </section>
+      </div>
 
-      {/* Feature cards */}
-      <section style={{ background: '#050d0a', padding: '60px 24px' }}>
-        <div style={{ maxWidth: 1080, margin: '0 auto' }}>
-          <div style={{ textAlign: 'center', marginBottom: 40 }}>
-            <h2 style={{ fontSize: 'clamp(1.5rem, 3vw, 2rem)', fontWeight: 700, color: '#f1f5f9', marginBottom: 10 }}>Everything your wellness needs</h2>
-            <p style={{ color: 'rgba(241,245,249,0.5)', fontSize: 15 }}>Science-backed tracking meets AI-powered coaching</p>
-          </div>
-          <div className="hg-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 16 }}>
-            {features.map((f, i) => (
-              <div key={i} className="hg-card" style={{ padding: '24px', background: 'rgba(52,211,153,0.04)', border: '1px solid rgba(52,211,153,0.12)', borderRadius: 16, cursor: 'default', animation: `hg-fade-up 0.5s ease-out ${i * 0.1}s both` }}>
-                <div style={{ fontSize: 28, marginBottom: 12, animation: 'hg-float 4s ease-in-out infinite', display: 'inline-block' }}>{f.icon}</div>
-                <h3 style={{ fontSize: 15, fontWeight: 700, color: '#f1f5f9', marginBottom: 6 }}>{f.title}</h3>
-                <p style={{ fontSize: 13.5, color: 'rgba(241,245,249,0.55)', lineHeight: 1.6 }}>{f.desc}</p>
-              </div>
+      {/* ── FOOTER (one row) ────────────────────────────────────── */}
+      <footer style={{ position: 'relative', zIndex: 1, borderTop: `1px solid rgba(16,185,129,0.07)`, padding: '14px 32px' }}>
+        <div style={{ maxWidth: 1160, margin: '0 auto', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12, flexWrap: 'wrap' }}>
+          <span style={{ fontWeight: 900, fontSize: 13, color: ACCENT }}>MyVitals</span>
+          <div style={{ display: 'flex', gap: 18 }}>
+            {[['Privacy', '/privacy'], ['Terms', '/terms'], ['About', '/about']].map(([label, href]) => (
+              <a key={label} href={href} style={{ fontSize: 11, color: 'rgba(255,255,255,0.22)', textDecoration: 'none' }}
+                onMouseOver={e => (e.currentTarget.style.color = ACCENT)}
+                onMouseOut={e => (e.currentTarget.style.color = 'rgba(255,255,255,0.22)')}>
+                {label}
+              </a>
             ))}
           </div>
+          <p style={{ fontSize: 10, color: 'rgba(255,255,255,0.12)', margin: 0 }}>© 2026 MyVitals</p>
         </div>
-      </section>
-
-      {/* How it works */}
-      <section id="how-it-works" style={{ background: 'linear-gradient(180deg, #050d0a 0%, #050510 100%)', padding: '60px 24px 80px' }}>
-        <div style={{ maxWidth: 900, margin: '0 auto' }}>
-          <div style={{ textAlign: 'center', marginBottom: 48 }}>
-            <h2 style={{ fontSize: 'clamp(1.5rem, 3vw, 2rem)', fontWeight: 700, color: '#f1f5f9', marginBottom: 10 }}>From check-in to insight in seconds</h2>
-          </div>
-          <div className="hg-steps" style={{ display: 'flex', gap: 0, position: 'relative' }}>
-            {/* connector line */}
-            <div style={{ position: 'absolute', top: 28, left: '12%', right: '12%', height: 1, background: 'rgba(52,211,153,0.15)', pointerEvents: 'none' }} />
-            {steps.map((s, i) => (
-              <div key={i} onClick={() => setActiveStep(i)} style={{ flex: 1, textAlign: 'center', padding: '0 12px', cursor: 'pointer', transition: 'opacity 200ms' }}>
-                <div style={{ width: 56, height: 56, borderRadius: '50%', background: activeStep === i ? `linear-gradient(135deg, ${ACCENT}, ${ACCENT2})` : 'rgba(52,211,153,0.08)', border: `2px solid ${activeStep === i ? ACCENT : 'rgba(52,211,153,0.2)'}`, display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 16px', transition: 'all 300ms cubic-bezier(.23,1,.32,1)', boxShadow: activeStep === i ? '0 0 20px rgba(52,211,153,0.4)' : 'none' }}>
-                  <span style={{ fontSize: 11, fontWeight: 800, color: activeStep === i ? '#fff' : ACCENT, letterSpacing: '0.05em' }}>{s.num}</span>
-                </div>
-                <h3 style={{ fontSize: 13, fontWeight: 700, color: activeStep === i ? ACCENT : '#f1f5f9', marginBottom: 6, transition: 'color 300ms' }}>{s.title}</h3>
-                <p style={{ fontSize: 12, color: 'rgba(241,245,249,0.5)', lineHeight: 1.5, maxWidth: 160, margin: '0 auto' }}>{s.desc}</p>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
-    </>
+      </footer>
+    </div>
   )
 }
