@@ -1,4 +1,5 @@
 import { reportToTaskFlow } from '@/lib/reportToTaskFlow'
+import { AI_LIMITER } from '@/lib/rateLimit'
 import Groq from 'groq-sdk'
 import { NextRequest, NextResponse } from 'next/server'
 
@@ -13,6 +14,8 @@ interface Message {
 }
 
 export async function POST(req: NextRequest) {
+  const limited = AI_LIMITER.check(req)
+  if (limited) return limited
   try {
     const body = await req.json()
     const messages: Message[] = body.messages
