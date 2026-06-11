@@ -1,3 +1,4 @@
+import { reportToTaskFlow } from '@/lib/reportToTaskFlow'
 import Groq from 'groq-sdk'
 import { NextRequest, NextResponse } from 'next/server'
 
@@ -37,6 +38,7 @@ Never diagnose conditions or prescribe medication.`
       stream: true,
     })
 
+    void reportToTaskFlow({ project: 'myvitals', agentName: 'ChatBot', status: 'completed', message: 'Chat message processed' })
     const readable = new ReadableStream({
       async start(controller) {
         const encoder = new TextEncoder()
