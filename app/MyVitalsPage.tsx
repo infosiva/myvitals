@@ -42,8 +42,8 @@ const TOUR_STEPS: TourStep[] = [
   },
 ]
 
-const GREEN = '#0ea5e9'
-const TEAL = '#38bdf8'
+const GREEN = '#10b981'
+const TEAL = '#34d399'
 
 export default function MyVitalsPage({ overrides }: { overrides: ContentOverrides }) {
   const [profile, setProfile] = useState<HealthProfile | null>(null)
@@ -200,7 +200,7 @@ export default function MyVitalsPage({ overrides }: { overrides: ContentOverride
   }, [score]) // eslint-disable-line react-hooks/exhaustive-deps
 
   if (!mounted) return (
-    <div style={{ minHeight: '100vh', background: '#040c14', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+    <div style={{ minHeight: '100vh', background: '#f8fafc', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
       <div style={{ width: 32, height: 32, borderRadius: '50%', border: '2px solid rgba(52,211,153,0.2)', borderTopColor: '#34d399', animation: 'spin 0.8s linear infinite' }} />
     </div>
   )
@@ -230,15 +230,15 @@ export default function MyVitalsPage({ overrides }: { overrides: ContentOverride
       @keyframes ring-in{from{stroke-dasharray:0 ${circumference}}to{stroke-dasharray:${dash} ${circumference}}}
       @keyframes dhi-count{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
       @keyframes strip-up{from{opacity:0;transform:translateY(100%)}to{opacity:1;transform:translateY(0)}}
-      .mv-main{background:#040c14;min-height:100vh;color:#fff;font-family:inherit}
+      .mv-main{background:transparent;min-height:100vh;color:#0f172a;font-family:inherit}
       .mv-hero{display:grid;grid-template-columns:1fr 250px;gap:20px;align-items:start;padding:18px 20px 14px;max-width:960px;margin:0 auto}
       .mv-metrics{display:grid;grid-template-columns:1fr 1fr;gap:8px;padding:0 20px 10px;max-width:960px;margin:0 auto}
       .mv-bottom{display:grid;grid-template-columns:1fr 1fr;gap:8px;padding:0 20px 10px;max-width:960px;margin:0 auto}
       .mv-full{padding:0 20px 10px;max-width:960px;margin:0 auto}
-      .mv-card{background:#0a1628;border:1px solid rgba(14,165,233,0.1);border-radius:16px;padding:14px 16px}
-      .mv-label{font-size:11px;font-weight:700;color:rgba(255,255,255,0.3);letter-spacing:.08em;text-transform:uppercase;margin-bottom:8px}
-      input[type=range]{-webkit-appearance:none;appearance:none;width:100%;height:4px;border-radius:99px;background:rgba(255,255,255,0.08);cursor:pointer;outline:none}
-      input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:18px;height:18px;border-radius:50%;background:#fff;box-shadow:0 0 8px rgba(52,211,153,0.4);cursor:pointer}
+      .mv-card{background:#fff;border:1px solid #e2e8f0;border-radius:16px;padding:14px 16px;box-shadow:0 2px 12px rgba(0,0,0,0.04)}
+      .mv-label{font-size:11px;font-weight:700;color:#64748b;letter-spacing:.08em;text-transform:uppercase;margin-bottom:8px}
+      input[type=range]{-webkit-appearance:none;appearance:none;width:100%;height:4px;border-radius:99px;background:#e2e8f0;cursor:pointer;outline:none}
+      input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:18px;height:18px;border-radius:50%;background:#10b981;box-shadow:0 0 8px rgba(16,185,129,0.3);cursor:pointer}
       .mv-compare{display:block}
       @media(max-width:640px){
         .mv-hero{grid-template-columns:1fr;padding:12px 12px 10px}
@@ -392,17 +392,17 @@ export default function MyVitalsPage({ overrides }: { overrides: ContentOverride
           {/* 5 mini metric bars */}
           {[
             { icon:'💧', label:'Water', v:log.water, max:8, color:'#38bdf8', fmt:(v:number)=>`${v} gl` },
-            { icon:'😴', label:'Sleep', v:log.sleep, max:8, color:'#818cf8', fmt:(v:number)=>`${v}h` },
+            { icon:'😴', label:'Sleep', v:log.sleep, max:8, color:'#10b981', fmt:(v:number)=>`${v}h` },
             { icon:'👟', label:'Steps', v:log.steps, max:10000, color:GREEN, fmt:(v:number)=>v>=1000?`${(v/1000).toFixed(1)}k`:String(v) },
             { icon:'😊', label:'Mood', v:log.mood, max:5, color:'#f472b6', fmt:(v:number)=>`${v}/5` },
             { icon:'🏃', label:'Exercise', v:log.exercise, max:30, color:'#fb923c', fmt:(v:number)=>`${v}m` },
           ].map(m => (
             <div key={m.label} style={{ marginBottom:8 }}>
               <div style={{ display:'flex', justifyContent:'space-between', marginBottom:3 }}>
-                <span style={{ fontSize:11, color:'rgba(255,255,255,0.4)' }}>{m.icon} {m.label}</span>
-                <span style={{ fontSize:11, fontWeight:700, color: Math.min(m.v/m.max,1)>=1 ? m.color : 'rgba(255,255,255,0.35)' }}>{m.fmt(m.v)}</span>
+                <span style={{ fontSize:11, color:'#64748b' }}>{m.icon} {m.label}</span>
+                <span style={{ fontSize:11, fontWeight:700, color: Math.min(m.v/m.max,1)>=1 ? m.color : '#94a3b8' }}>{m.fmt(m.v)}</span>
               </div>
-              <div style={{ height:3, borderRadius:99, background:'rgba(255,255,255,0.07)', overflow:'hidden' }}>
+              <div style={{ height:3, borderRadius:99, background:'#e2e8f0', overflow:'hidden' }}>
                 <div style={{ height:'100%', width:`${Math.min((m.v/m.max)*100,100)}%`, background:m.color, borderRadius:99, transition:'width 0.5s' }} />
               </div>
             </div>
@@ -418,13 +418,13 @@ export default function MyVitalsPage({ overrides }: { overrides: ContentOverride
         {/* Water */}
         <motion.div className="mv-card" initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.35, delay: 0.05, ease: [0.23, 1, 0.32, 1] }}>
           <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center', marginBottom:8 }}>
-            <span style={{ fontSize:12, color:'rgba(255,255,255,0.5)', fontWeight:600 }}>💧 Water</span>
-            <span style={{ fontSize:18, fontWeight:800, color:'#38bdf8' }}>{log.water} <span style={{ fontSize:11, color:'rgba(255,255,255,0.3)', fontWeight:400 }}>gl</span></span>
+            <span style={{ fontSize:12, color:'#64748b', fontWeight:600 }}>💧 Water</span>
+            <span style={{ fontSize:18, fontWeight:800, color:'#10b981' }}>{log.water} <span style={{ fontSize:11, color:'#94a3b8', fontWeight:400 }}>gl</span></span>
           </div>
-          <input type="range" min={0} max={12} value={log.water} onChange={e => update('water', parseInt(e.target.value))} style={{ accentColor:'#38bdf8' }} />
+          <input type="range" min={0} max={12} value={log.water} onChange={e => update('water', parseInt(e.target.value))} style={{ accentColor:'#10b981' }} />
           <div style={{ display:'flex', gap:4, marginTop:8, flexWrap:'wrap' }}>
             {[2,4,6,8].map(n => (
-              <button key={n} onClick={() => update('water', n)} style={{ padding:'3px 9px', borderRadius:20, fontSize:11, fontWeight:600, cursor:'pointer', border:`1px solid ${log.water===n?'#38bdf8':'rgba(56,189,248,0.2)'}`, background:log.water===n?'rgba(56,189,248,0.15)':'transparent', color:log.water===n?'#38bdf8':'rgba(56,189,248,0.4)', minHeight:28 }}>{n}</button>
+              <button key={n} onClick={() => update('water', n)} style={{ padding:'3px 9px', borderRadius:20, fontSize:11, fontWeight:600, cursor:'pointer', border:`1px solid ${log.water===n?'#10b981':'#e2e8f0'}`, background:log.water===n?'rgba(16,185,129,0.12)':'transparent', color:log.water===n?'#10b981':'#94a3b8', minHeight:28 }}>{n}</button>
             ))}
           </div>
         </motion.div>

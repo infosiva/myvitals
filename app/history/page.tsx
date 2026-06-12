@@ -3,6 +3,7 @@ import { useState, useEffect } from 'react'
 import { getLast30Days, healthScore } from '@/lib/storage'
 import type { DayLog } from '@/lib/types'
 import { MOOD_LABELS, MOOD_COLORS } from '@/lib/types'
+import TrendSparklines from '@/components/TrendSparklines'
 
 export default function HistoryPage() {
   const [logs, setLogs] = useState<DayLog[]>([])

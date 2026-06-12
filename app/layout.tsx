@@ -3,12 +3,14 @@ import type { Metadata } from 'next'
 import './globals.css'
 import FeedbackWidget from '@/components/FeedbackWidget'
 import NavBar from '@/components/NavBar'
-import CookieConsent from "../components/CookieConsent";
-import Footer from "../components/Footer";
+import CookieConsent from "../components/CookieConsent"
+import Footer from "../components/Footer"
 import AuthButton from '@/components/AuthButton'
 import AffiliateStrip from '@/components/AffiliateStrip'
 import ChatBot from '@/components/ChatBot'
+import BackToTop from '@/components/BackToTop'
 import { getSiteFlags } from '@/lib/flags'
+import { loadSiteTheme, buildThemeStyleTag, isWidgetHidden } from '@/lib/theme-loader'
 
 export const metadata: Metadata = {
   title: 'MyVitals — Your health, finally explained.',
@@ -42,7 +44,17 @@ const jsonLd = {
 }
 
 export default async function RootLayout({ children }: { children: React.ReactNode }) {
-  const flags = await getSiteFlags('myvitals')
+  const [flags, theme] = await Promise.all([
+    getSiteFlags('myvitals'),
+    loadSiteTheme('myvitals'),
+  ])
+
+  const themeCSS = buildThemeStyleTag(theme, {
+    background: '#f0fdf4',
+    primary: '#10b981',
+    secondary: '#34d399',
+  })
+
   return (
     <html lang="en">
       <head>
@@ -52,37 +64,41 @@ export default async function RootLayout({ children }: { children: React.ReactNo
         <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700&display=swap" rel="stylesheet" />
         <style dangerouslySetInnerHTML={{ __html: `
           :root {
-            --theme-primary: #0ea5e9;
-            --theme-secondary: #38bdf8;
-            --background: #040c14;
-            --surface-1: rgba(255,255,255,0.04);
-            --surface-2: rgba(255,255,255,0.07);
-            --foreground: #f1f5f9;
-            --text-2: rgba(255,255,255,0.55);
-            --border-default: rgba(255,255,255,0.08);
-            --border-strong: rgba(14,165,233,0.25);
+            --theme-primary: #10b981;
+            --theme-secondary: #34d399;
+            --theme-base: #f0fdf4;
+            --background: #f0fdf4;
+            --foreground: #0f172a;
+            --text-2: #065f46;
+            --border-default: rgba(16,185,129,0.2);
+            --border-strong: rgba(16,185,129,0.4);
+            --radius: 1rem;
           }
-          html, body { background: #040c14 !important; color: #f1f5f9 !important; }
-          body { font-family: 'DM Sans', system-ui, sans-serif !important; }
-          h1, h2, h3 { font-weight: 700 !important; }
-          .glass { background: rgba(255,255,255,0.04) !important; border-color: rgba(255,255,255,0.08) !important; }
+          body { font-family: 'DM Sans', system-ui, sans-serif !important; color: #0f172a; }
+          h1, h2, h3 { font-family: 'DM Sans', system-ui, sans-serif !important; font-weight: 700; letter-spacing: -0.02em; }
+          ${themeCSS}
         ` }} />
       </head>
-      <body>
+      <body style={{
+        background: 'linear-gradient(-45deg, #f0fdf4, #dcfce7, #f8fafc, #f0fdf4, #ecfdf5)',
+        backgroundSize: '400% 400%',
+        animation: 'bgGradientShift 18s ease infinite',
+        color: '#0f172a',
+        fontFamily: "'DM Sans', system-ui, sans-serif",
+      }}>
         <div className="aurora aurora-primary" aria-hidden />
         <div className="aurora aurora-secondary" aria-hidden />
         <div className="aurora aurora-third" aria-hidden />
-        <div className="grain" aria-hidden />
         <NavBar authSlot={<AuthButton />} />
         <div style={{ paddingTop: 58 }}>{children}</div>
-        {flags.chatbot && <ChatBot />}
+        {flags.chatbot && !isWidgetHidden(theme, 'chatbot') && <ChatBot />}
         <FeedbackWidget siteName="MyVitals" accentColor="#34d399" accentColor2="#10b981" position={flags.chatbot ? 'left' : 'right'} />
+        {!isWidgetHidden(theme, 'backToTop') && <BackToTop accentColor="#10b981" />}
         <AffiliateStrip />
         <Footer siteName="MyVitals" />
-      <CookieConsent />
-        {/* eslint-disable-next-line @next/next/no-before-interactive-script-outside-document */}
+        {!isWidgetHidden(theme, 'cookieConsent') && <CookieConsent />}
         <script src="http://31.97.56.148:3098/t.js" data-site="myvitals.app" defer></script>
-            <Script async src="http://31.97.56.148:3100/script.js" data-website-id="5574c4a1-ce1c-45aa-ba8b-2ffe9b5eb9c5" strategy="afterInteractive" />
+        <Script async src="http://31.97.56.148:3100/script.js" data-website-id="5574c4a1-ce1c-45aa-ba8b-2ffe9b5eb9c5" strategy="afterInteractive" />
       </body>
     </html>
   )
