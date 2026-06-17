@@ -1,10 +1,12 @@
 @import "tailwindcss";
 
 :root {
-  --background: #f8fafc;
+  --background: #f0fdfa;
   --foreground: #0f172a;
-  --theme-primary: #10b981;
-  --theme-secondary: #34d399;
+  --accent: #0d9488;
+  --accent-2: #14b8a6;
+  --theme-primary: #0d9488;
+  --theme-secondary: #14b8a6;
 }
 
 @keyframes bgGradientShift {
