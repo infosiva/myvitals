@@ -39,9 +39,9 @@ export default function NavBar({ authSlot }: { authSlot?: React.ReactNode }) {
               href={href}
               className="nav-link"
               style={isActive ? {
-                background: 'rgba(52,211,153,0.15)',
-                color: '#34d399',
-                border: '1px solid rgba(52,211,153,0.25)',
+                background: 'rgba(13,148,136,0.12)',
+                color: '#0d9488',
+                border: '1px solid rgba(13,148,136,0.25)',
               } : undefined}
             >
               {label}

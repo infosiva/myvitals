@@ -50,9 +50,9 @@ export default async function RootLayout({ children }: { children: React.ReactNo
   ])
 
   const themeCSS = buildThemeStyleTag(theme, {
-    background: '#f0fdf4',
-    primary: '#10b981',
-    secondary: '#34d399',
+    background: '#f0fdfa',
+    primary: '#0d9488',
+    secondary: '#0f766e',
   })
 
   return (
@@ -65,14 +65,19 @@ export default async function RootLayout({ children }: { children: React.ReactNo
         <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700&display=swap" rel="stylesheet" />
         <style dangerouslySetInnerHTML={{ __html: `
           :root {
-            --theme-primary: #10b981;
-            --theme-secondary: #34d399;
-            --theme-base: #f0fdf4;
-            --background: #f0fdf4;
+            --theme-primary: #0d9488;
+            --theme-secondary: #0f766e;
+            --theme-base: #f0fdfa;
+            --background: #f0fdfa;
             --foreground: #0f172a;
-            --text-2: #065f46;
-            --border-default: rgba(16,185,129,0.2);
-            --border-strong: rgba(16,185,129,0.4);
+            --accent: #0d9488;
+            --accent-2: #0f766e;
+            --border: #99f6e4;
+            --surface-1: #ffffff;
+            --surface-2: #ccfbf1;
+            --text-2: #0f766e;
+            --border-default: rgba(13,148,136,0.2);
+            --border-strong: rgba(13,148,136,0.4);
             --radius: 1rem;
           }
           body { font-family: 'DM Sans', system-ui, sans-serif !important; color: #0f172a; }
@@ -81,9 +86,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
         ` }} />
       </head>
       <body style={{
-        background: 'linear-gradient(-45deg, #f0fdf4, #dcfce7, #f8fafc, #f0fdf4, #ecfdf5)',
-        backgroundSize: '400% 400%',
-        animation: 'bgGradientShift 18s ease infinite',
+        background: 'var(--background, #f0fdfa)',
         color: '#0f172a',
         fontFamily: "'DM Sans', system-ui, sans-serif",
       }}>
