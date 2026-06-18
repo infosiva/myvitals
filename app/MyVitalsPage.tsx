@@ -10,6 +10,7 @@ import { useGate } from '@/lib/shared/useGate'
 import RegisterGate from '@/lib/shared/RegisterGate'
 import type { ContentOverrides } from '@/lib/content'
 import GoalProgressBars from '@/components/GoalProgressBars'
+import LiveStatsBar from '@/components/LiveStatsBar'
 
 const TOUR_STEPS: TourStep[] = [
   {
@@ -42,8 +43,8 @@ const TOUR_STEPS: TourStep[] = [
   },
 ]
 
-const GREEN = '#10b981'
-const TEAL = '#34d399'
+const GREEN = '#0d9488'
+const TEAL = '#0f766e'
 
 export default function MyVitalsPage({ overrides }: { overrides: ContentOverrides }) {
   const [profile, setProfile] = useState<HealthProfile | null>(null)
@@ -200,8 +201,8 @@ export default function MyVitalsPage({ overrides }: { overrides: ContentOverride
   }, [score]) // eslint-disable-line react-hooks/exhaustive-deps
 
   if (!mounted) return (
-    <div style={{ minHeight: '100vh', background: '#f8fafc', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-      <div style={{ width: 32, height: 32, borderRadius: '50%', border: '2px solid rgba(52,211,153,0.2)', borderTopColor: '#34d399', animation: 'spin 0.8s linear infinite' }} />
+    <div style={{ minHeight: '100vh', background: 'var(--background, #f0fdfa)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+      <div style={{ width: 32, height: 32, borderRadius: '50%', border: '2px solid rgba(13,148,136,0.2)', borderTopColor: '#0d9488', animation: 'spin 0.8s linear infinite' }} />
     </div>
   )
   if (!profile) return (
@@ -252,6 +253,7 @@ export default function MyVitalsPage({ overrides }: { overrides: ContentOverride
     `}</style>
 
     <div className="mv-main">
+      <LiveStatsBar />
 
       {/* ── HERO: 2-col above fold ─────────────────────────────────── */}
       <div className="mv-hero">
@@ -534,6 +536,11 @@ export default function MyVitalsPage({ overrides }: { overrides: ContentOverride
           🩺 Weekly insight →
         </a>
       </div>
+
+      {/* Promo code link */}
+      <p style={{ textAlign: 'center', fontSize: 12, color: 'rgba(15,118,110,0.7)', marginTop: 4 }}>
+        Have a promo code? <a href="#promo" style={{ color: GREEN, textDecoration: 'underline' }}>Apply it →</a>
+      </p>
 
       {/* ── 3-TAP MOBILE LOG STRIP ────────────────────────────────── */}
       <QuickLogStrip log={log} onUpdate={update} accent={GREEN} />
