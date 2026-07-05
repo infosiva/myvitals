@@ -320,9 +320,9 @@ export default function MyVitalsPage({ overrides }: { overrides: ContentOverride
                   '10k steps, 8h sleep, salad, feeling great',
                 ].map(ex => (
                   <button key={ex} onClick={() => setNlText(ex)}
-                    style={{ padding:'4px 10px', borderRadius:20, fontSize:11, cursor:'pointer', border:'1px solid rgba(52,211,153,0.18)', background:'rgba(52,211,153,0.05)', color:'rgba(52,211,153,0.6)', fontFamily:'inherit', transition:'all 0.15s' }}
-                    onMouseEnter={e => { (e.currentTarget as HTMLButtonElement).style.background='rgba(52,211,153,0.12)'; (e.currentTarget as HTMLButtonElement).style.color='#34d399' }}
-                    onMouseLeave={e => { (e.currentTarget as HTMLButtonElement).style.background='rgba(52,211,153,0.05)'; (e.currentTarget as HTMLButtonElement).style.color='rgba(52,211,153,0.6)' }}
+                    style={{ padding:'4px 10px', borderRadius:20, fontSize:11, cursor:'pointer', border:'1px solid rgba(52,211,153,0.35)', background:'rgba(52,211,153,0.15)', color:'#a7f3d0', fontFamily:'inherit', transition:'all 0.15s' }}
+                    onMouseEnter={e => { (e.currentTarget as HTMLButtonElement).style.background='rgba(52,211,153,0.25)'; (e.currentTarget as HTMLButtonElement).style.color='#d1fae5' }}
+                    onMouseLeave={e => { (e.currentTarget as HTMLButtonElement).style.background='rgba(52,211,153,0.15)'; (e.currentTarget as HTMLButtonElement).style.color='#a7f3d0' }}
                   >
                     {ex}
                   </button>
