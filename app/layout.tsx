@@ -1,4 +1,3 @@
-import Script from 'next/script'
 import type { Metadata } from 'next'
 import './globals.css'
 import FeedbackWidget from '@/components/FeedbackWidget'
@@ -101,8 +100,6 @@ export default async function RootLayout({ children }: { children: React.ReactNo
         <AffiliateStrip />
         <Footer siteName="MyVitals" />
         {!isWidgetHidden(theme, 'cookieConsent') && <CookieConsent />}
-        <script src="http://31.97.56.148:3098/t.js" data-site="myvitals.app" defer></script>
-        <Script async src="http://31.97.56.148:3100/script.js" data-website-id="5574c4a1-ce1c-45aa-ba8b-2ffe9b5eb9c5" strategy="afterInteractive" />
       </body>
     </html>
   )
