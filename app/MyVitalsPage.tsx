@@ -959,7 +959,7 @@ function AIChatOnboarding({ onDone }: { onDone: (p: HealthProfile) => void }) {
     <div style={{ maxWidth: 540, margin: '0 auto', padding: '0 20px', display: 'flex', flexDirection: 'column', minHeight: 'calc(100vh - 58px)', justifyContent: 'center' }}>
       <div style={{ textAlign: 'center', marginBottom: 24 }}>
         <div style={{ width: 48, height: 48, borderRadius: 14, background: 'linear-gradient(135deg, #0ea5e9, #38bdf8)', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 10px', fontSize: 22, boxShadow: '0 0 24px rgba(14,165,233,0.28)' }}>💙</div>
-        <p style={{ fontSize: 18, fontWeight: 800, color: '#0f172a' }}>My<span style={{ color: GREEN }}>Vitals</span> <span style={{ fontSize: 13, color: '#94a3b8', fontWeight: 400 }}>— Setup</span></p>
+        <h1 style={{ fontSize: 18, fontWeight: 800, color: '#0f172a', margin: 0 }}>My<span style={{ color: GREEN }}>Vitals</span> <span style={{ fontSize: 13, color: '#94a3b8', fontWeight: 400 }}>— Setup</span></h1>
       </div>
       <div ref={scrollRef} style={{ background: '#f8fafc', border: '1px solid #e2e8f0', borderRadius: 20, padding: 20, maxHeight: 320, overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: 10, marginBottom: 12 }}>
         {messages.map((m, i) => (
