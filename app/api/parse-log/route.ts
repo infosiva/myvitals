@@ -1,11 +1,14 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { aiChat } from '@/lib/ai'
 import type { HealthProfile } from '@/lib/types'
+import { AI_LIMITER } from '@/lib/rateLimit'
 
 const SYSTEM = `You are a health data extraction assistant. Extract health metrics from natural language.
 Return ONLY valid JSON, no markdown, no explanation.`
 
 export async function POST(req: NextRequest) {
+  const limited = AI_LIMITER.check(req); if (limited) return limited
+
   const { text, profile }: { text: string; profile?: HealthProfile } = await req.json()
   if (!text?.trim()) return NextResponse.json({ error: 'No text' }, { status: 400 })
 

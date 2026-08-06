@@ -1,10 +1,13 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { aiChat } from '@/lib/ai'
+import { AI_LIMITER } from '@/lib/rateLimit'
 
 const SYSTEM = `You are a health onboarding assistant extracting user profile info from conversation.
 Return ONLY valid JSON, no markdown, no explanation.`
 
 export async function POST(req: NextRequest) {
+  const limited = AI_LIMITER.check(req); if (limited) return limited
+
   const { messages }: { messages: Array<{ role: 'user' | 'assistant'; content: string }> } = await req.json()
   if (!messages?.length) return NextResponse.json({ error: 'No messages' }, { status: 400 })
 

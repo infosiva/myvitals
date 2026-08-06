@@ -1,7 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { callAI } from '@/lib/ai'
+import { AI_LIMITER } from '@/lib/rateLimit'
 
 export async function POST(req: NextRequest) {
+  const limited = AI_LIMITER.check(req); if (limited) return limited
+
   const { logs, profile } = await req.json()
 
   const system = `You are a highly empathetic personal health coach AI with expertise in preventive medicine, nutrition, exercise science, and sleep health. Your insights are warm, specific, encouraging, and medically informed — like a knowledgeable friend who happens to be a doctor. Return ONLY valid JSON, no markdown.`

@@ -1,11 +1,14 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { aiChat } from '@/lib/ai'
 import type { DayLog, HealthProfile } from '@/lib/types'
+import { AI_LIMITER } from '@/lib/rateLimit'
 
 const SYSTEM = `You are an encouraging AI health coach. Write warm, personal, data-driven summaries.
 Keep it to 2 sentences max. Be specific with numbers. Never be generic.`
 
 export async function POST(req: NextRequest) {
+  const limited = AI_LIMITER.check(req); if (limited) return limited
+
   const { log, profile }: { log: DayLog; profile?: HealthProfile } = await req.json()
   if (!log) return NextResponse.json({ error: 'No log data' }, { status: 400 })
 
