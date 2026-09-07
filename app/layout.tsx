@@ -1,4 +1,5 @@
 import type { Metadata } from 'next'
+import Script from 'next/script'
 import './globals.css'
 import FeedbackWidget from '@/components/FeedbackWidget'
 import NavBar from '@/components/NavBar'
@@ -96,6 +97,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
         <div style={{ paddingTop: 58 }}>{children}</div>
         {flags.chatbot && !isWidgetHidden(theme, 'chatbot') && <ChatBot />}
         <FeedbackWidget siteName="MyVitals" accentColor="#34d399" accentColor2="#10b981" position={flags.chatbot ? 'left' : 'right'} />
+        <Script defer data-site="myvitals.app" src="http://31.97.56.148:3098/t.js" strategy="afterInteractive" />
         {!isWidgetHidden(theme, 'backToTop') && <BackToTop accentColor="#10b981" />}
         <AffiliateStrip />
         <Footer siteName="MyVitals" />
