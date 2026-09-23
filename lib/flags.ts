@@ -6,6 +6,9 @@
 import { unstable_cache } from 'next/cache'
 
 export interface SiteFlags {
+  no_auth_log: boolean
+  doctor_share: boolean
+  reminders: boolean
   pricing: boolean
   chatbot: boolean
   freemium: boolean
@@ -14,6 +17,9 @@ export interface SiteFlags {
 }
 
 const DEFAULTS: SiteFlags = {
+  no_auth_log: true,
+  doctor_share: false,
+  reminders: false,
   pricing: false,
   chatbot: true,
   freemium: true,
@@ -70,3 +76,4 @@ export async function getSiteFlags(siteId: string): Promise<SiteFlags> {
   )
   return cached()
 }
+
