@@ -14,12 +14,12 @@ export default function HistoryPage() {
   }, [])
 
   return (
-    <main style={{ maxWidth: 800, margin: '0 auto', padding: '32px 20px' }}>
-      <h1 style={{ fontSize: 24, fontWeight: 700, color: '#fff', marginBottom: 6 }}>📅 30-Day History</h1>
-      <p style={{ color: 'rgba(255,255,255,0.4)', marginBottom: 28, fontSize: 14 }}>All logged days in the past 30 days</p>
+    <main style={{ maxWidth: 800, margin: '0 auto', padding: '32px 20px', background: 'var(--background, #f0fdfa)' }}>
+      <h1 style={{ fontSize: 24, fontWeight: 700, color: '#0f172a', marginBottom: 6 }}>📅 30-Day History</h1>
+      <p style={{ color: '#64748b', marginBottom: 28, fontSize: 14 }}>All logged days in the past 30 days</p>
 
       {logs.length === 0 && (
-        <div style={{ textAlign: 'center', padding: '60px 20px', color: 'rgba(255,255,255,0.35)' }}>
+        <div style={{ textAlign: 'center', padding: '60px 20px', color: '#94a3b8' }}>
           <p style={{ fontSize: 40, marginBottom: 12 }}>📋</p>
           <p>No logs yet. Start tracking on the dashboard!</p>
         </div>
@@ -30,10 +30,10 @@ export default function HistoryPage() {
           const sc = healthScore(log)
           const scoreColor = sc >= 80 ? '#10b981' : sc >= 60 ? '#34d399' : sc >= 40 ? '#f59e0b' : '#ef4444'
           return (
-            <div key={log.date} className="history-card" style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.07)', borderRadius: 14, padding: '18px 20px', display: 'flex', alignItems: 'center', gap: 20 }}>
+            <div key={log.date} className="history-card" style={{ background: '#ffffff', border: '1px solid #e2e8f0', borderRadius: 14, padding: '18px 20px', display: 'flex', alignItems: 'center', gap: 20, boxShadow: '0 1px 3px rgba(15,23,42,0.06)' }}>
               <div className="history-date" style={{ minWidth: 80 }}>
-                <p style={{ fontSize: 13, fontWeight: 700, color: '#fff' }}>{formatDate(log.date)}</p>
-                <p style={{ fontSize: 11, color: 'rgba(255,255,255,0.35)', marginTop: 2 }}>{log.date}</p>
+                <p style={{ fontSize: 13, fontWeight: 700, color: '#0f172a' }}>{formatDate(log.date)}</p>
+                <p style={{ fontSize: 11, color: '#94a3b8', marginTop: 2 }}>{log.date}</p>
               </div>
               <div className="history-metrics" style={{ flex: 1, display: 'flex', gap: 16, flexWrap: 'wrap' }}>
                 <Metric icon="💧" value={log.water} unit="gl" />
@@ -44,7 +44,7 @@ export default function HistoryPage() {
               </div>
               <div style={{ textAlign: 'center', minWidth: 48 }}>
                 <span style={{ fontSize: 22, fontWeight: 800, color: scoreColor }}>{sc}</span>
-                <p style={{ fontSize: 10, color: 'rgba(255,255,255,0.35)' }}>score</p>
+                <p style={{ fontSize: 10, color: '#94a3b8' }}>score</p>
               </div>
             </div>
           )
@@ -56,8 +56,8 @@ export default function HistoryPage() {
 
 function Metric({ icon, value, unit }: { icon: string; value: any; unit: string }) {
   return (
-    <span style={{ fontSize: 13, color: 'rgba(255,255,255,0.6)' }}>
-      {icon} <strong style={{ color: '#fff' }}>{value}</strong> {unit}
+    <span style={{ fontSize: 13, color: '#475569' }}>
+      {icon} <strong style={{ color: '#0f172a' }}>{value}</strong> {unit}
     </span>
   )
 }

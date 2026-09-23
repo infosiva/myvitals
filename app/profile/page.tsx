@@ -31,18 +31,18 @@ export default function ProfilePage() {
   }
 
   return (
-    <main style={{ maxWidth: 560, margin: '0 auto', padding: '32px 20px' }}>
-      <h1 style={{ fontSize: 24, fontWeight: 700, color: '#fff', marginBottom: 6 }}>⚙️ Your Profile</h1>
-      <p style={{ color: 'rgba(255,255,255,0.4)', marginBottom: 28, fontSize: 14 }}>Used to personalise your AI health insights</p>
+    <main style={{ maxWidth: 560, margin: '0 auto', padding: '32px 20px', background: 'var(--background, #f0fdfa)' }}>
+      <h1 style={{ fontSize: 24, fontWeight: 700, color: '#0f172a', marginBottom: 6 }}>⚙️ Your Profile</h1>
+      <p style={{ color: '#64748b', marginBottom: 28, fontSize: 14 }}>Used to personalise your AI health insights</p>
 
-      <div style={{ display: 'flex', flexDirection: 'column', gap: 16, background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: 20, padding: 28 }}>
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 16, background: '#ffffff', border: '1px solid #e2e8f0', borderRadius: 20, padding: 28, boxShadow: '0 1px 3px rgba(15,23,42,0.06)' }}>
         <Field label="Name" value={form.name} onChange={v => setForm(f => ({ ...f, name: v }))} placeholder="Siva" />
         <div className="profile-2col" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
           <Field label="Age" value={form.age} onChange={v => setForm(f => ({ ...f, age: v }))} placeholder="35" type="number" />
           <div>
-            <label style={{ fontSize: 12, color: 'rgba(255,255,255,0.5)', display: 'block', marginBottom: 6 }}>Gender</label>
+            <label style={{ fontSize: 12, color: '#64748b', display: 'block', marginBottom: 6 }}>Gender</label>
             <select value={form.gender} onChange={e => setForm(f => ({ ...f, gender: e.target.value }))}
-              style={{ width: '100%', padding: '10px 12px', borderRadius: 10, background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', color: '#fff', fontSize: 14 }}>
+              style={{ width: '100%', padding: '10px 12px', borderRadius: 10, background: '#f8fafc', border: '1px solid #e2e8f0', color: '#0f172a', fontSize: 14 }}>
               <option value="male">Male</option>
               <option value="female">Female</option>
               <option value="other">Other</option>
@@ -55,14 +55,14 @@ export default function ProfilePage() {
         </div>
 
         <div>
-          <label style={{ fontSize: 12, color: 'rgba(255,255,255,0.5)', display: 'block', marginBottom: 10 }}>Health goals</label>
+          <label style={{ fontSize: 12, color: '#64748b', display: 'block', marginBottom: 10 }}>Health goals</label>
           <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
             {GOALS.map(g => (
               <button key={g} onClick={() => toggleGoal(g)}
                 style={{ padding: '7px 14px', borderRadius: 20, fontSize: 13, cursor: 'pointer',
-                  border: `1px solid ${form.goals.includes(g) ? '#34d399' : 'rgba(255,255,255,0.12)'}`,
-                  background: form.goals.includes(g) ? 'rgba(52,211,153,0.15)' : 'transparent',
-                  color: form.goals.includes(g) ? '#34d399' : 'rgba(255,255,255,0.6)' }}>
+                  border: `1px solid ${form.goals.includes(g) ? '#10b981' : '#e2e8f0'}`,
+                  background: form.goals.includes(g) ? 'rgba(16,185,129,0.12)' : '#f8fafc',
+                  color: form.goals.includes(g) ? '#0f766e' : '#475569' }}>
                 {g}
               </button>
             ))}
@@ -72,8 +72,8 @@ export default function ProfilePage() {
         <Field label="Health conditions (comma-separated)" value={form.conditions} onChange={v => setForm(f => ({ ...f, conditions: v }))} placeholder="e.g. diabetes, hypertension" />
 
         <button onClick={save} style={{ padding: '13px', borderRadius: 12, fontWeight: 700, fontSize: 15, border: 'none', cursor: 'pointer',
-          background: saved ? 'rgba(52,211,153,0.2)' : 'linear-gradient(135deg,#34d399,#10b981)',
-          color: saved ? '#34d399' : '#000', transition: 'all 0.3s' }}>
+          background: saved ? 'rgba(16,185,129,0.15)' : 'linear-gradient(135deg,#34d399,#10b981)',
+          color: saved ? '#0f766e' : '#000', transition: 'all 0.3s' }}>
           {saved ? '✓ Saved!' : 'Save Profile'}
         </button>
       </div>
@@ -84,10 +84,10 @@ export default function ProfilePage() {
 function Field({ label, value, onChange, placeholder, type = 'text' }: { label: string; value: string; onChange: (v: string) => void; placeholder: string; type?: string }) {
   return (
     <div>
-      <label style={{ fontSize: 12, color: 'rgba(255,255,255,0.5)', display: 'block', marginBottom: 6 }}>{label}</label>
+      <label style={{ fontSize: 12, color: '#64748b', display: 'block', marginBottom: 6 }}>{label}</label>
       <input type={type} value={value} onChange={e => onChange(e.target.value)} placeholder={placeholder}
-        style={{ width: '100%', padding: '10px 12px', borderRadius: 10, fontSize: 14, color: '#fff',
-          background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', outline: 'none' }} />
+        style={{ width: '100%', padding: '10px 12px', borderRadius: 10, fontSize: 14, color: '#0f172a',
+          background: '#f8fafc', border: '1px solid #e2e8f0', outline: 'none' }} />
     </div>
   )
 }
