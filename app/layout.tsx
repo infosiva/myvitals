@@ -12,6 +12,7 @@ import BackToTop from '@/components/BackToTop'
 import { getSiteFlags } from '@/lib/flags'
 import { loadSiteTheme, buildThemeStyleTag, isWidgetHidden } from '@/lib/theme-loader'
 
+import { MotionProvider } from "@infosiva/shared-ui/modern";
 export const metadata: Metadata = {
   title: 'MyVitals — Your health, finally explained.',
   description: 'AI connects your food, sleep, symptoms and mood — and tells you what\'s actually driving how you feel. No paywall on insights.',
@@ -100,7 +101,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
         <div className="aurora aurora-secondary" aria-hidden />
         <div className="aurora aurora-third" aria-hidden />
         <NavBar authSlot={<AuthButton />} />
-        <div style={{ paddingTop: 58 }}>{children}</div>
+        <div style={{ paddingTop: 58 }}><MotionProvider>{children}</MotionProvider></div>
         {flags.chatbot && !isWidgetHidden(theme, 'chatbot') && <ChatBot />}
         <FeedbackWidget siteName="MyVitals" accentColor="#34d399" accentColor2="#10b981" position={flags.chatbot ? 'left' : 'right'} />
         <Script defer data-domain="myvitals.app" src="https://plausible.io/js/script.js" strategy="afterInteractive" />

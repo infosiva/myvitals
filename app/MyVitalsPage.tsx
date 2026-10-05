@@ -11,6 +11,7 @@ import RegisterGate from '@/lib/shared/RegisterGate'
 import type { ContentOverrides } from '@/lib/content'
 import GoalProgressBars from '@/components/GoalProgressBars'
 import LiveStatsBar from '@/components/LiveStatsBar'
+import { MagneticButton } from "@infosiva/shared-ui/modern";
 
 const TOUR_STEPS: TourStep[] = [
   {
@@ -307,10 +308,10 @@ export default function MyVitalsPage({ overrides }: { overrides: ContentOverride
                 placeholder='e.g. "8k steps, 7h sleep, oats, feeling good"'
                 style={{ flex:1, minWidth:0, padding:'11px 14px', borderRadius:10, fontSize:14, color:'#0f172a', background:'#f8fafc', border:'1px solid #e2e8f0', outline:'none', fontFamily:'inherit' }}
               />
-              <button onClick={parseNL} disabled={nlParsing || !nlText.trim()}
+              <MagneticButton onClick={parseNL} disabled={nlParsing || !nlText.trim()}
                 style={{ flexShrink:0, padding:'11px 18px', borderRadius:10, fontWeight:700, fontSize:14, cursor: nlParsing || !nlText.trim() ? 'not-allowed' : 'pointer', border:'none', background: nlText.trim() ? `linear-gradient(135deg,${GREEN},${TEAL})` : '#f1f5f9', color: nlText.trim() ? '#000' : '#cbd5e1', transition:'all 0.2s', minHeight:44 }}>
                 {nlParsing ? '…' : 'AI →'}
-              </button>
+              </MagneticButton>
             </div>
             {!nlConfirm && !nlText && (
               <div style={{ display:'flex', gap:5, flexWrap:'wrap', marginTop:8 }}>
