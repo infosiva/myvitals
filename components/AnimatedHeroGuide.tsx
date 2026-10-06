@@ -133,7 +133,7 @@ const FEATURES = [
 ]
 
 // ── Main component ──────────────────────────────────────────────────────────
-export default function AnimatedHeroGuide() {
+export default function AnimatedHeroGuide({ children }: { children?: React.ReactNode }) {
   const [activePill, setActivePill] = useState(0)
 
   return (
@@ -153,11 +153,11 @@ export default function AnimatedHeroGuide() {
       </div>
 
       <style>{`
-        .mv-hero-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 48px; align-items: center; }
+        .mv-hero-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 32px; align-items: center; }
         .mv-feature-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
         @media (max-width: 768px) {
-          .mv-hero-grid { grid-template-columns: 1fr !important; gap: 28px !important; }
-          .mv-feature-grid { grid-template-columns: 1fr !important; gap: 12px !important; }
+          .mv-hero-grid { grid-template-columns: 1fr !important; gap: 16px !important; }
+          .mv-feature-grid { grid-template-columns: 1fr !important; gap: 8px !important; }
         }
         @media (max-width: 640px) {
           .mv-pill-strip { overflow-x: auto; flex-wrap: nowrap !important; -webkit-overflow-scrolling: touch; scrollbar-width: none; }
@@ -166,7 +166,7 @@ export default function AnimatedHeroGuide() {
       `}</style>
 
       {/* ── SECTION 1: HERO (~70vh) ─────────────────────────────── */}
-      <section style={{ position: 'relative', zIndex: 1, padding: '80px 32px 56px', maxWidth: 1160, margin: '0 auto', boxSizing: 'border-box' }}>
+      <section style={{ position: 'relative', zIndex: 1, padding: '64px 32px 24px', maxWidth: 1160, margin: '0 auto', boxSizing: 'border-box' }}>
         <div className="mv-hero-grid">
 
           {/* Left */}
@@ -208,7 +208,7 @@ export default function AnimatedHeroGuide() {
                 onClick={() => document.getElementById('myvitals-onboard')?.scrollIntoView({ behavior: 'smooth' })}
                 style={{
                   display: 'inline-flex', alignItems: 'center', gap: 8,
-                  padding: '13px 28px', borderRadius: 10,
+                  padding: '11px 24px', borderRadius: 10,
                   background: `linear-gradient(135deg, ${ACCENT}, ${ACCENT2})`,
                   color: '#000', fontWeight: 800, fontSize: 15,
                   border: 'none', cursor: 'pointer', letterSpacing: '-0.2px',
@@ -226,12 +226,14 @@ export default function AnimatedHeroGuide() {
           </div>
 
           {/* Right: dashboard mockup */}
-          <div style={{ display: 'flex', justifyContent: 'center' }}>
-            <DashMockup />
+          <div id="myvitals-onboard" style={{ display: 'flex', justifyContent: 'center' }}>
+            {children ?? <DashMockup />}
           </div>
         </div>
       </section>
 
+      <details style={{ position: "relative", zIndex: 1, maxWidth: 1160, margin: "0 auto", padding: "0 32px 8px" }}>
+        <summary style={{ cursor: "pointer", fontSize: 13, fontWeight: 700, color: ACCENT, minHeight: 44, display: "flex", alignItems: "center" }}>Features, tools &amp; pricing</summary>
       {/* ── SECTION 2: PILL STRIP (60px) ───────────────────────── */}
       <div style={{ position: 'relative', zIndex: 1, borderTop: `1px solid rgba(16,185,129,0.08)`, borderBottom: `1px solid rgba(16,185,129,0.08)`, padding: '0 32px' }}>
         <div style={{ maxWidth: 1160, margin: '0 auto' }}>
@@ -263,7 +265,7 @@ export default function AnimatedHeroGuide() {
       </div>
 
       {/* ── SECTION 3: 3-COL FEATURES ──────────────────────────── */}
-      <section style={{ position: 'relative', zIndex: 1, padding: '40px 32px', maxWidth: 1160, margin: '0 auto', boxSizing: 'border-box' }}>
+      <section style={{ position: 'relative', zIndex: 1, padding: '16px 32px', maxWidth: 1160, margin: '0 auto', boxSizing: 'border-box' }}>
         <div className="mv-feature-grid">
           {FEATURES.map((f, i) => (
             <motion.div
@@ -274,7 +276,7 @@ export default function AnimatedHeroGuide() {
               transition={{ delay: i * 0.08, duration: 0.4, ease }}
               whileHover={{ y: -3, boxShadow: `0 8px 32px rgba(16,185,129,0.12)` }}
               style={{
-                padding: '20px 22px', borderRadius: 16,
+                padding: '12px 16px', borderRadius: 14,
                 background: CARD_BG, border: `1px solid ${CARD_BORDER}`,
                 backdropFilter: 'blur(10px)',
               }}
@@ -288,7 +290,7 @@ export default function AnimatedHeroGuide() {
       </section>
 
       {/* ── SECTION 4: PRICING ─────────────────────────────────── */}
-      <section style={{ position: 'relative', zIndex: 1, padding: '40px 32px', maxWidth: 1160, margin: '0 auto', boxSizing: 'border-box' }}>
+      <section style={{ position: 'relative', zIndex: 1, padding: '16px 32px', maxWidth: 1160, margin: '0 auto', boxSizing: 'border-box' }}>
         <div style={{ textAlign: 'center', marginBottom: 28 }}>
           <h2 style={{ fontSize: 'clamp(1.3rem,2.5vw,1.8rem)', fontWeight: 900, letterSpacing: '-0.03em', margin: '0 0 8px', color: '#f0fdf4' }}>
             Simple pricing.{' '}
@@ -329,7 +331,7 @@ export default function AnimatedHeroGuide() {
               transition={{ delay: i * 0.1, duration: 0.4, ease }}
               whileHover={{ scale: 1.02, y: -3 }}
               style={{
-                padding: '22px 20px', borderRadius: 16, position: 'relative', overflow: 'hidden',
+                padding: '14px 16px', borderRadius: 14, position: 'relative', overflow: 'hidden',
                 background: plan.highlight ? 'rgba(16,185,129,0.08)' : 'rgba(255,255,255,0.02)',
                 border: plan.highlight ? '1px solid rgba(16,185,129,0.3)' : `1px solid ${CARD_BORDER}`,
                 backdropFilter: 'blur(10px)',
@@ -369,35 +371,10 @@ export default function AnimatedHeroGuide() {
           ))}
         </div>
       </section>
-
-      {/* ── SECTION 5: CTA STRIP ───────────────────────────────── */}
-      <div style={{ position: 'relative', zIndex: 1, borderTop: `1px solid rgba(16,185,129,0.08)`, padding: '20px 32px' }}>
-        <div style={{ maxWidth: 1160, margin: '0 auto', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 16, flexWrap: 'wrap' }}>
-          <p style={{ fontSize: 13, color: 'rgba(255,255,255,0.4)', margin: 0 }}>
-            Free forever for personal use. No account needed to start.
-          </p>
-          <motion.button
-            id="myvitals-onboard"
-            whileHover={{ scale: 1.03 }}
-            whileTap={{ scale: 0.97 }}
-            onClick={() => {
-              // scroll down — onboarding is rendered below by MyVitalsPage
-              window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' })
-            }}
-            style={{
-              padding: '10px 22px', borderRadius: 9,
-              background: `linear-gradient(135deg, ${ACCENT}, ${ACCENT2})`,
-              color: '#000', fontWeight: 700, fontSize: 13,
-              border: 'none', cursor: 'pointer',
-            }}
-          >
-            Get started free →
-          </motion.button>
-        </div>
-      </div>
+      </details>
 
       {/* ── FOOTER (one row) ────────────────────────────────────── */}
-      <footer style={{ position: 'relative', zIndex: 1, borderTop: `1px solid rgba(16,185,129,0.07)`, padding: '14px 32px' }}>
+      <footer style={{ position: 'relative', zIndex: 1, borderTop: `1px solid rgba(16,185,129,0.07)`, padding: '10px 32px' }}>
         <div style={{ maxWidth: 1160, margin: '0 auto', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12, flexWrap: 'wrap' }}>
           <span style={{ fontWeight: 900, fontSize: 13, color: ACCENT }}>MyVitals</span>
           <div style={{ display: 'flex', gap: 18 }}>

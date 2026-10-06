@@ -208,8 +208,9 @@ export default function MyVitalsPage({ overrides }: { overrides: ContentOverride
   )
   if (!profile) return (
     <>
-      <AnimatedHeroGuide />
-      <Onboarding onDone={p => { saveProfile(p); setProfile(p) }} />
+      <AnimatedHeroGuide>
+        <Onboarding onDone={p => { saveProfile(p); setProfile(p) }} />
+      </AnimatedHeroGuide>
     </>
   )
 
@@ -232,7 +233,7 @@ export default function MyVitalsPage({ overrides }: { overrides: ContentOverride
       @keyframes ring-in{from{stroke-dasharray:0 ${circumference}}to{stroke-dasharray:${dash} ${circumference}}}
       @keyframes dhi-count{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
       @keyframes strip-up{from{opacity:0;transform:translateY(100%)}to{opacity:1;transform:translateY(0)}}
-      .mv-main{background:transparent;min-height:100vh;color:#0f172a;font-family:inherit}
+      .mv-main{background:transparent;min-height:0;color:#0f172a;font-family:inherit}
       .mv-hero{display:grid;grid-template-columns:1fr 250px;gap:20px;align-items:start;padding:18px 20px 14px;max-width:960px;margin:0 auto}
       .mv-metrics{display:grid;grid-template-columns:1fr 1fr;gap:8px;padding:0 20px 10px;max-width:960px;margin:0 auto}
       .mv-bottom{display:grid;grid-template-columns:1fr 1fr;gap:8px;padding:0 20px 10px;max-width:960px;margin:0 auto}
@@ -895,7 +896,7 @@ function ManualOnboarding({ onDone }: { onDone: (p: HealthProfile) => void }) {
   ]
 
   return (
-    <div style={{ minHeight:'calc(100vh - 58px)', display:'flex', flexDirection:'column', justifyContent:'center', paddingBottom:40 }}>
+    <div style={{ minHeight:0, display:'flex', flexDirection:'column', justifyContent:'center', paddingBottom:8 }}>
       {/* Progress dots */}
       <div style={{ display:'flex', justifyContent:'center', gap:6, marginBottom:32 }}>
         {[0,1,2].map(i => (
@@ -957,10 +958,10 @@ function AIChatOnboarding({ onDone }: { onDone: (p: HealthProfile) => void }) {
   }
 
   return (
-    <div style={{ maxWidth: 540, margin: '0 auto', padding: '0 20px', display: 'flex', flexDirection: 'column', minHeight: 'calc(100vh - 58px)', justifyContent: 'center' }}>
+    <div style={{ maxWidth: 540, margin: '0 auto', padding: '0 20px', display: 'flex', flexDirection: 'column', minHeight: 0, justifyContent: 'center' }}>
       <div style={{ textAlign: 'center', marginBottom: 24 }}>
         <div style={{ width: 48, height: 48, borderRadius: 14, background: 'linear-gradient(135deg, #0ea5e9, #38bdf8)', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 10px', fontSize: 22, boxShadow: '0 0 24px rgba(14,165,233,0.28)' }}>💙</div>
-        <h1 style={{ fontSize: 18, fontWeight: 800, color: '#0f172a', margin: 0 }}>My<span style={{ color: GREEN }}>Vitals</span> <span style={{ fontSize: 13, color: '#94a3b8', fontWeight: 400 }}>— Setup</span></h1>
+        <h1 style={{ fontSize: 18, fontWeight: 800, color: '#f0fdf4', margin: 0 }}>My<span style={{ color: GREEN }}>Vitals</span> <span style={{ fontSize: 13, color: '#94a3b8', fontWeight: 400 }}>— Setup</span></h1>
       </div>
       <div ref={scrollRef} style={{ background: '#f8fafc', border: '1px solid #e2e8f0', borderRadius: 20, padding: 20, maxHeight: 320, overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: 10, marginBottom: 12 }}>
         {messages.map((m, i) => (
