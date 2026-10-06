@@ -10,7 +10,7 @@ import AffiliateStrip from '@/components/AffiliateStrip'
 import ChatBot from '@/components/ChatBot'
 import BackToTop from '@/components/BackToTop'
 import { getSiteFlags } from '@/lib/flags'
-import { loadSiteTheme, buildThemeStyleTag, isWidgetHidden } from '@/lib/theme-loader'
+import { loadSiteTheme, buildThemeStyleTag, buildGa4Snippet, isWidgetHidden } from '@/lib/theme-loader'
 
 import { MotionProvider } from "@infosiva/shared-ui/modern";
 export const metadata: Metadata = {
@@ -91,6 +91,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
           h1, h2, h3 { font-family: 'DM Sans', system-ui, sans-serif !important; font-weight: 700; letter-spacing: -0.02em; }
           ${themeCSS}
         ` }} />
+      {buildGa4Snippet(theme) && <script dangerouslySetInnerHTML={{ __html: buildGa4Snippet(theme) }} />}
       </head>
       <body style={{
         background: 'var(--background, #f0fdfa)',
