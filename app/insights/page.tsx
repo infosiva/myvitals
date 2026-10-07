@@ -66,7 +66,7 @@ export default function InsightsPage() {
     {/* Print export div — hidden normally, visible on print */}
     <div id="print-export" ref={printRef} style={{ maxWidth: 800, margin: '0 auto', padding: '32px', fontFamily: 'system-ui, sans-serif' }}>
       <div style={{ marginBottom: 24, borderBottom: '2px solid #0ea5e9', paddingBottom: 16 }}>
-        <h1 style={{ fontSize: 22, fontWeight: 800, color: '#0a1628', margin: 0 }}>MyVitals — Health Report</h1>
+        <h2 style={{ fontSize: 22, fontWeight: 800, color: '#0a1628', margin: 0 }}>MyVitals — Health Report</h2>
         <p style={{ color: '#666', marginTop: 4, fontSize: 13 }}>
           Generated {new Date().toLocaleDateString('en-GB', { day:'numeric', month:'long', year:'numeric' })} — share with your GP
         </p>
