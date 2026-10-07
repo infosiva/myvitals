@@ -1,3 +1,4 @@
+import { sanitizeUserInput } from '@/lib/guard'
 import { reportToTaskFlow } from '@/lib/reportToTaskFlow'
 import { AI_LIMITER } from '@/lib/rateLimit'
 import { aiChat } from '@/lib/ai'
@@ -15,6 +16,8 @@ export async function POST(req: NextRequest) {
   if (limited) return limited
   try {
     const body = await req.json()
+    if (body && Array.isArray(body.messages)) for (const m of body.messages) if (m && typeof m.content === 'string') m.content = sanitizeUserInput(m.content).text
+    if (body && typeof body.message === 'string') body.message = sanitizeUserInput(body.message).text
     const messages: Message[] = body.messages
     const systemPrompt: string = body.systemPrompt ?? `You are VitalsBot, the AI health coach for MyVitals.
 Help users understand health metrics, give evidence-based nutrition and fitness advice, explain sleep and stress management.
