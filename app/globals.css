@@ -260,49 +260,9 @@ pre {
   html, body { overflow-x: hidden !important; }
 }
 
-/* ── Light green floating orbs (replaces dark aurora) ── */
+/* ── Flat clean bg — banned radial-gradient teal mesh blob removed (§0-DESIGN-PIPELINE, agents/CLAUDE.md) ── */
 .aurora {
-  position: fixed;
-  border-radius: 50%;
-  filter: blur(80px);
-  pointer-events: none;
-  z-index: 0;
-}
-.aurora-primary {
-  top: -10%;
-  left: -5%;
-  width: 600px;
-  height: 600px;
-  background: radial-gradient(circle, rgba(13,148,136,0.10) 0%, transparent 70%);
-  animation: drift-a 16s ease-in-out infinite;
-}
-.aurora-secondary {
-  bottom: -8%;
-  right: -4%;
-  width: 500px;
-  height: 500px;
-  background: radial-gradient(circle, rgba(15,118,110,0.08) 0%, transparent 70%);
-  animation: drift-b 20s ease-in-out infinite;
-}
-.aurora-third {
-  top: 40%;
-  left: 50%;
-  width: 400px;
-  height: 400px;
-  background: radial-gradient(circle, rgba(13,148,136,0.05) 0%, transparent 70%);
-  animation: drift-c 24s ease-in-out infinite;
-}
-@keyframes drift-a {
-  0%, 100% { transform: translate(0, 0) scale(1); }
-  50%       { transform: translate(40px, -20px) scale(1.08); }
-}
-@keyframes drift-b {
-  0%, 100% { transform: translate(0, 0) scale(1); }
-  50%       { transform: translate(-25px, 20px) scale(1.06); }
-}
-@keyframes drift-c {
-  0%, 100% { transform: translate(0, 0) scale(1); }
-  50%       { transform: translate(30px, -30px) scale(1.1); }
+  display: none;
 }
 @media (prefers-reduced-motion: reduce) {
   .aurora-primary, .aurora-secondary, .aurora-third { animation: none; }
