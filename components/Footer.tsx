@@ -57,7 +57,7 @@ export default function Footer({
 
           <nav aria-label="Footer navigation" className="flex flex-wrap items-center gap-4 text-xs text-white/40">
             {allLinks.map((link) => (
-              <Link key={link.href} href={link.href} className="hover:text-white/70 transition-colors">
+              <Link key={link.href} href={link.href} className="mv-foot-link hover:text-white/70 transition-colors">
                 {link.label}
               </Link>
             ))}

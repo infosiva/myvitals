@@ -81,7 +81,7 @@ button { font-family: inherit; cursor: pointer; border: none; }
   border-bottom: 1px solid #99f6e4;
 }
 .nav-brand {
-  display: flex; align-items: center; gap: 10px;
+  display: flex; align-items: center; gap: 10px; min-height: 44px;
   text-decoration: none;
   font-size: 17px; font-weight: 800; color: #0f172a; letter-spacing: -0.5px;
 }
@@ -101,14 +101,16 @@ button { font-family: inherit; cursor: pointer; border: none; }
   border: 1px solid #e2e8f0;
 }
 .nav-link {
-  padding: 6px 14px; border-radius: 8px;
+  display: inline-flex; align-items: center; justify-content: center; min-height: 44px;
+  padding: 0 14px; border-radius: 8px;
   font-size: 13px; font-weight: 600;
-  color: #64748b;
+  color: #475569;
   text-decoration: none;
   white-space: nowrap;
-  transition: color 0.2s, background 0.2s;
+  transition: color 0.2s, background-color 0.2s, transform 140ms var(--ease-out);
 }
-.nav-link:hover { color: #0f172a; background: #fff; }
+.nav-link:active { transform: scale(0.97); }
+@media (hover: hover) and (pointer: fine) { .nav-link:hover { color: #0f172a; background: #fff; } }
 .nav-auth { flex-shrink: 0; margin-left: 12px; }
 
 /* ── Mobile nav ── */
@@ -124,7 +126,7 @@ button { font-family: inherit; cursor: pointer; border: none; }
   }
   .nav-link {
     flex: 1; text-align: center;
-    padding: 6px 4px; font-size: 11px;
+    padding: 0 4px; font-size: 12px;
     border-radius: 8px;
   }
   body { padding-bottom: 60px; }
@@ -266,4 +268,26 @@ pre {
 }
 @media (prefers-reduced-motion: reduce) {
   .aurora-primary, .aurora-secondary, .aurora-third { animation: none; }
+}
+
+/* ── item 21: cookie banner, footer targets, press motion (unlayered: global reset zeroes Tailwind padding) ── */
+:root { --ease-out: cubic-bezier(0.23, 1, 0.32, 1); }
+.mv-cookie { position: fixed; left: 0; right: 0; bottom: 0; z-index: 50; padding: 14px 16px calc(14px + env(safe-area-inset-bottom)); background: #06201d; border-top: 1px solid rgba(94,234,212,0.25); animation: gateSlideUp 0.28s var(--ease-out) both; }
+.mv-cookie-inner { max-width: 880px; margin: 0 auto; display: flex; flex-direction: column; gap: 10px; }
+.mv-cookie-text { font-size: 13px; line-height: 1.5; color: #e2f5f1; padding-right: 64px; }
+.mv-cookie-text strong { color: #fff; }
+.mv-cookie-link { color: #99f6e4; text-decoration: underline; display: inline-block; min-height: 44px; min-width: 44px; line-height: 44px; text-align: center; }
+.mv-cookie-actions { display: flex; gap: 10px; }
+.mv-cookie-btn { min-height: 44px; min-width: 44px; padding: 0 18px; font-size: 14px; border-radius: 10px; font-weight: 600; transition: transform 140ms var(--ease-out), background-color 160ms ease; }
+.mv-cookie-btn:active, .mv-foot-link:active { transform: scale(0.97); }
+.mv-cookie-btn--ghost { background: transparent; color: #e2f5f1; border: 1px solid rgba(226,245,241,0.5); }
+.mv-cookie-btn--solid { background: #2dd4a0; color: #022c22; }
+.mv-foot-link { display: inline-flex; align-items: center; min-height: 44px; padding: 0 6px; transition: transform 140ms var(--ease-out), color 160ms ease; }
+@media (min-width: 640px) { .mv-cookie-inner { flex-direction: row; align-items: center; gap: 20px; } .mv-cookie-text { padding-right: 0; flex: 1; } }
+@media (prefers-reduced-motion: reduce) { .mv-cookie { animation: none; } .mv-cookie-btn:active, .mv-foot-link:active { transform: none; } }
+@keyframes gateSlideUp { from { transform: translateY(100%); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+
+/* Mobile: backdrop-filter on .nav-bar made it the containing block for the fixed bottom tab bar, pinning tabs over the brand. */
+@media (max-width: 640px) {
+  .nav-bar { backdrop-filter: none; -webkit-backdrop-filter: none; background: rgba(240,253,250,0.97); }
 }

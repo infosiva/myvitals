@@ -13,3 +13,9 @@
 - Moves: AnimatedBg (ambient hero/background); CSS keyframes: bgGradientShift, dhi-count, ds-float, ds-shift, fadeIn, float, fw-spin, gateSlideUp; transitions on interactive elements.
 - Trigger: page load (ambient) and hover/press (interactive). Reduced motion: honoured via prefers-reduced-motion block.
 - STATUS: scope documented from existing code only. Skill-stack passes (ui-ux-pro-max, emil-design-eng, impeccable critique, review-animations) and 375/1280 screenshot review are NOT yet run for this app. Item 21 stays OPEN until they are.
+
+## Item 21 visual pass (2026-10-07)
+Files changed: components/CookieConsent.tsx, components/Footer.tsx, components/AnimatedHeroGuide.tsx, components/FeedbackWidget.tsx, components/AuthButton.tsx, app/MyVitalsPage.tsx, app/globals.css (cookie banner restyle, 44px targets everywhere, footer/subtext contrast, press feedback, reduced-motion, mobile nav fix).
+Verified: 375+1280 screenshots read after last edit, no horizontal overflow, 0 interactive targets under 44px.
+Caveat: contrast set by token choice (#475569 on light, rgba>=0.6 white on dark), not ratio-measured per node; mobile bottom tab bar hidden behind cookie banner until consent.
+SKILL-STACK: done

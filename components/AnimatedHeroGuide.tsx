@@ -247,13 +247,14 @@ export default function AnimatedHeroGuide({ children }: { children?: React.React
             {METRIC_PILLS.map((pill, i) => (
               <button
                 key={pill}
+                className="mv-foot-link"
                 onClick={() => setActivePill(i)}
                 style={{
-                  padding: '5px 14px', borderRadius: 999, fontSize: 12, fontWeight: 600,
+                  minHeight: 44, padding: '0 16px', borderRadius: 999, fontSize: 12, fontWeight: 600,
                   cursor: 'pointer', border: `1px solid ${activePill === i ? ACCENT : 'rgba(16,185,129,0.18)'}`,
                   background: activePill === i ? `rgba(16,185,129,0.12)` : 'transparent',
-                  color: activePill === i ? ACCENT : 'rgba(255,255,255,0.4)',
-                  transition: 'all 0.15s',
+                  color: activePill === i ? ACCENT : 'rgba(255,255,255,0.72)',
+                  transition: 'transform 140ms cubic-bezier(0.23,1,0.32,1), background-color 150ms ease, border-color 150ms ease, color 150ms ease',
                   whiteSpace: 'nowrap',
                 }}
               >
@@ -343,9 +344,9 @@ export default function AnimatedHeroGuide({ children }: { children?: React.React
               <p style={{ fontSize: 12, color: 'rgba(255,255,255,0.45)', fontWeight: 600, margin: '0 0 6px' }}>{plan.name}</p>
               <div style={{ display: 'flex', alignItems: 'baseline', gap: 3, marginBottom: 3 }}>
                 <span style={{ fontSize: 30, fontWeight: 900, letterSpacing: '-0.04em', color: plan.highlight ? ACCENT : '#f0fdf4' }}>{plan.price}</span>
-                <span style={{ fontSize: 13, color: 'rgba(255,255,255,0.35)' }}>{plan.period}</span>
+                <span style={{ fontSize: 13, color: 'rgba(255,255,255,0.6)' }}>{plan.period}</span>
               </div>
-              <p style={{ fontSize: 11, color: 'rgba(255,255,255,0.28)', margin: '0 0 14px' }}>{plan.note}</p>
+              <p style={{ fontSize: 12, color: 'rgba(255,255,255,0.6)', margin: '0 0 14px' }}>{plan.note}</p>
               <div style={{ display: 'flex', flexDirection: 'column', gap: 7, marginBottom: 18 }}>
                 {plan.features.map(f => (
                   <div key={f} style={{ display: 'flex', alignItems: 'center', gap: 7, fontSize: 12, color: 'rgba(255,255,255,0.55)' }}>
@@ -357,7 +358,7 @@ export default function AnimatedHeroGuide({ children }: { children?: React.React
                 href={plan.href}
                 whileHover={{ scale: 1.03 }} whileTap={{ scale: 0.97 }}
                 style={{
-                  display: 'block', padding: '10px', borderRadius: 10, fontWeight: 700, fontSize: 13,
+                  display: 'block', padding: '14px 10px', borderRadius: 10, fontWeight: 700, fontSize: 13,
                   textAlign: 'center', textDecoration: 'none',
                   background: plan.highlight ? `linear-gradient(135deg, ${ACCENT}, ${ACCENT2})` : 'rgba(16,185,129,0.08)',
                   color: plan.highlight ? '#000' : ACCENT,
@@ -379,14 +380,14 @@ export default function AnimatedHeroGuide({ children }: { children?: React.React
           <span style={{ fontWeight: 900, fontSize: 13, color: ACCENT }}>MyVitals</span>
           <div style={{ display: 'flex', gap: 18 }}>
             {[['Privacy', '/privacy'], ['Terms', '/terms'], ['About', '/about']].map(([label, href]) => (
-              <a key={label} href={href} style={{ fontSize: 11, color: 'rgba(255,255,255,0.22)', textDecoration: 'none' }}
+              <a key={label} href={href} className="mv-foot-link" style={{ fontSize: 12, color: 'rgba(255,255,255,0.72)', textDecoration: 'none' }}
                 onMouseOver={e => (e.currentTarget.style.color = ACCENT)}
-                onMouseOut={e => (e.currentTarget.style.color = 'rgba(255,255,255,0.22)')}>
+                onMouseOut={e => (e.currentTarget.style.color = 'rgba(255,255,255,0.72)')}>
                 {label}
               </a>
             ))}
           </div>
-          <p style={{ fontSize: 10, color: 'rgba(255,255,255,0.12)', margin: 0 }}>© 2026 MyVitals</p>
+          <p style={{ fontSize: 12, color: 'rgba(255,255,255,0.65)', margin: 0 }}>© 2026 MyVitals</p>
         </div>
       </footer>
     </div>

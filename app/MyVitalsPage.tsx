@@ -555,11 +555,11 @@ export default function MyVitalsPage({ overrides }: { overrides: ContentOverride
           <span style={{ fontWeight:900, fontSize:13, color:GREEN }}>MyVitals</span>
           <div style={{ display:'flex', gap:16, flexWrap:'wrap' }}>
             {[['Privacy','/privacy'],['Terms','/terms'],['About','/about']].map(([label,href]) => (
-              <a key={label} href={href} style={{ fontSize:11, color:'#94a3b8', textDecoration:'none' }}
-                onMouseOver={e=>(e.currentTarget.style.color=GREEN)} onMouseOut={e=>(e.currentTarget.style.color='#94a3b8')}>{label}</a>
+              <a key={label} href={href} className="mv-foot-link" style={{ fontSize:12, color:'#475569', textDecoration:'none' }}
+                onMouseOver={e=>(e.currentTarget.style.color='#0f766e')} onMouseOut={e=>(e.currentTarget.style.color='#475569')}>{label}</a>
             ))}
           </div>
-          <p style={{ fontSize:10, color:'#e2e8f0' }}>© 2026 MyVitals</p>
+          <p style={{ fontSize:12, color:'#475569' }}>© 2026 MyVitals</p>
         </div>
       </footer>
 
@@ -1001,7 +1001,7 @@ function Onboarding({ onDone }: { onDone: (p: HealthProfile) => void }) {
         ? <>
             <AIChatOnboarding onDone={onDone} />
             <div style={{ textAlign: 'center', paddingBottom: 20, marginTop: -10 }}>
-              <button onClick={() => setMode('manual')} style={{ background: 'none', border: 'none', color: '#cbd5e1', fontSize: 12, cursor: 'pointer', textDecoration: 'underline', textUnderlineOffset: 3 }}>Prefer a form instead?</button>
+              <button onClick={() => setMode('manual')} className="mv-foot-link" style={{ background: 'none', border: 'none', color: '#cbd5e1', fontSize: 12, cursor: 'pointer', textDecoration: 'underline', textUnderlineOffset: 3 }}>Prefer a form instead?</button>
             </div>
           </>
         : <>

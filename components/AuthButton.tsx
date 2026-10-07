@@ -45,7 +45,8 @@ export default function AuthButton() {
         style={{
           fontSize: "12px",
           fontWeight: 600,
-          padding: "6px 14px",
+          padding: "0 14px",
+          minHeight: 44,
           borderRadius: "8px",
           border: `1px solid ${SITE_CONFIG.accentColor}55`,
           background: `${SITE_CONFIG.accentColor}15`,
