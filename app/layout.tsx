@@ -92,7 +92,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
           h1, h2, h3 { font-family: 'DM Sans', system-ui, sans-serif !important; font-weight: 700; letter-spacing: -0.02em; }
           ${themeCSS}
         ` }} />
-      {buildGa4Snippet(theme) && <script dangerouslySetInnerHTML={{ __html: buildGa4Snippet(theme) }} />}
+      {buildGa4Snippet(theme) ? <script dangerouslySetInnerHTML={{ __html: buildGa4Snippet(theme) }} /> : null}
       </head>
       <body style={{
         background: 'var(--background, #f0fdfa)',
