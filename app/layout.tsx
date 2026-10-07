@@ -12,6 +12,7 @@ import BackToTop from '@/components/BackToTop'
 import { getSiteFlags } from '@/lib/flags'
 import { loadSiteTheme, buildThemeStyleTag, buildGa4Snippet, isWidgetHidden } from '@/lib/theme-loader'
 
+import { AnimatedBg } from "@/components/AnimatedBg"
 import { MotionProvider } from "@infosiva/shared-ui/modern";
 export const metadata: Metadata = {
   title: 'MyVitals — Your health, finally explained.',
@@ -98,6 +99,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
         color: '#0f172a',
         fontFamily: "'DM Sans', system-ui, sans-serif",
       }}>
+        <AnimatedBg theme={theme} fallback="none" />
         <div className="aurora aurora-primary" aria-hidden />
         <div className="aurora aurora-secondary" aria-hidden />
         <div className="aurora aurora-third" aria-hidden />
