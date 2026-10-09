@@ -10,7 +10,7 @@ import AffiliateStrip from '@/components/AffiliateStrip'
 import ChatBot from '@/components/ChatBot'
 import BackToTop from '@/components/BackToTop'
 import { getSiteFlags } from '@/lib/flags'
-import { loadSiteTheme, buildThemeStyleTag, buildGa4Snippet, isWidgetHidden } from '@/lib/theme-loader'
+import { loadSiteTheme, buildThemeStyleTag, buildGa4Snippet, resolveGa4Id, isWidgetHidden } from '@/lib/theme-loader'
 
 import { AnimatedBg } from "@/components/AnimatedBg"
 import { MotionProvider } from "@infosiva/shared-ui/modern";
@@ -92,6 +92,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
           h1, h2, h3 { font-family: 'DM Sans', system-ui, sans-serif !important; font-weight: 700; letter-spacing: -0.02em; }
           ${themeCSS}
         ` }} />
+      {buildGa4Snippet(theme) ? <script async src={`https://www.googletagmanager.com/gtag/js?id=${resolveGa4Id(theme)}`} /> : null}
       {buildGa4Snippet(theme) ? <script dangerouslySetInnerHTML={{ __html: buildGa4Snippet(theme) }} /> : null}
       </head>
       <body style={{
